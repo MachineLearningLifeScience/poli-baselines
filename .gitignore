@@ -1,0 +1,8 @@
+# Development
+.vscode/
+.DS_Store
+
+# Python
+*.pyc
+__pycache__/
+*.egg-info/
