@@ -45,16 +45,6 @@ TMP_PATH = Path("/tmp").resolve()
 # maybe passed as an argument to the
 # FoldXStabilityProblemFactory, but POLi doesn't
 # support that yet.
-initial_pdb_file = THIS_DIR / "101m_Repair.pdb"
-
-parser = PDB.PDBParser(QUIET=True)
-wildtype_protein = parser.get_structure("pdb", initial_pdb_file)
-wildtype_amino_acids = [
-    seq1(residue.get_resname()) for residue in wildtype_protein.get_residues()
-]
-wildtype_residue_string = "".join(wildtype_amino_acids)
-
-MAX_SEQUENCE_LENGTH = len(wildtype_amino_acids)
 
 
 class FoldXContext(TypedDict):
@@ -73,6 +63,7 @@ class FoldXStabilityBlackBox(AbstractBlackBox):
         experiment_id: str = None,
     ):
         super().__init__(L)
+        self.sequences_aligned = False
         self.parser = PDB.PDBParser(QUIET=True)
         self.alphabet = alphabet
         self.decoding = {v: k for k, v in self.alphabet.items()}
@@ -242,6 +233,7 @@ class FoldXStabilityBlackBox(AbstractBlackBox):
 class FoldXStabilityProblemFactory(AbstractProblemFactory):
     def __init__(self) -> None:
         self.required_arguments = ["wildtype_pdb_path"]
+        self.max_sequence_length = np.inf
         super().__init__()
 
     def get_setup_information(self) -> ProblemSetupInformation:
@@ -250,17 +242,18 @@ class FoldXStabilityProblemFactory(AbstractProblemFactory):
         """
         alphabet = ENCODING
 
+        # Parsing the wildtype pdb file to get the sequence
+        # and the residues, for their length.
         return ProblemSetupInformation(
             name="FoldX_stability",
-            max_sequence_length=MAX_SEQUENCE_LENGTH,
+            max_sequence_length=np.inf,
             alphabet=alphabet,
-            aligned=True,
+            aligned=False,
         )
 
     def create(
         self, seed: int = 0, wildtype_pdb_path: Path = None
     ) -> Tuple[AbstractBlackBox, np.ndarray, np.ndarray]:
-        L = self.get_setup_information().get_max_sequence_length()
         if wildtype_pdb_path is None:
             raise ValueError(
                 "Missing required argument wildtype_pdb_path. "
@@ -269,19 +262,25 @@ class FoldXStabilityProblemFactory(AbstractProblemFactory):
 
         if isinstance(wildtype_pdb_path, str):
             wildtype_pdb_path = Path(wildtype_pdb_path.strip())
-        else:
+        elif not isinstance(wildtype_pdb_path, Path):
             raise ValueError(
                 f"wildtype_pdb_path must be a string or a Path. Received {type(wildtype_pdb_path)}"
             )
 
-        alphabet = self.get_setup_information().get_alphabet()
-        f = FoldXStabilityBlackBox(L, wildtype_pdb_path, alphabet)
-
+        # Loading up the wildtype pdb file
+        # using biopython to infer L, the
+        # length of the sequence.
         parser = PDB.PDBParser(QUIET=True)
         wildtype_structure = parser.get_structure("pdb", wildtype_pdb_path)
         wildtype_amino_acids = [
-            seq1(residue.get_resname()) for residue in wildtype_structure.get_residues()
+            seq1(residue.get_resname())
+            for residue in wildtype_structure.get_residues()
+            if residue.get_resname() != "NA"
         ]
+        L = len(wildtype_amino_acids)
+
+        alphabet = self.get_setup_information().get_alphabet()
+        f = FoldXStabilityBlackBox(L, wildtype_pdb_path, alphabet)
 
         x0 = np.array(
             [ENCODING[amino_acid] for amino_acid in wildtype_amino_acids]

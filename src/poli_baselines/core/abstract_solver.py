@@ -1,3 +1,7 @@
+from typing import Dict
+from pathlib import Path
+import json
+
 import numpy as np
 
 from poli.core.abstract_black_box import AbstractBlackBox
@@ -52,7 +56,34 @@ class AbstractSolver:
             x = self.next_candidate()
             y = self.black_box(x)
 
-            self.history["x"].append(x)
-            self.history["y"].append(y)
+            self.update(x, y)
+            print(f"Iteration {i}: {y}, best so far: {np.max(self.history['y'])}")
 
-            print(f"Iteration {i}: {y}")
+    def save_history(self, path: Path, alphabet: Dict[str, int] = None):
+        """
+        Saves the history of the solver to the given path.
+        """
+        if alphabet is not None:
+            inverse_alphabet = {i: amino_acid for amino_acid, i in alphabet.items()}
+            # Then we translate the integers in the history
+            # to the corresponding characters in the alphabet.
+            x_to_save = [
+                "".join(
+                    [inverse_alphabet[x_i] for x_i in x.flatten().tolist()]
+                ) for x in self.history["x"]
+            ]
+        else:
+            x_to_save = [x.flatten().tolist() for x in self.history["x"]]
+
+        y_to_save = [
+            y.flatten()[0] for y in self.history["y"]
+        ]
+
+        with open(path, "w") as fp:
+            json.dump(
+                {
+                    "x": x_to_save,
+                    "y": y_to_save,
+                },
+                fp,
+            )

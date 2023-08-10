@@ -22,8 +22,10 @@ class RandomMutation(AbstractSolver):
         black_box: AbstractBlackBox,
         x0: np.ndarray,
         y0: np.ndarray,
+        alphabet_size: int,
     ):
         super().__init__(black_box, x0, y0)
+        self.alphabet_size = alphabet_size
 
     def next_candidate(self) -> np.ndarray:
         """
@@ -38,8 +40,11 @@ class RandomMutation(AbstractSolver):
         best_x = self.history["x"][np.argmax(self.history["y"])]
 
         # Perform a random mutation
-        x = best_x.copy()
-        pos = np.random.randint(0, len(x))
-        x[pos] = np.random.randint(0, self.black_box.L)
+        # TODO: this assumes that x has shape [1, L],
+        # what happens with batches? So far, POLi is
+        # implemented without batching in mind.
+        next_x = best_x.copy()
+        pos = np.random.randint(0, len(next_x.flatten()))
+        next_x[0][pos] = np.random.randint(0, self.alphabet_size)
 
-        return x
+        return next_x
