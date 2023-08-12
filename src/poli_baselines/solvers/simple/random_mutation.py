@@ -8,8 +8,6 @@ are performed by randomly selecting a
 position in the input and randomly selecting
 a new value for that position.
 """
-from pathlib import Path
-
 import numpy as np
 
 from poli_baselines.core.abstract_solver import AbstractSolver

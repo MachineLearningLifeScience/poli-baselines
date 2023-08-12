@@ -43,7 +43,7 @@ class AbstractSolver:
         self.history["x"].append(x)
         self.history["y"].append(y)
 
-    def solve(self, max_iter: int = 1000) -> np.ndarray:
+    def solve(self, max_iter: int = 100) -> np.ndarray:
         """
         Runs the solver for the given number of iterations.
         :param max_iter:

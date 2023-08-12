@@ -1,15 +1,10 @@
 """
-In this script, we test whether POLi can
-optimize the stability of a protein using
-FoldX as an objective function.
-
-By this, I mean: I'm not exactly sure whether
-the conda environment will be enough to run
-FoldX. If not, we'll have to use a Docker
-container.
+In this script, we register an objective
+function that uses FoldX to compute the
+stability of a protein.
 """
 from pathlib import Path
-from typing import Dict, List, TypedDict, Tuple
+from typing import Dict, List, Tuple
 import subprocess
 import shutil
 from time import time
@@ -22,7 +17,7 @@ import numpy as np
 from Bio import PDB
 from Bio.SeqUtils import seq1
 
-from foldx_utils import AMINO_ACIDS, ENCODING
+from foldx_utils import ENCODING
 
 from poli.core.abstract_black_box import AbstractBlackBox
 from poli.core.abstract_problem_factory import AbstractProblemFactory
@@ -45,13 +40,6 @@ TMP_PATH = Path("/tmp").resolve()
 # maybe passed as an argument to the
 # FoldXStabilityProblemFactory, but POLi doesn't
 # support that yet.
-
-
-class FoldXContext(TypedDict):
-    pdb_files: List[Path]
-    wildtype_pdb_file: List[Path]
-    delete_working_dir: bool
-    path_to_mutation_list: Path
 
 
 class FoldXStabilityBlackBox(AbstractBlackBox):
@@ -136,7 +124,7 @@ class FoldXStabilityBlackBox(AbstractBlackBox):
 
         return working_dir
 
-    def _black_box(self, x: np.ndarray, context: FoldXContext = None) -> np.ndarray:
+    def _black_box(self, x: np.ndarray, context: dict = None) -> np.ndarray:
         """
         Runs the given input x and pdb files provided
         in the context through FoldX and returns the
@@ -295,8 +283,6 @@ if __name__ == "__main__":
     from poli import objective_factory
     from poli.core.registry import register_problem
 
-    wildtype_pdb_path = THIS_DIR / "101m_Repair.pdb"
-
     foldx_problem_factory = FoldXStabilityProblemFactory()
 
     register_problem(
@@ -304,16 +290,16 @@ if __name__ == "__main__":
         conda_environment_location="/Users/migd/anaconda3/envs/poli-dev",
     )
 
-    problem_name = foldx_problem_factory.get_setup_information().get_problem_name()
-    problem_info, f, x0, y0, run_info = objective_factory.create(
-        problem_name,
-        seed=0,
-        observer=None,
-        wildtype_pdb_path=wildtype_pdb_path,
-    )
+    # problem_name = foldx_problem_factory.get_setup_information().get_problem_name()
+    # problem_info, f, x0, y0, run_info = objective_factory.create(
+    #     problem_name,
+    #     seed=0,
+    #     observer=None,
+    #     wildtype_pdb_path=wildtype_pdb_path,
+    # )
 
-    print(f"Problem name: {problem_name}")
-    print(f"Problem info: {problem_info}")
-    print(f"Initial sequence: {x0}")
-    print(f"Initial score: {y0}")
-    print(f"Run info: {run_info}")
+    # print(f"Problem name: {problem_name}")
+    # print(f"Problem info: {problem_info}")
+    # print(f"Initial sequence: {x0}")
+    # print(f"Initial score: {y0}")
+    # print(f"Run info: {run_info}")
