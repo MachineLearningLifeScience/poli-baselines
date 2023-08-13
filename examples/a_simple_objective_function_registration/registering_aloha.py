@@ -1,4 +1,11 @@
+"""
+This is the minimal example of how to register
+a problem factory, which allows for creating
+instances of the problem: the objective function,
+the initial point, and its first evaluation.
+"""
 from typing import Tuple
+from string import ascii_uppercase
 
 import numpy as np
 
@@ -19,7 +26,8 @@ class AlohaBlackBox(AbstractBlackBox):
 
 class AlohaProblemFactory(AbstractProblemFactory):
     def get_setup_information(self) -> ProblemSetupInformation:
-        alphabet_symbols = ["A", ...]
+        # The alphabet: ["A", "B", "C", ...]
+        alphabet_symbols = list(ascii_uppercase)
         alphabet = {symbol: i for i, symbol in enumerate(alphabet_symbols)}
 
         return ProblemSetupInformation(
@@ -38,21 +46,14 @@ class AlohaProblemFactory(AbstractProblemFactory):
 
 
 if __name__ == "__main__":
-    from poli import objective_factory
     from poli.core.registry import register_problem
 
-    # (once) we have to register our factory
+    # Once we have created a simple conda enviroment
+    # (see the environment.yml file in this folder),
+    # we can register our problem s.t. it uses
+    # said conda environment.
     aloha_problem_factory = AlohaProblemFactory()
     register_problem(
         aloha_problem_factory,
-        conda_environment_location="/Users/migd/anaconda3/envs/poli-dev",
+        conda_environment_name="poli_aloha",
     )
-
-    # now we can instantiate our objective
-    problem_name = aloha_problem_factory.get_setup_information().get_problem_name()
-    problem_info, f, x0, y0, run_info = objective_factory.create(
-        problem_name, caller_info=None, observer=None
-    )
-
-    print(f(x0[:1, :]))
-    f.terminate()
