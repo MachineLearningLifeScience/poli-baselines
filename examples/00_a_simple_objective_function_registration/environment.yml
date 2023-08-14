@@ -1,4 +1,4 @@
-name: poli_aloha_problem
+name: poli_aloha
 channels:
   - defaults
 dependencies:
@@ -6,5 +6,4 @@ dependencies:
   - pip
   - pip:
     - numpy
-    - click
     - "git+https://github.com/miguelgondu/poli.git"

@@ -8,6 +8,8 @@ are performed by randomly selecting a
 position in the input and randomly selecting
 a new value for that position.
 """
+from typing import Dict
+
 import numpy as np
 
 from poli_baselines.core.abstract_solver import AbstractSolver
@@ -20,10 +22,12 @@ class RandomMutation(AbstractSolver):
         black_box: AbstractBlackBox,
         x0: np.ndarray,
         y0: np.ndarray,
-        alphabet_size: int,
+        alphabet: Dict[str, int],
     ):
         super().__init__(black_box, x0, y0)
-        self.alphabet_size = alphabet_size
+        self.alphabet = alphabet
+        self.alphabet_size = len(alphabet)
+        self.inverse_alphabet = {v: k for k, v in alphabet.items()}
 
     def next_candidate(self) -> np.ndarray:
         """
@@ -43,6 +47,17 @@ class RandomMutation(AbstractSolver):
         # implemented without batching in mind.
         next_x = best_x.copy()
         pos = np.random.randint(0, len(next_x.flatten()))
-        next_x[0][pos] = np.random.randint(0, self.alphabet_size)
+
+        if isinstance(next_x.dtype, (np.integer, np.float_)):
+            mutant = np.random.randint(0, self.alphabet_size)
+        elif next_x.dtype.kind in ("U", "S"):
+            mutant = np.random.choice(list(self.alphabet.keys()))
+        else:
+            raise ValueError(
+                f"Unknown dtype for the input: {next_x.dtype}. "
+                "Only integer, float and unicode dtypes are supported."
+            )
+
+        next_x[0][pos] = mutant
 
         return next_x

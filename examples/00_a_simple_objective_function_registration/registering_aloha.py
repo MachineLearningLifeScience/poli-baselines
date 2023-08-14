@@ -55,5 +55,5 @@ if __name__ == "__main__":
     aloha_problem_factory = AlohaProblemFactory()
     register_problem(
         aloha_problem_factory,
-        conda_environment_name="poli_aloha_problem",
+        conda_environment_name="poli_aloha",
     )

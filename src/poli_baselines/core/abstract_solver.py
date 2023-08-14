@@ -43,7 +43,7 @@ class AbstractSolver:
         self.history["x"].append(x)
         self.history["y"].append(y)
 
-    def solve(self, max_iter: int = 100) -> np.ndarray:
+    def solve(self, max_iter: int = 100, break_at_performance: float = None, verbose: bool = False) -> np.ndarray:
         """
         Runs the solver for the given number of iterations.
         :param max_iter:
@@ -57,7 +57,12 @@ class AbstractSolver:
             y = self.black_box(x)
 
             self.update(x, y)
-            print(f"Iteration {i}: {y}, best so far: {np.max(self.history['y'])}")
+            if verbose:
+                print(f"Iteration {i}: {y}, best so far: {np.max(self.history['y'])}")
+            
+            if break_at_performance is not None:
+                if y >= break_at_performance:
+                    break
 
     def save_history(self, path: Path, alphabet: Dict[str, int] = None):
         """
@@ -87,3 +92,9 @@ class AbstractSolver:
                 },
                 fp,
             )
+
+    def get_best_solution(self) -> np.ndarray:
+        """
+        Returns the best solution found so far.
+        """
+        return self.history["x"][np.argmax(self.history["y"])]
