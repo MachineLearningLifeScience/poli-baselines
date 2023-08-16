@@ -1,3 +1,2 @@
 numpy
-click
 poli @ git+https://github.com/miguelgondu/poli.git

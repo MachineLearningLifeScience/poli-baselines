@@ -48,7 +48,7 @@ class RandomMutation(AbstractSolver):
         next_x = best_x.copy()
         pos = np.random.randint(0, len(next_x.flatten()))
 
-        if isinstance(next_x.dtype, (np.integer, np.float_)):
+        if next_x.dtype.kind in ("i", "f"):
             mutant = np.random.randint(0, self.alphabet_size)
         elif next_x.dtype.kind in ("U", "S"):
             mutant = np.random.choice(list(self.alphabet.keys()))
