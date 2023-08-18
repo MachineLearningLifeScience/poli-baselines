@@ -2,4 +2,4 @@ numpy
 click
 python-levenshtein
 biopython
-poli @ git+https://github.com/miguelgondu/poli.git
+poli @ git+https://github.com/MachineLearningLifeScience/poli.git
