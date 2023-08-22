@@ -43,7 +43,12 @@ class AbstractSolver:
         self.history["x"].append(x)
         self.history["y"].append(y)
 
-    def solve(self, max_iter: int = 100, break_at_performance: float = None, verbose: bool = False) -> np.ndarray:
+    def solve(
+        self,
+        max_iter: int = 100,
+        break_at_performance: float = None,
+        verbose: bool = False,
+    ) -> np.ndarray:
         """
         Runs the solver for the given number of iterations.
         :param max_iter:
@@ -59,7 +64,7 @@ class AbstractSolver:
             self.update(x, y)
             if verbose:
                 print(f"Iteration {i}: {y}, best so far: {np.max(self.history['y'])}")
-            
+
             if break_at_performance is not None:
                 if y >= break_at_performance:
                     break
@@ -73,16 +78,13 @@ class AbstractSolver:
             # Then we translate the integers in the history
             # to the corresponding characters in the alphabet.
             x_to_save = [
-                "".join(
-                    [inverse_alphabet[x_i] for x_i in x.flatten().tolist()]
-                ) for x in self.history["x"]
+                "".join([inverse_alphabet[x_i] for x_i in x.flatten().tolist()])
+                for x in self.history["x"]
             ]
         else:
             x_to_save = [x.flatten().tolist() for x in self.history["x"]]
 
-        y_to_save = [
-            y.flatten()[0] for y in self.history["y"]
-        ]
+        y_to_save = [y.flatten()[0] for y in self.history["y"]]
 
         with open(path, "w") as fp:
             json.dump(
@@ -98,3 +100,9 @@ class AbstractSolver:
         Returns the best solution found so far.
         """
         return self.history["x"][np.argmax(self.history["y"])]
+
+    def get_best_performance(self) -> np.ndarray:
+        """
+        Returns the best performance found so far.
+        """
+        return np.max(self.history["y"])
