@@ -85,7 +85,7 @@ class LatentSpaceBayesianOptimization(AbstractSolver):
         # Bounds needs to be a 2xd tensor.
         # In this case, we can infer d from
         # the size of z.
-        bounds = torch.tensor([[-2.0, 2.0]] * z.shape[1])
+        bounds = torch.tensor([[-2.0, 2.0]] * z.shape[1]).T
 
         # TODO: remove this grid search:
         if z.shape[1] == 2:
