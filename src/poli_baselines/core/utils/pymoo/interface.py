@@ -6,12 +6,7 @@ from typing import Dict
 
 import numpy as np
 
-from pymoo.core.problem import (
-    ElementwiseEvaluationFunction,
-    LoopedElementwiseEvaluation,
-    Problem,
-)
-from pymoo.core.variable import Choice
+from pymoo.core.problem import Problem
 
 from poli.core.multi_objective_black_box import MultiObjectiveBlackBox
 
