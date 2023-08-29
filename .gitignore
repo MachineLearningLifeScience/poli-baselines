@@ -9,3 +9,4 @@ __pycache__/
 
 examples/05_optimizing_qed_using_latent_space_bo/VAESelfies_TINY-CID-SELFIES-20_latent_dim_2.pt
 examples/07_optimizing_logp_on_chembl/VAE_CHEMBL.pt
+examples/08_pymoo_nsga_ii_on_foldx/history.json

@@ -4,16 +4,19 @@ In this script, we optimize the stability and SASA of a protein using pymoo's im
 from pathlib import Path
 
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.optimize import minimize
 from pymoo.core.mutation import Mutation
-from pymoo.core.crossover import Crossover
 from pymoo.core.sampling import Sampling
+from pymoo.operators.crossover.ux import UniformCrossover
 
 from poli import objective_factory
 
 from poli_baselines.core.utils.pymoo.interface import DiscretePymooProblem
+from poli_baselines.core.utils.pymoo.save_history import save_final_population
 
 THIS_DIR = Path(__file__).parent.resolve()
 
@@ -40,15 +43,6 @@ class WildtypeMutationSampling(Sampling):
                 sample[idx] = np.random.randint(minimum_[idx], maximum_[idx] + 1)
 
         return samples
-
-
-class NoCrossover(Crossover):
-    def __init__(self):
-        # define the crossover: number of parents and number of offsprings
-        super().__init__(2, 2)
-
-    def _do(self, problem, X, **kwargs):
-        return X
 
 
 class IntegerFlipMutation(Mutation):
@@ -78,17 +72,9 @@ if __name__ == "__main__":
     # Creating e.g. the aloha problem. We require that the black
     # box objective function takes integers as inputs.
     path_to_wildtype = THIS_DIR / "3ned_Repair.pdb"
-    # problem_info, f_stability, x_0, _, _ = objective_factory.create(
-    #     name="foldx_stability", wildtype_pdb_path=path_to_wildtype
-    # )
-    # problem_info, f_sasa, x_0, _, _ = objective_factory.create(
-    #     name="foldx_sasa", wildtype_pdb_path=path_to_wildtype
-    # )
 
-    # # Creating a multi-objective black box using two copies
-    # # of aloha
-    # f = MultiObjectiveBlackBox(L=np.inf, objective_functions=[f_stability, f_sasa])
-    # y_0 = f(x_0)
+    # Creating a problem for computing both stability and SASA at the
+    # same time.
     problem_info, f_stability_and_sasa, x_0, y_0, _ = objective_factory.create(
         name="foldx_stability_and_sasa", wildtype_pdb_path=path_to_wildtype
     )
@@ -107,9 +93,9 @@ if __name__ == "__main__":
     # that they manipulate integers instead of floats.
     # See e.g. https://pymoo.org/customization/discrete.html
     method = NSGA2(
-        pop_size=2,
+        pop_size=10,
         sampling=WildtypeMutationSampling(x_0=x_0, num_mutations=1),
-        crossover=NoCrossover(),
+        crossover=UniformCrossover(),
         mutation=IntegerFlipMutation(num_mutations=1),
         eliminate_duplicates=True,
     )
@@ -128,3 +114,26 @@ if __name__ == "__main__":
     print(f"Best solution found (index 0): {res.X[0]} ({best_solution_as_string})")
     print(f"Function value: {-res.F}")
     print(f"Starting value: {y_0}")
+
+    save_final_population(
+        result=res,
+        alphabet=problem_info.alphabet,
+        path=THIS_DIR / "history.json",
+    )
+
+    # Let's plot all the different populations:
+    all_F = -np.concatenate(
+        [history_i.pop.get("F") for history_i in res.history], axis=0
+    )
+    fig, ax = plt.subplots(1, 1)
+    sns.scatterplot(
+        x=all_F[:, 0],
+        y=all_F[:, 1],
+        ax=ax,
+        label="All populations",
+    )
+    sns.scatterplot(x=y_0[:, 0], y=y_0[:, 1], ax=ax, label="Wildtype", c="red", marker="x")
+    ax.set_xlabel("Stability")
+    ax.set_ylabel("SASA")
+
+    plt.show()
