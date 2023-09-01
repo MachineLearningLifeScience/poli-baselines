@@ -1,6 +1,7 @@
 """
 In this script, we optimize the stability and SASA of a protein using pymoo's implementation of NSGA-II.
 """
+from typing import List
 from pathlib import Path
 
 import numpy as np
@@ -11,61 +12,67 @@ from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.optimize import minimize
 from pymoo.core.mutation import Mutation
 from pymoo.core.sampling import Sampling
-from pymoo.operators.crossover.ux import UniformCrossover
+from pymoo.core.variable import Choice
+from pymoo.core.mixed import (
+    MixedVariableMating,
+    MixedVariableSampling,
+    MixedVariableDuplicateElimination,
+)
 
 from poli import objective_factory
 
 from poli_baselines.core.utils.pymoo.interface import DiscretePymooProblem
-from poli_baselines.core.utils.pymoo.save_history import save_final_population
+from poli_baselines.core.utils.pymoo.save_history import save_all_populations
 
 THIS_DIR = Path(__file__).parent.resolve()
 
 
 class WildtypeMutationSampling(Sampling):
-    def __init__(self, x_0: np.ndarray, num_mutations: int = 1) -> None:
+    """
+    TODO: document
+    """
+
+    def __init__(
+        self, x_0: np.ndarray, alphabet: List[str], num_mutations: int = 1
+    ) -> None:
+        """
+        TODO: document
+        """
         self.x_0 = x_0
         self.num_mutations = num_mutations
+        self.alphabet = alphabet
         super().__init__()
 
     def _do(self, problem, n_samples, **kwargs):
-        samples = np.repeat(self.x_0, n_samples, axis=0)
-        minimum_ = problem.xl
-        maximum_ = problem.xu
-
-        # To perform different self.num_mutations, we first
-        # select the indices to mutate.
-
-        # Then we mutate the selected indices.
-        for sample in samples:
-            all_indices_at_random = np.random.permutation(samples.shape[1])
+        # This needs to output a list of dictionaries, where each
+        # dictionary has keys "x_0", "x_1", etc. and values that
+        # are elements of the alphabet.
+        sequence_length = self.x_0.shape[1]
+        mutations = []
+        for _ in range(n_samples):
+            # The original dict
+            # TODO: we can change the keys to be problem.vars.keys(),
+            # but will they be ordered?
+            mutation = {f"x_{i}": self.x_0[0, i] for i in range(sequence_length)}
+            all_indices_at_random = np.random.permutation(sequence_length)
             indices_to_mutate = all_indices_at_random[: self.num_mutations]
+
+            # Then we mutate the selected indices.
             for idx in indices_to_mutate:
-                sample[idx] = np.random.randint(minimum_[idx], maximum_[idx] + 1)
+                mutation[f"x_{idx}"] = np.random.choice(self.alphabet)
 
-        return samples
+            # And we add it to the list of mutations
+            mutations.append(mutation)
+
+        return mutations
 
 
-class IntegerFlipMutation(Mutation):
-    def __init__(self, num_mutations=1, prob=1, prob_var=None, **kwargs) -> None:
-        self.num_mutations = num_mutations
+class NoMutation(Mutation):
+    def __init__(self, prob=1, prob_var=None, **kwargs) -> None:
         super().__init__(prob, prob_var, **kwargs)
 
     def _do(self, problem, X, **kwargs):
-        minimum_ = problem.xl
-        maximum_ = problem.xu
-        Xp = np.copy(X)
-
-        # To perform different self.num_mutations, we first
-        # select the indices to mutate.
-        all_indices_at_random = np.random.permutation(X.shape[1])
-        indices_to_mutate = all_indices_at_random[: self.num_mutations]
-
-        # Then we mutate the selected indices.
-        for xp in Xp:
-            for idx in indices_to_mutate:
-                xp[idx] = np.random.randint(minimum_[idx], maximum_[idx] + 1)
-
-        return Xp
+        return X
 
 
 if __name__ == "__main__":
@@ -83,7 +90,6 @@ if __name__ == "__main__":
     # we pass -f instead of f.
     problem = DiscretePymooProblem(
         black_box=-f_stability_and_sasa,
-        alphabet=problem_info.alphabet,
         x0=x_0,
         y0=y_0,
     )
@@ -94,28 +100,20 @@ if __name__ == "__main__":
     # See e.g. https://pymoo.org/customization/discrete.html
     method = NSGA2(
         pop_size=10,
-        sampling=WildtypeMutationSampling(x_0=x_0, num_mutations=1),
-        crossover=UniformCrossover(),
-        mutation=IntegerFlipMutation(num_mutations=1),
-        eliminate_duplicates=True,
+        sampling=WildtypeMutationSampling(
+            x_0=x_0, alphabet=problem_info.alphabet, num_mutations=1
+        ),
+        mating=MixedVariableMating(
+            eliminate_duplicates=MixedVariableDuplicateElimination(),
+            mutation={Choice: NoMutation()},
+        ),
+        eliminate_duplicates=MixedVariableDuplicateElimination(),
     )
 
     # Now we can minimize the problem
-    res = minimize(problem, method, termination=("n_gen", 2), seed=1, save_history=True)
+    res = minimize(problem, method, termination=("n_gen", 3), seed=1, save_history=True)
 
-    # And print the results
-    if len(res.X.shape) == 1:
-        best_solution = res.X
-    else:
-        best_solution = res.X[0]
-    inverse_alphabet = {v: k for k, v in problem_info.alphabet.items()}
-    best_solution_as_string = "".join([inverse_alphabet[i] for i in best_solution])
-    print(f"Nr. good solutions found: {len(res.X)}")
-    print(f"Best solution found (index 0): {res.X[0]} ({best_solution_as_string})")
-    print(f"Function value: {-res.F}")
-    print(f"Starting value: {y_0}")
-
-    save_final_population(
+    save_all_populations(
         result=res,
         alphabet=problem_info.alphabet,
         path=THIS_DIR / "history.json",
@@ -132,7 +130,9 @@ if __name__ == "__main__":
         ax=ax,
         label="All populations",
     )
-    sns.scatterplot(x=y_0[:, 0], y=y_0[:, 1], ax=ax, label="Wildtype", c="red", marker="x")
+    sns.scatterplot(
+        x=y_0[:, 0], y=y_0[:, 1], ax=ax, label="Wildtype", c="red", marker="x"
+    )
     ax.set_xlabel("Stability")
     ax.set_ylabel("SASA")
 

@@ -6,36 +6,53 @@ from typing import Dict
 
 import numpy as np
 
-from pymoo.core.problem import Problem
+from pymoo.core.problem import Problem, ElementwiseProblem
+from pymoo.core.variable import Choice
 
 from poli.core.multi_objective_black_box import MultiObjectiveBlackBox
 
 
-class DiscretePymooProblem(Problem):
+class DiscretePymooProblem(ElementwiseProblem):
     def __init__(
         self,
         black_box: MultiObjectiveBlackBox,
-        alphabet: Dict[str, int],
         x0: np.ndarray,
         y0: np.ndarray,
         **kwargs,
     ):
         self.x0 = x0
         self.y0 = y0
-        self.alphabet = alphabet
+
+        # We define sequence_length discrete choice variables,
+        # selecting from the alphabet, which we assure is List[str]
+        # (by checking the first key, if it's dict).
+        alphabet = black_box.info.alphabet
+        if isinstance(alphabet, Dict):
+            alphabet = list(alphabet.keys())
+            assert isinstance(alphabet[0], str)
+
+        sequence_length = x0.shape[1]
+        variables = {f"x_{i}": Choice(options=alphabet) for i in range(sequence_length)}
 
         super().__init__(
-            n_var=x0.shape[1],
+            vars=variables,
             n_obj=y0.shape[1],
-            xl=np.zeros(x0.shape[1]),
-            xu=np.ones(x0.shape[1]) * (len(alphabet) - 1),
-            vtype=int,
             **kwargs,
         )
         self.black_box = black_box
 
     def _evaluate(self, x, out, *args, **kwargs):
-        # an [b, n] array, where n is the number of objectives
+        """
+        Evaluates the black box function by transforming
+        the discrete choices to a vector, and then evaluating.
+        """
+        # At this point, x is a dictionary with keys "x_0", "x_1", etc.
+        # and we assume that were evaluating a single x at a time.
+        # TODO: is there a way to parallelize? To implement this,
+        # using Problem instead of ElementwiseProblem might be necessary.
+        x = np.array([x[f"x_{i}"] for i in range(len(x))]).reshape(1, -1)
+
+        # The output is a [1, n] array, where n is the number of objectives
         f = self.black_box(x, context=kwargs.get("context", None))
         out["F"] = f
 
@@ -54,6 +71,11 @@ if __name__ == "__main__":
     from pymoo.operators.repair.rounding import RoundingRepair
     from pymoo.operators.sampling.rnd import IntegerRandomSampling
     from pymoo.optimize import minimize
+    from pymoo.core.mixed import (
+        MixedVariableMating,
+        MixedVariableSampling,
+        MixedVariableDuplicateElimination,
+    )
 
     # Creating e.g. the aloha problem. We require that the black
     # box objective function takes integers as inputs.
@@ -61,14 +83,15 @@ if __name__ == "__main__":
 
     # Creating a multi-objective black box using two copies
     # of aloha
-    f = MultiObjectiveBlackBox(L=5, objective_functions=[f_aloha, f_aloha])
+    f = MultiObjectiveBlackBox(
+        info=problem_info, objective_functions=[f_aloha, f_aloha]
+    )
     y_0 = f(x_0_aloha)
 
     # Since PyMoo is used to minimizing instead of maximizing (our convention),
     # we pass -f instead of f.
     problem = DiscretePymooProblem(
         black_box=-f,
-        alphabet=problem_info.alphabet,
         x0=x_0_aloha,
         y0=y_0,
     )
@@ -79,10 +102,11 @@ if __name__ == "__main__":
     # See e.g. https://pymoo.org/customization/discrete.html
     method = NSGA2(
         pop_size=100,
-        sampling=IntegerRandomSampling(),
-        crossover=SBX(prob=1.0, eta=3.0, vtype=float, repair=RoundingRepair()),
-        mutation=PM(prob=1.0, eta=3.0, vtype=float, repair=RoundingRepair()),
-        eliminate_duplicates=True,
+        sampling=MixedVariableSampling(),
+        mating=MixedVariableMating(
+            eliminate_duplicates=MixedVariableDuplicateElimination()
+        ),
+        eliminate_duplicates=MixedVariableDuplicateElimination(),
     )
 
     # Now we can minimize the problem
@@ -92,7 +116,8 @@ if __name__ == "__main__":
 
     # And print the results
     best_solution = res.X[0]
-    inverse_alphabet = {v: k for k, v in problem_info.alphabet.items()}
-    best_solution_as_string = [inverse_alphabet[i] for i in best_solution]
+    best_solution_as_string = "".join(
+        [best_solution[f"x_{i}"] for i in range(len(best_solution))]
+    )
     print(f"Best solution found: {res.X} ({best_solution_as_string})")
     print(f"Function value: {res.F}")

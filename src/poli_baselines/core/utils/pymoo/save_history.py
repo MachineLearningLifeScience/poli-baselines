@@ -6,11 +6,16 @@ from typing import Dict
 from pathlib import Path
 import json
 
-import numpy as np
-
 from pymoo.core.result import Result
 
-from poli_baselines.core.utils.pymoo.interface import DiscretePymooProblem
+
+def _from_dict_to_list(d: Dict[str, str]):
+    """
+    Since we are using Choice variables on pymoo, we need to
+    convert the dictionary to a list. The dictionary has the
+    following format: {"x_0": ..., "x_1": ..., }
+    """
+    return [d[f"x_{i}"] for i in range(len(d))]
 
 
 def save_final_population(result: Result, alphabet: Dict[str, int], path: Path):
@@ -25,7 +30,7 @@ def save_final_population(result: Result, alphabet: Dict[str, int], path: Path):
     }
     """
     history = {
-        "x": [x for x in result.X.tolist()],
+        "x": [_from_dict_to_list(x) for x in result.X.tolist],
         "y": [y for y in result.F.tolist()],
         "alphabet": alphabet,
     }
@@ -41,7 +46,7 @@ def save_all_populations(result: Result, alphabet: Dict[str, int], path: Path):
     """
     history = {
         i: {
-            "x": [x for x in history_i.pop.get("X").tolist()],
+            "x": [_from_dict_to_list(x) for x in history_i.pop.get("X").tolist()],
             "y": [y for y in history_i.pop.get("F").tolist()],
         }
         for i, history_i in enumerate(result.history)
@@ -50,5 +55,3 @@ def save_all_populations(result: Result, alphabet: Dict[str, int], path: Path):
 
     with open(path, "w") as f:
         json.dump(history, f)
-
-    ...

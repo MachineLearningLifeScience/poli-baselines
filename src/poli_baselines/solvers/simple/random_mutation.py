@@ -22,12 +22,12 @@ class RandomMutation(AbstractSolver):
         black_box: AbstractBlackBox,
         x0: np.ndarray,
         y0: np.ndarray,
-        alphabet: Dict[str, int],
     ):
         super().__init__(black_box, x0, y0)
-        self.alphabet = alphabet
-        self.alphabet_size = len(alphabet)
-        self.inverse_alphabet = {v: k for k, v in alphabet.items()}
+        self.alphabet = black_box.info.alphabet
+        self.string_to_idx = {symbol: i for i, symbol in enumerate(self.alphabet)}
+        self.alphabet_size = len(self.alphabet)
+        self.idx_to_string = {v: k for k, v in self.string_to_idx.items()}
 
     def next_candidate(self) -> np.ndarray:
         """
@@ -51,7 +51,7 @@ class RandomMutation(AbstractSolver):
         if next_x.dtype.kind in ("i", "f"):
             mutant = np.random.randint(0, self.alphabet_size)
         elif next_x.dtype.kind in ("U", "S"):
-            mutant = np.random.choice(list(self.alphabet.keys()))
+            mutant = np.random.choice(list(self.string_to_idx.keys()))
         else:
             raise ValueError(
                 f"Unknown dtype for the input: {next_x.dtype}. "

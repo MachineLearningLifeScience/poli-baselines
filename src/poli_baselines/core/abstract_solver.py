@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import List
 from pathlib import Path
 import json
 
@@ -63,27 +63,19 @@ class AbstractSolver:
 
             self.update(x, y)
             if verbose:
-                print(f"Iteration {i}: {y}, best so far: {np.max([y_i for y_i in self.history['y'] if not np.isnan(y_i)])}")
+                print(
+                    f"Iteration {i}: {y}, best so far: {np.max([y_i for y_i in self.history['y'] if not np.isnan(y_i)])}"
+                )
 
             if break_at_performance is not None:
                 if y >= break_at_performance:
                     break
 
-    def save_history(self, path: Path, alphabet: Dict[str, int] = None):
+    def save_history(self, path: Path, alphabet: List[str] = None):
         """
         Saves the history of the solver to the given path.
         """
-        if alphabet is not None:
-            inverse_alphabet = {i: amino_acid for amino_acid, i in alphabet.items()}
-            # Then we translate the integers in the history
-            # to the corresponding characters in the alphabet.
-            x_to_save = [
-                "".join([inverse_alphabet[x_i] for x_i in x.flatten().tolist()])
-                for x in self.history["x"]
-            ]
-        else:
-            x_to_save = [x.flatten().tolist() for x in self.history["x"]]
-
+        x_to_save = ["".join(x.flatten().tolist()) for x in self.history["x"]]
         y_to_save = [y.flatten()[0] for y in self.history["y"]]
 
         with open(path, "w") as fp:
