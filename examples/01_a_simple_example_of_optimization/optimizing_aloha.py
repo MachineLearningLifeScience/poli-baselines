@@ -3,11 +3,9 @@ from poli.core.registry import get_problems
 from poli_baselines.solvers.simple.random_mutation import RandomMutation
 
 if __name__ == "__main__":
-    assert "our_aloha" in get_problems()
-
     # Creating an instance of the problem
     problem_info, f, x0, y0, run_info = objective_factory.create(
-        name="our_aloha", caller_info=None, observer=None
+        name="aloha", caller_info=None, observer=None
     )
 
     # Creating an instance of the solver
