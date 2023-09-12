@@ -16,6 +16,9 @@ class WildtypeMating(InfillCriterion):
             # TODO: Check for padding and mutate until there.
             random_position = np.random.randint(0, len(child.X))
             random_key = f"x_{random_position}"
+            while child.X[random_key] == "":
+                random_position = np.random.randint(0, len(child.X))
+                random_key = f"x_{random_position}"
 
             mutant_at_position = problem.vars[random_key]._sample(1)[0]
             while mutant_at_position == child.X[random_key]:
