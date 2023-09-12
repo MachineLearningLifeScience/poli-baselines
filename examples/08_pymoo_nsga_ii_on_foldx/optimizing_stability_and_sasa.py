@@ -38,22 +38,37 @@ class WildtypeMutationSampling(Sampling):
         """
         TODO: document
         """
+        # We assume a shape [b, L], where some of the rows
+        # have been padded with empty strings.
         self.x_0 = x_0
         self.num_mutations = num_mutations
         self.alphabet = alphabet
         super().__init__()
 
     def _do(self, problem, n_samples, **kwargs):
-        # This needs to output a list of dictionaries, where each
-        # dictionary has keys "x_0", "x_1", etc. and values that
-        # are elements of the alphabet.
-        sequence_length = self.x_0.shape[1]
+        """
+        This mutation takes a random wildtype (i.e. a row
+        of self.x_0), and mutates it at a random place
+        self.num_mutations times.
+
+        To comply with what pymoo expects for discrete
+        (choice) problems, This needs to output a list
+        of dictionaries, where each dictionary has keys
+        "x_0", "x_1", etc. and values that are elements
+        of the alphabet.
+        """
+        # Selecting a row from self.x_0 at random
+        random_wildtype = np.random.choice(self.x_0, size=1)
+
+        # Cleaning up the padding
+        random_wildtype = random_wildtype[random_wildtype != ""]
+        sequence_length = random_wildtype.shape[1]
+
+        # Defining the mutations
         mutations = []
         for _ in range(n_samples):
             # The original dict
-            # TODO: we can change the keys to be problem.vars.keys(),
-            # but will they be ordered?
-            mutation = {f"x_{i}": self.x_0[0, i] for i in range(sequence_length)}
+            mutation = {f"x_{i}": random_wildtype[0, i] for i in range(sequence_length)}
             all_indices_at_random = np.random.permutation(sequence_length)
             indices_to_mutate = all_indices_at_random[: self.num_mutations]
 

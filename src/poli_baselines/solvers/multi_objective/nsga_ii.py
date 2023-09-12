@@ -7,7 +7,9 @@ import numpy as np
 
 from poli.core.multi_objective_black_box import MultiObjectiveBlackBox
 from poli.core.abstract_black_box import AbstractBlackBox
+
 from poli_baselines.core.abstract_solver import AbstractSolver
+from poli_baselines.core.utils.pymoo.interface import DiscretePymooProblem
 
 
 class NSGASolver(AbstractSolver):
@@ -33,6 +35,11 @@ class NSGASolver(AbstractSolver):
         super().__init__(black_box, x0, y0)
 
         self.population_size = population_size
-
-    def _create_inner_pymoo_problem(self):
-        ...
+        self.inner_pymoo_problem = DiscretePymooProblem(
+            black_box=self.black_box,
+            x0=self.x0,
+            y0=self.y0,
+        )
+    
+    def next_candidate(self) -> np.ndarray:
+        return super().next_candidate()

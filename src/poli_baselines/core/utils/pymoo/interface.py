@@ -111,7 +111,12 @@ if __name__ == "__main__":
 
     # Now we can minimize the problem
     res = minimize(
-        problem, method, termination=("n_gen", 50), seed=1, save_history=True
+        problem,
+        method,
+        termination=("n_gen", 50),
+        seed=1,
+        save_history=True,
+        verbose=True,
     )
 
     # And print the results
