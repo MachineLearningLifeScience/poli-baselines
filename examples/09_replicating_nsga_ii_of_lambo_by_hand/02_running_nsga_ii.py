@@ -92,6 +92,13 @@ if __name__ == "__main__":
         batch_size=8,
     )
 
+    # Saving the wildtypes
+    time_ = str(int(time.time()))
+    history_dir = THIS_DIR / "history" / time_
+    history_dir.mkdir(exist_ok=True, parents=True)
+    with open(history_dir / "wildtype_scores.json", "w") as fp:
+        json.dump({"x": x0.tolist(), "y": y0.tolist()}, fp)
+
     pymoo_problem = DiscretePymooProblem(
         black_box=-f,
         x0=x0,
@@ -110,9 +117,6 @@ if __name__ == "__main__":
     )
 
     # Now we can minimize the problem
-    time_ = str(int(time.time()))
-    history_dir = THIS_DIR / "history" / time_
-    history_dir.mkdir(exist_ok=True, parents=True)
     res = minimize(
         pymoo_problem,
         method,
@@ -122,22 +126,3 @@ if __name__ == "__main__":
         verbose=True,
         callback=SaveCallback(history_dir),
     )
-
-    # Let's plot all the different populations:
-    all_F = -np.concatenate(
-        [history_i.pop.get("F") for history_i in res.history], axis=0
-    )
-    fig, ax = plt.subplots(1, 1)
-    sns.scatterplot(
-        x=all_F[:, 1],
-        y=all_F[:, 0],
-        ax=ax,
-        label="All populations",
-    )
-    sns.scatterplot(
-        x=y0[:, 1], y=y0[:, 0], ax=ax, label="Wildtype", c="red", marker="x"
-    )
-    ax.set_xlabel("SASA")
-    ax.set_ylabel("Stability")
-    fig.savefig(history_dir / "all_populations.png")
-    plt.close()
