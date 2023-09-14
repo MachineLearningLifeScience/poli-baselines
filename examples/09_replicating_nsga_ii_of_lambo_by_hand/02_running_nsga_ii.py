@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+import time
 
 import pandas as pd
 import numpy as np
@@ -109,20 +110,17 @@ if __name__ == "__main__":
     )
 
     # Now we can minimize the problem
+    time_ = str(int(time.time()))
+    history_dir = THIS_DIR / "history" / time_
+    history_dir.mkdir(exist_ok=True, parents=True)
     res = minimize(
         pymoo_problem,
         method,
         termination=("n_gen", 5),
         seed=1,
-        save_history=True,
+        save_history=False,
         verbose=True,
-        callback=SaveCallback(THIS_DIR / "history"),
-    )
-
-    save_all_populations(
-        result=res,
-        alphabet=problem_info.alphabet,
-        path=THIS_DIR / "history.json",
+        callback=SaveCallback(history_dir),
     )
 
     # Let's plot all the different populations:
@@ -141,5 +139,5 @@ if __name__ == "__main__":
     )
     ax.set_xlabel("SASA")
     ax.set_ylabel("Stability")
-
-    plt.show()
+    fig.savefig(history_dir / "all_populations.png")
+    plt.close()
