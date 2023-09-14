@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 
 import pandas as pd
 import numpy as np
@@ -14,6 +15,7 @@ from pymoo.core.mixed import (
 )
 from pymoo.core.variable import Choice
 from pymoo.core.crossover import Crossover
+from pymoo.core.callback import Callback
 
 from poli import objective_factory
 
@@ -24,7 +26,31 @@ from poli_baselines.core.utils.pymoo.wildtype_mutation import (
     WildtypeMutation,
 )
 from poli_baselines.core.utils.pymoo.wildtype_mating import WildtypeMating
-from poli_baselines.core.utils.pymoo.save_history import save_all_populations
+from poli_baselines.core.utils.pymoo.save_history import (
+    save_all_populations,
+    _from_dict_to_list,
+)
+
+
+class SaveCallback(Callback):
+    def __init__(self, saving_path: Path) -> None:
+        self.saving_path = saving_path
+        self.saving_path.mkdir(exist_ok=True)
+        super().__init__()
+
+    def notify(self, algorithm: NSGA2):
+        # We will save the population at each generation
+        current_generation = {
+            "x": [_from_dict_to_list(x) for x in algorithm.pop.get("X").tolist()],
+            "y": [y for y in algorithm.pop.get("F").tolist()],
+        }
+
+        with open(self.saving_path / f"history_{algorithm.n_gen}.json", "w") as f:
+            json.dump(current_generation, f)
+
+        self.data[algorithm.n_gen] = current_generation
+
+        return super().notify(algorithm)
 
 
 class NoCrossover(Crossover):
@@ -60,6 +86,9 @@ if __name__ == "__main__":
     problem_info, f, x0, y0, _ = objective_factory.create(
         name="foldx_stability_and_sasa",
         wildtype_pdb_path=wildtype_pdb_paths,
+        parallelize=True,
+        num_workers=8,
+        batch_size=8,
     )
 
     pymoo_problem = DiscretePymooProblem(
@@ -69,7 +98,7 @@ if __name__ == "__main__":
     )
 
     # Now we can use PyMoo's NSGA-II to solve the problem.
-    population_size = 10
+    population_size = 8
     method = NSGA2(
         pop_size=population_size,
         sampling=WildtypeMutationSampling(
@@ -83,10 +112,11 @@ if __name__ == "__main__":
     res = minimize(
         pymoo_problem,
         method,
-        termination=("n_gen", 2),
+        termination=("n_gen", 5),
         seed=1,
         save_history=True,
         verbose=True,
+        callback=SaveCallback(THIS_DIR / "history"),
     )
 
     save_all_populations(

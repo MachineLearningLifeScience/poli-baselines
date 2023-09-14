@@ -2,7 +2,7 @@
 This module contains ways of transforming poli's objective
 functions to pymoo problems.
 """
-from typing import Dict
+from typing import Dict, List
 
 import numpy as np
 
@@ -12,7 +12,7 @@ from pymoo.core.variable import Choice
 from poli.core.multi_objective_black_box import MultiObjectiveBlackBox
 
 
-class DiscretePymooProblem(ElementwiseProblem):
+class DiscretePymooProblem(Problem):
     def __init__(
         self,
         black_box: MultiObjectiveBlackBox,
@@ -41,6 +41,18 @@ class DiscretePymooProblem(ElementwiseProblem):
         )
         self.black_box = black_box
 
+    def _from_dict_to_array(self, x: List[dict]) -> np.ndarray:
+        """
+        Transforms a list of dicts {x_i: value}
+        to an array of shape [n, sequence_length]
+        """
+        if isinstance(x, dict):
+            new_x = np.array([x[f"x_{i}"] for i in range(len(x))])
+        else:
+            new_x = np.array([[x_[f"x_{i}"] for i in range(len(x_))] for x_ in x])
+
+        return new_x
+
     def _evaluate(self, x, out, *args, **kwargs):
         """
         Evaluates the black box function by transforming
@@ -50,7 +62,8 @@ class DiscretePymooProblem(ElementwiseProblem):
         # and we assume that were evaluating a single x at a time.
         # TODO: is there a way to parallelize? To implement this,
         # using Problem instead of ElementwiseProblem might be necessary.
-        x = np.array([x[f"x_{i}"] for i in range(len(x))]).reshape(1, -1)
+        x = self._from_dict_to_array(x)
+        # x = np.array([x[f"x_{i}"] for i in range(len(x))]).reshape(1, -1)
 
         # The output is a [1, n] array, where n is the number of objectives
         f = self.black_box(x, context=kwargs.get("context", None))
