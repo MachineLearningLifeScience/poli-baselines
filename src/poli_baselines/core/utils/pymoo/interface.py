@@ -2,12 +2,15 @@
 This module contains ways of transforming poli's objective
 functions to pymoo problems.
 """
-from typing import Dict, List
+from typing import Dict, List, Tuple
+from pathlib import Path
+import pickle
 
 import numpy as np
 
 from pymoo.core.problem import Problem, ElementwiseProblem
 from pymoo.core.variable import Choice
+from pymoo.core.population import Population
 
 from poli.core.multi_objective_black_box import MultiObjectiveBlackBox
 
@@ -18,8 +21,12 @@ class DiscretePymooProblem(Problem):
         black_box: MultiObjectiveBlackBox,
         x0: np.ndarray,
         y0: np.ndarray,
+        checkpoint_path: Path = None,
         **kwargs,
     ):
+        """
+        TODO: Document
+        """
         self.x0 = x0
         self.y0 = y0
 
@@ -34,9 +41,18 @@ class DiscretePymooProblem(Problem):
         sequence_length = x0.shape[1]
         variables = {f"x_{i}": Choice(options=alphabet) for i in range(sequence_length)}
 
+        self.checkpoint_path = checkpoint_path
+        if checkpoint_path is not None:
+            X, F = self._load_checkpoint()
+            pop = Population.new("X", X)
+            pop.set("F", F)
+        else:
+            pop = None
+
         super().__init__(
             vars=variables,
             n_obj=y0.shape[1],
+            sampling=pop,
             **kwargs,
         )
         self.black_box = black_box
@@ -68,6 +84,19 @@ class DiscretePymooProblem(Problem):
         # The output is a [1, n] array, where n is the number of objectives
         f = self.black_box(x, context=kwargs.get("context", None))
         out["F"] = f
+
+    def save_checkpoint(self, saving_path: Path):
+        X = self.pop.get("X")
+        F = self.pop.get("F")
+
+        with open(saving_path, "wb") as fp:
+            pickle.dump((X, F), fp)
+
+    def _load_checkpoint(self) -> Tuple[dict, list]:
+        with open(self.checkpoint_path, "rb") as fp:
+            X, F = pickle.load(fp)
+
+        return X, F
 
 
 if __name__ == "__main__":

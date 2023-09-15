@@ -1,55 +1,50 @@
 from pathlib import Path
 import json
 import time
+import dill
 
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 from pymoo.optimize import minimize
 from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.core.mixed import (
-    MixedVariableMating,
-    MixedVariableSampling,
     MixedVariableDuplicateElimination,
 )
-from pymoo.core.variable import Choice
 from pymoo.core.crossover import Crossover
 from pymoo.core.callback import Callback
+from pymoo.core.population import Population
 
 from poli import objective_factory
 
 from poli_baselines.core.utils.pymoo.interface import DiscretePymooProblem
 from poli_baselines.core.utils.pymoo.wildtype_sampling import WildtypeMutationSampling
-from poli_baselines.core.utils.pymoo.wildtype_mutation import (
-    NoMutation,
-    WildtypeMutation,
-)
 from poli_baselines.core.utils.pymoo.wildtype_mating import WildtypeMating
 from poli_baselines.core.utils.pymoo.save_history import (
-    save_all_populations,
     _from_dict_to_list,
+    _from_list_to_dict,
 )
 
 
 class SaveCallback(Callback):
-    def __init__(self, saving_path: Path) -> None:
+    def __init__(self, saving_path: Path, save_every: int = None) -> None:
         self.saving_path = saving_path
         self.saving_path.mkdir(exist_ok=True)
+        self.save_every = save_every
         super().__init__()
 
     def notify(self, algorithm: NSGA2):
-        # We will save the population at each generation
-        current_generation = {
-            "x": [_from_dict_to_list(x) for x in algorithm.pop.get("X").tolist()],
-            "y": [y for y in algorithm.pop.get("F").tolist()],
-        }
+        if self.save_every is not None and algorithm.n_gen % self.save_every != 0:
+            # We will save the population at each generation
+            current_generation = {
+                "x": [_from_dict_to_list(x) for x in algorithm.pop.get("X").tolist()],
+                "y": [y for y in algorithm.pop.get("F").tolist()],
+            }
 
-        with open(self.saving_path / f"history_{algorithm.n_gen}.json", "w") as f:
-            json.dump(current_generation, f)
+            with open(self.saving_path / f"history_{algorithm.n_gen}.json", "w") as f:
+                json.dump(current_generation, f)
 
-        self.data[algorithm.n_gen] = current_generation
+            self.data[algorithm.n_gen] = current_generation
 
         return super().notify(algorithm)
 
@@ -70,6 +65,9 @@ if __name__ == "__main__":
         THIS_DIR / "initial_pareto_front.csv",
         index_col=False,
     )
+
+    START_FROM = None
+    START_FROM = THIS_DIR / "history" / "1694697851" / "history_00013.json"
 
     wildtype_pdb_paths = []
     for pdb_id in original_pareto_front["pdb_id"]:
@@ -107,11 +105,22 @@ if __name__ == "__main__":
 
     # Now we can use PyMoo's NSGA-II to solve the problem.
     population_size = 8
+
+    if START_FROM is not None:
+        with open(START_FROM, "r") as fp:
+            history = json.load(fp)
+
+        X = np.array([_from_list_to_dict(x) for x in history["x"]])
+        F = np.array(history["y"])
+        sampling = Population.new("X", X, "F", F)
+    else:
+        sampling = WildtypeMutationSampling(
+            x_0=x0, alphabet=problem_info.alphabet, num_mutations=1
+        )
+
     method = NSGA2(
         pop_size=population_size,
-        sampling=WildtypeMutationSampling(
-            x_0=x0, alphabet=problem_info.alphabet, num_mutations=1
-        ),
+        sampling=sampling,
         mating=WildtypeMating(),
         eliminate_duplicates=MixedVariableDuplicateElimination(),
     )
@@ -124,5 +133,5 @@ if __name__ == "__main__":
         seed=1,
         save_history=False,
         verbose=True,
-        callback=SaveCallback(history_dir),
+        callback=SaveCallback(history_dir, save_every=1),
     )
