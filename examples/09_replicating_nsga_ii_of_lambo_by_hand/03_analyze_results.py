@@ -11,7 +11,7 @@ THIS_DIR = Path(__file__).parent.resolve()
 if __name__ == "__main__":
     # We will load the history of the optimization
     # from the json files.
-    timestamp = "1694697851"
+    timestamp = "1698413727"
     history_files = list((THIS_DIR / "history" / timestamp).glob("history_*.json"))
     history_files = sorted(history_files)
 

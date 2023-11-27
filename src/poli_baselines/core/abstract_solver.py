@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 from pathlib import Path
 import json
 
@@ -43,6 +43,17 @@ class AbstractSolver:
         self.history["x"].append(x)
         self.history["y"].append(y)
 
+    def step(self) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Runs the solver for one iteration.
+        """
+        x = self.next_candidate()
+        y = self.black_box(x)
+
+        self.update(x, y)
+
+        return x, y
+
     def solve(
         self,
         max_iter: int = 100,
@@ -58,10 +69,8 @@ class AbstractSolver:
         """
         # TODO: add logging, link it to the observer logic.
         for i in range(max_iter):
-            x = self.next_candidate()
-            y = self.black_box(x)
+            _, y = self.step()
 
-            self.update(x, y)
             if verbose:
                 print(
                     f"Iteration {i}: {y}, best so far: {np.max([y_i for y_i in self.history['y'] if not np.isnan(y_i)])}"

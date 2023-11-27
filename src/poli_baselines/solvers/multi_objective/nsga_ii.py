@@ -40,6 +40,6 @@ class NSGASolver(AbstractSolver):
             x0=self.x0,
             y0=self.y0,
         )
-    
+
     def next_candidate(self) -> np.ndarray:
         return super().next_candidate()

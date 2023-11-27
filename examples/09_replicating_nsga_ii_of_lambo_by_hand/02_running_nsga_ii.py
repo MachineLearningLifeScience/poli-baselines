@@ -1,7 +1,6 @@
 from pathlib import Path
 import json
 import time
-import dill
 
 import pandas as pd
 import numpy as np
@@ -34,17 +33,16 @@ class SaveCallback(Callback):
         super().__init__()
 
     def notify(self, algorithm: NSGA2):
-        if self.save_every is not None and algorithm.n_gen % self.save_every != 0:
-            # We will save the population at each generation
-            current_generation = {
-                "x": [_from_dict_to_list(x) for x in algorithm.pop.get("X").tolist()],
-                "y": [y for y in algorithm.pop.get("F").tolist()],
-            }
+        # We will save the population at each generation
+        current_generation = {
+            "x": [_from_dict_to_list(x) for x in algorithm.pop.get("X").tolist()],
+            "y": [y for y in algorithm.pop.get("F").tolist()],
+        }
 
-            with open(self.saving_path / f"history_{algorithm.n_gen}.json", "w") as f:
-                json.dump(current_generation, f)
+        with open(self.saving_path / f"history_{algorithm.n_gen}.json", "w") as f:
+            json.dump(current_generation, f)
 
-            self.data[algorithm.n_gen] = current_generation
+        self.data[algorithm.n_gen] = current_generation
 
         return super().notify(algorithm)
 
@@ -67,7 +65,7 @@ if __name__ == "__main__":
     )
 
     START_FROM = None
-    START_FROM = THIS_DIR / "history" / "1694697851" / "history_00013.json"
+    # START_FROM = THIS_DIR / "history" / "1694697851" / "history_00013.json"
 
     wildtype_pdb_paths = []
     for pdb_id in original_pareto_front["pdb_id"]:
@@ -115,13 +113,13 @@ if __name__ == "__main__":
         sampling = Population.new("X", X, "F", F)
     else:
         sampling = WildtypeMutationSampling(
-            x_0=x0, alphabet=problem_info.alphabet, num_mutations=1
+            x_0=x0, alphabet=problem_info.alphabet, num_mutations=5
         )
 
     method = NSGA2(
         pop_size=population_size,
         sampling=sampling,
-        mating=WildtypeMating(),
+        mating=WildtypeMating(num_mutations=4),
         eliminate_duplicates=MixedVariableDuplicateElimination(),
     )
 
@@ -129,9 +127,9 @@ if __name__ == "__main__":
     res = minimize(
         pymoo_problem,
         method,
-        termination=("n_gen", 5),
+        termination=("n_gen", 10),
         seed=1,
-        save_history=False,
+        save_history=True,
         verbose=True,
-        callback=SaveCallback(history_dir, save_every=1),
+        callback=SaveCallback(history_dir),
     )

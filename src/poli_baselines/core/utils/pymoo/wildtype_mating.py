@@ -6,7 +6,12 @@ from pymoo.core.infill import InfillCriterion
 
 class WildtypeMating(InfillCriterion):
     def __init__(
-        self, num_mutations: int = 1, repair=None, eliminate_duplicates=None, n_max_iterations=100, **kwargs
+        self,
+        num_mutations: int = 1,
+        repair=None,
+        eliminate_duplicates=None,
+        n_max_iterations=100,
+        **kwargs,
     ):
         self.num_mutations = num_mutations
         super().__init__(repair, eliminate_duplicates, n_max_iterations, **kwargs)
