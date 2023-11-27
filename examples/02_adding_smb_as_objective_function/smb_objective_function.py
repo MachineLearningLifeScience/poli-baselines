@@ -59,7 +59,9 @@ class SMBProblemFactory(AbstractProblemFactory):
             alphabet=alphabet,
         )
 
-    def create(self, seed: int = 0) -> Tuple[AbstractBlackBox, np.ndarray, np.ndarray]:
+    def create(
+        self, seed: int = None
+    ) -> Tuple[AbstractBlackBox, np.ndarray, np.ndarray]:
         L = self.get_setup_information().get_max_sequence_length()
         f = SMBBlackBox(L)
         x0 = np.ones([1, L])

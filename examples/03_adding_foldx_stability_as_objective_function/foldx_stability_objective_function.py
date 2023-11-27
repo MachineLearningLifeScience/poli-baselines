@@ -240,7 +240,7 @@ class FoldXStabilityProblemFactory(AbstractProblemFactory):
         )
 
     def create(
-        self, seed: int = 0, wildtype_pdb_path: Path = None
+        self, seed: int = None, wildtype_pdb_path: Path = None
     ) -> Tuple[AbstractBlackBox, np.ndarray, np.ndarray]:
         if wildtype_pdb_path is None:
             raise ValueError(

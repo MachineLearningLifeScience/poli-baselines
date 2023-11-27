@@ -25,7 +25,7 @@ from poli.core.abstract_black_box import AbstractBlackBox
 from poli_baselines.core.abstract_solver import AbstractSolver
 
 
-class LatentSpaceBayesianOptimization(AbstractSolver):
+class LatentSpaceLineBO(AbstractSolver):
     def __init__(
         self,
         black_box: AbstractBlackBox,
@@ -35,6 +35,7 @@ class LatentSpaceBayesianOptimization(AbstractSolver):
         decoder: Callable[[np.ndarray], np.ndarray],
         acq_function: Type[AcquisitionFunction] = ExpectedImprovement,
         bounds: Tuple[float, float] = (-2.0, 2.0),
+        type_of_line: str = "random",
     ):
         """
         TODO: add docstring
@@ -46,6 +47,7 @@ class LatentSpaceBayesianOptimization(AbstractSolver):
         self.decoder = decoder
         self.acq_function = acq_function
         self.bounds = bounds
+        self.type_of_line = type_of_line
 
     def next_candidate(self) -> np.ndarray:
         """
@@ -83,46 +85,28 @@ class LatentSpaceBayesianOptimization(AbstractSolver):
         else:
             raise NotImplementedError
 
-        # Optimize the acquisition function
-        # Bounds needs to be a 2xd tensor.
-        # In this case, we can infer d from
-        # the size of z.
-        bounds_ = torch.tensor([list(self.bounds)] * z.shape[1]).T.to(torch.float32)
+        # The core difference of LineBO: optimize the acquisition function
+        # over a random/coordinate linear direction in latent space.
+        if self.type_of_line == "random":
+            # Selecting a linear direction at random.
+            offset = np.random.randn(z.shape[1])
+            l = np.random.randn(z.shape[1])
 
-        # TODO: remove this grid search:
-        if z.shape[1] == 2:
-            n_points_in_acq_grid = 100
-            limits = self.bounds
-            zs = torch.Tensor(
-                [
-                    [x, y]
-                    for x in torch.linspace(*limits, n_points_in_acq_grid)
-                    for y in reversed(torch.linspace(*limits, n_points_in_acq_grid))
-                ]
-            )
-            acq_values = acq_func(zs.unsqueeze(1))
+            # Optimizing along this line
+            t = np.linspace(-1.0, 1.0, 100)
+            zs_in_line = offset + t[:, None] * l[None, :]
+        elif self.type_of_line == "coordinate":
+            # Selecting a coordinate direction at random.
+            l = np.zeros(z.shape[1])
+            l[np.random.randint(z.shape[1])] = 1.0
 
-            # This is the argmax as a set,
-            possible_candidates = zs[acq_values == acq_values.max()]
+            # Optimizing along this line
+            t = np.linspace(*self.bounds, 100)
+            zs_in_line = t[:, None] * l[None, :]
 
-            # and so we select one of these possible candidates at random
-            candidate = possible_candidates[
-                np.random.choice(len(possible_candidates), 1)[0]
-            ]
-        else:
-            candidate, _ = optimize_acqf(
-                acq_function=acq_func,
-                bounds=bounds_,
-                q=1,
-                num_restarts=20,
-                raw_samples=100,
-                gen_candidates=gen_candidates_torch,
-            )
-
-        # Unnormalize the candidate
+        acq_values = acq_func(torch.from_numpy(zs_in_line).to(torch.float32))
+        candidate = zs_in_line[acq_values == acq_values.max()]
         candidate = candidate.detach().cpu().numpy().reshape(1, -1)
-        # candidate = scaler_z.inverse_transform(candidate)
-        print(candidate)
 
         # Return the next candidate
         candidate_as_ints = self.decoder(candidate)
