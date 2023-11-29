@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Dict, Any
 from pathlib import Path
 import json
 
@@ -68,6 +68,9 @@ class AbstractSolver:
         :rtype:
         """
         # TODO: add logging, link it to the observer logic.
+        # TODO: should we add a callback?
+        # TODO: should we add a progress bar?
+        # TODO: should we add a try-except block?
         for i in range(max_iter):
             _, y = self.step()
 
@@ -80,19 +83,18 @@ class AbstractSolver:
                 if y >= break_at_performance:
                     break
 
-    def save_history(self, path: Path, alphabet: List[str] = None):
+    def save_history(
+        self, path: Path, alphabet: List[str] = None, metadata: Dict[str, Any] = None
+    ) -> None:
         """
         Saves the history of the solver to the given path.
         """
-        x_to_save = ["".join(x.flatten().tolist()) for x in self.history["x"]]
-        y_to_save = [y.flatten()[0] for y in self.history["y"]]
+        x_to_save = [x.flatten().tolist() for x in self.history["x"]]
+        y_to_save = [float(y.flatten()[0]) for y in self.history["y"]]
 
         with open(path, "w") as fp:
             json.dump(
-                {
-                    "x": x_to_save,
-                    "y": y_to_save,
-                },
+                {"x": x_to_save, "y": y_to_save, "metadata": metadata},
                 fp,
             )
 
