@@ -2,6 +2,11 @@
 This script tests Line Bayesian Optimization [1] on the Ackley function
 in several dimensions.
 """
+import warnings
+
+warnings.filterwarnings("ignore", module="botorch")
+
+import numpy as np
 import matplotlib.pyplot as plt
 
 from poli import objective_factory
@@ -13,11 +18,14 @@ from poli_baselines.core.utils.visualization.objective_functions import (
 )
 
 if __name__ == "__main__":
-    problem_info, f_ackley, x0, y0, _ = objective_factory.create(
+    problem_info, f_ackley, _, _, _ = objective_factory.create(
         name="toy_continuous_problem",
         function_name="ackley_function_01",
         n_dimensions=2,
     )
+
+    x0 = np.random.randn(2).reshape(1, -1).clip(-2.0, 2.0)
+    y0 = f_ackley(x0)
 
     line_bo = LineBO(
         black_box=f_ackley,

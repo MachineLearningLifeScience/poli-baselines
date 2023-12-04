@@ -48,18 +48,3 @@ def ray_box_intersection(
         return t_min, intersection_point
     else:
         return None, None  # No intersection
-
-
-# Example usage:
-point_inside_box = np.array([1, 2, 3])
-direction_vector = np.array([1, 0, 0])
-box_bounds = [(-5, 5), (-5, 5), (-5, 5)]
-
-t_of_intersection, intersection_point = ray_box_intersection(
-    point_inside_box, direction_vector, box_bounds
-)
-
-if intersection_point is not None:
-    print("Intersection Point:", intersection_point)
-else:
-    print("No intersection.")

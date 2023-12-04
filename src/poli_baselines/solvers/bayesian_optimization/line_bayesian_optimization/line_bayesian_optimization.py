@@ -112,12 +112,12 @@ class LineBO(AbstractSolver):
             # TODO: there must be a better way of
             # defining the line, especially since we're
             # interested in clipping the line to the bounds.
-            last_x = x[-1]
+            best_x = self.get_best_solution()[0]
             _, one_intersection = ray_box_intersection(
-                last_x, l, [self.bounds] * x.shape[1]
+                best_x, l, [self.bounds] * x.shape[1]
             )
             _, another_intersection = ray_box_intersection(
-                last_x, -l, [self.bounds] * x.shape[1]
+                best_x, -l, [self.bounds] * x.shape[1]
             )
             t = np.linspace(0, 1, 100)
             xs_in_line = one_intersection[None, :] * t[:, None] + another_intersection[
