@@ -1,6 +1,6 @@
 # Poli-baselines: a series of baselines for discrete sequence optimization
 
-`poli-baselines` is a collection of **black box optimization algorithms**, aimed mostly at optimizing discrete sequences. These optimization algorithms are meant to optimize objective functions defined using [`poli`](https://github.com/MachineLearningLifeScience/poli), a tool for isolating complex, difficult-to-query functions.
+`poli-baselines` is a collection of **black box optimization algorithms**, aimed mostly at optimizing discrete sequences. These optimization algorithms are meant to optimize objective functions defined using [`poli`](https://github.com/MachineLearningLifeScience/poli), a tool for instantiating complex, difficult-to-query functions.
 
 ## Installation
 
@@ -31,42 +31,38 @@ After this, you could test you installation by running (inside your `poli-baseli
 python -c "import poli_baselines ; print('Everything went well!')"
 ```
 
-## Where to find documentation?
+## Your first optimization using `poli-baselines`
 
-You can find documentation about both `poli` and `poli-baselines` on [TODO:Add the website when we publish it].
+As mentioned above, this library interoperates well with the discrete objective functions defined in [`poli`](). One such objective function is the ALOHA problem, in which we search the space of 5-letter sequences of the word "ALOHA". The following is a simple example of how one could use the `RandomMutation` solver inside `poli-baselines` to solve this problem:
 
-This documentation is built from this repository: https://github.com/MachineLearningLifeScience/protein-optimization-docs
+```python
+import numpy as np
 
-**FOR NOW, AND UNTIL WE PUBLISH THE WEBSITE AND THIS REPO:**
+from poli import objective_factory
+from poli_baselines.solvers import RandomMutation
 
-Since we haven't published this documentation,
+# Creating an instance of the problem
+problem_info, f, x0, y0, run_info = objective_factory.create(name="aloha")
 
-1. clone that repo:
+# Creating an instance of the solver
+solver = RandomMutation(
+    black_box=f,
+    x0=x0,
+    y0=y0,
+)
 
-```bash
-git clone git@github.com:MachineLearningLifeScience/protein-optimization-docs.git
+# Running the optimization for 1000 steps,
+# breaking if we find a performance above 5.0.
+solver.solve(max_iter=1000, break_at_performance=5.0)
+
+# Checking if we got the solution we were waiting for
+print(solver.get_best_solution())  # Should be [["A", "L", "O", "H", "A"]]
 ```
 
-2. Create a `poli-docs` environment (if you want).
+## More examples
 
-```bash
-conda create -n poli-docs python=3.9
-conda activate poli-docs
-```
+The `examples` folder includes the optimization of more complex objective functions such as `foldx` stability (if you have `foldx` installed in your computer), `logp` and `qed` of small molecules (on either SMILES or SELFIES representations), and the use of advanced black box optimizers like latent space Bayesian Optimization, or NSGA-2.
 
-3. Install the requirements:
+## Where can I find documentation?
 
-```bash
-pip install jupyter-book biopython pandas
-```
-
-4. Build the docs locally:
-
-```bash
-jupyter-book build --all docs/protein-optimization
-```
-
-5. Open the relevant address in your browser (check the output of the last step).
-
-[TODO: remove this when we publish the website]
-
+You can find documentation about both `poli` and `poli-baselines` on this repository: https://github.com/MachineLearningLifeScience/protein-optimization-docs

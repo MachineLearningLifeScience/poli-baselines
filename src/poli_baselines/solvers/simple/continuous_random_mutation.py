@@ -7,7 +7,7 @@ from poli.core.abstract_black_box import AbstractBlackBox
 from poli_baselines.core.abstract_solver import AbstractSolver
 
 
-class RandomSearchByHillClimbing(AbstractSolver):
+class ContinuousRandomMutation(AbstractSolver):
     def __init__(
         self,
         black_box: AbstractBlackBox,

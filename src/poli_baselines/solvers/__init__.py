@@ -1,5 +1,5 @@
 from .simple.random_mutation import RandomMutation
-from .simple.random_search import RandomSearchByHillClimbing
+from .simple.continuous_random_mutation import ContinuousRandomMutation
 
 try:
     from .bayesian_optimization.latent_space_bayesian_optimization import (
