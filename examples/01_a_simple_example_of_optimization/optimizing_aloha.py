@@ -1,5 +1,4 @@
 from poli import objective_factory
-from poli.core.registry import get_problems
 from poli_baselines.solvers.simple.random_mutation import RandomMutation
 
 if __name__ == "__main__":

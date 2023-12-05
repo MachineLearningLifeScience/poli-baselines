@@ -1,5 +1,7 @@
 # Poli-baselines: a series of baselines for discrete sequence optimization
 
+[![Test (conda, python 3.9)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml)
+
 `poli-baselines` is a collection of **black box optimization algorithms**, aimed mostly at optimizing discrete sequences. These optimization algorithms are meant to optimize objective functions defined using [`poli`](https://github.com/MachineLearningLifeScience/poli), a tool for instantiating complex, difficult-to-query functions.
 
 ## Installation
@@ -33,11 +35,9 @@ python -c "import poli_baselines ; print('Everything went well!')"
 
 ## Your first optimization using `poli-baselines`
 
-As mentioned above, this library interoperates well with the discrete objective functions defined in [`poli`](). One such objective function is the ALOHA problem, in which we search the space of 5-letter sequences of the word "ALOHA". The following is a simple example of how one could use the `RandomMutation` solver inside `poli-baselines` to solve this problem:
+As mentioned above, this library interoperates well with the discrete objective functions defined in [`poli`](https://github.com/MachineLearningLifeScience/poli). One such objective function is the ALOHA problem, in which we search the space of 5-letter sequences of the word "ALOHA". The following is a simple example of how one could use the `RandomMutation` solver inside `poli-baselines` to solve this problem:
 
 ```python
-import numpy as np
-
 from poli import objective_factory
 from poli_baselines.solvers import RandomMutation
 
