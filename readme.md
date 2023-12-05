@@ -1,4 +1,4 @@
-# Poli-baselines: a series of baselines for discrete sequence optimization
+# `poli-baselines`, a library of optimizers of black-box functions
 
 [![Test (conda, python 3.9)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml)
 
@@ -66,3 +66,7 @@ The `examples` folder includes the optimization of more complex objective functi
 ## Where can I find documentation?
 
 You can find documentation about both `poli` and `poli-baselines` on this repository: https://github.com/MachineLearningLifeScience/protein-optimization-docs
+
+## Want to contribute?
+
+Take a look at our open issues, and check our [guide to contributing](https://github.com/MachineLearningLifeScience/poli-baselines/blob/main/CONTRIBUTING.md).
