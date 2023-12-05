@@ -11,12 +11,12 @@ def ray_box_intersection(
     Find the intersection between a ray and an n-dimensional box.
 
     Parameters:
-    - p (np.ndarray): Point inside the box.
-    - v (np.ndarray): Direction vector of the ray.
-    - bounds (List[Tuple[float, float]]): List of tuples, each representing the bounds for one dimension (-L, L).
+        p (np.ndarray): Point inside the box.
+        v (np.ndarray): Direction vector of the ray.
+        bounds (List[Tuple[float, float]]): List of tuples, each representing the bounds for one dimension (-L, L).
 
     Returns:
-    - Optional[np.ndarray]: Intersection point if it exists, None otherwise.
+        Optional[Tuple[float, np.ndarray]]: t and intersection point if it exists, (None, None) otherwise.
     """
 
     n = len(p)  # Dimensionality of the space
