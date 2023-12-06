@@ -6,7 +6,9 @@ and runs Bayesian Optimization in latent space.
 We use BoTorch as the backend for Bayesian Optimization.
 """
 
-from typing import Callable, Type, Tuple, Literal
+from typing import Tuple, Literal
+from gpytorch.kernels import Kernel
+from gpytorch.means import Mean
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -15,35 +17,37 @@ import torch
 
 
 from botorch.models import SingleTaskGP
-from botorch.fit import fit_gpytorch_model
 from botorch.acquisition import ExpectedImprovement, AcquisitionFunction
 
-from gpytorch.mlls import ExactMarginalLogLikelihood
-
 from poli.core.abstract_black_box import AbstractBlackBox
-from poli_baselines.core.abstract_solver import AbstractSolver
+from poli_baselines.solvers.bayesian_optimization.base_bayesian_optimization.base_bayesian_optimization import (
+    BaseBayesianOptimization,
+)
 from poli_baselines.core.utils.visualization.bayesian_optimization import (
     plot_prediction_in_2d,
-    plot_acquisition_in_2d,
 )
 
 from .utilities import ray_box_intersection
 
 
-class LineBO(AbstractSolver):
+class LineBO(BaseBayesianOptimization):
     def __init__(
         self,
         black_box: AbstractBlackBox,
         x0: np.ndarray,
         y0: np.ndarray,
-        acq_function: Type[AcquisitionFunction] = ExpectedImprovement,
+        mean: Mean = None,
+        kernel: Kernel = None,
+        acq_function: type[AcquisitionFunction] = ExpectedImprovement,
         bounds: Tuple[float, float] = (-2.0, 2.0),
+        penalize_nans_with: float = -10,
         type_of_line: Literal["random", "coordinate"] = "random",
     ):
+        super().__init__(
+            black_box, x0, y0, mean, kernel, acq_function, bounds, penalize_nans_with
+        )
         """
         TODO: add docstring
-
-        encoder is a callable that takes [ints of classes] (np.array) -> [latent codes] (np.array)
         """
         super().__init__(black_box, x0, y0)
         self.acq_function = acq_function
@@ -65,48 +69,22 @@ class LineBO(AbstractSolver):
         # in the current line and is mostly used for visualization purposes.
         self.current_acq_values = None
 
-    def next_candidate(self) -> np.ndarray:
+    def _optimize_acquisition_function(
+        self, acquisition_function: AcquisitionFunction
+    ) -> np.ndarray:
         """
-        Encodes whatever data we have to latent space,
-        fits a Gaussian Process, and maximizies the acquisition
-        function.
+
+        Notes
+        -----
+        - This class overwrites the method from BaseBayesianOptimization,
+          optimizing the acqusition function across a single line in search
+          space.
         """
-        # Encode the data to latent space
-        x = np.concatenate(self.history["x"], axis=0)
-        y = np.concatenate(self.history["y"], axis=0)
-
-        # Normalize the data
-        # scaler_z = MinMaxScaler().fit(z)
-        # scaler_y = MinMaxScaler().fit(y)
-        # z = scaler_z.transform(z)
-        # y = scaler_y.transform(y)
-
-        # Penalize NaNs (TODO: add a flag for this)
-        y[np.isnan(y)] = -10.0
-
-        # Fit a GP
-        model = SingleTaskGP(
-            torch.from_numpy(x).to(torch.float32),
-            torch.from_numpy(y).to(torch.float32),
-        )
-        mll = ExactMarginalLogLikelihood(model.likelihood, model)
-        fit_gpytorch_model(mll)
-        model.eval()
-
-        # Update the model in the class itself:
-        self.gp_model_of_objective = model
-
-        # Instantiate the acq. function
-        if self.acq_function == ExpectedImprovement:
-            acq_func = self.acq_function(model, best_f=y.max())
-        else:
-            raise NotImplementedError
-
         # The core difference of LineBO: optimize the acquisition function
         # over a random/coordinate linear direction in latent space.
         if self.type_of_line == "random":
             # Selecting a linear direction at random.
-            l = np.random.randn(x.shape[1])
+            l = np.random.randn(self.x0.shape[1])
 
             # Optimizing along this line
             # TODO: there must be a better way of
@@ -114,10 +92,10 @@ class LineBO(AbstractSolver):
             # interested in clipping the line to the bounds.
             best_x = self.get_best_solution()[0]
             _, one_intersection = ray_box_intersection(
-                best_x, l, [self.bounds] * x.shape[1]
+                best_x, l, [self.bounds] * self.x0.shape[1]
             )
             _, another_intersection = ray_box_intersection(
-                best_x, -l, [self.bounds] * x.shape[1]
+                best_x, -l, [self.bounds] * self.x0.shape[1]
             )
             t = np.linspace(0, 1, 100)
             xs_in_line = one_intersection[None, :] * t[:, None] + another_intersection[
@@ -126,17 +104,18 @@ class LineBO(AbstractSolver):
 
         elif self.type_of_line == "coordinate":
             # Selecting a coordinate direction at random.
-            l = np.zeros(x.shape[1])
-            l[np.random.randint(x.shape[1])] = 1.0
+            l = np.zeros(self.x0.shape[1])
+            l[np.random.randint(self.x0.shape[1])] = 1.0
 
             # Optimizing along this line
             t = np.linspace(*self.bounds, 100)
             xs_in_line = t[:, None] * l[None, :]
             # self.current_line = xs_in_line
 
-        acq_values = acq_func(
+        acq_values = acquisition_function(
             torch.from_numpy(xs_in_line).to(torch.float32).unsqueeze(1)
         )
+
         # More than one value might achieve the maximum,
         # so we select one at random
         candidates = xs_in_line[acq_values == acq_values.max()]
@@ -145,6 +124,32 @@ class LineBO(AbstractSolver):
         # Update the variables used for vizualization
         self.current_line = xs_in_line
         self.current_acq_values = acq_values
+
+        return candidate
+
+    def next_candidate(self) -> np.ndarray:
+        """
+        Encodes whatever data we have to latent space,
+        fits a Gaussian Process, and maximizies the acquisition
+        function.
+        """
+        # Build up the history
+        x, y = self.get_history_as_arrays()
+
+        # Penalize NaNs (TODO: add a flag for this)
+        y[np.isnan(y)] = -10.0
+
+        # Fit a GP
+        model = self._fit_model(SingleTaskGP, x, y)
+
+        # Update the model in the class itself
+        self.gp_model_of_objective = model
+
+        # Instantiate the acq. function
+        acq_function = self._instantiate_acquisition_function(model)
+
+        # Optimize the acquisition function
+        candidate = self._optimize_acquisition_function(acq_function)
 
         return candidate
 

@@ -21,3 +21,7 @@ def test_line_bayesian_optimization_instantiates_and_runs_well():
     )
 
     solver.solve(max_iter=3)
+
+
+if __name__ == "__main__":
+    test_line_bayesian_optimization_instantiates_and_runs_well()
