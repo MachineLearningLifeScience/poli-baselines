@@ -68,6 +68,7 @@ class BaseBayesianOptimization(AbstractSolver):
             torch.from_numpy(x).to(torch.float32),
             torch.from_numpy(y).to(torch.float32),
             mean_module=self.mean,
+            covar_module=self.kernel,
         )
         mll = ExactMarginalLogLikelihood(model_instance.likelihood, model_instance)
         fit_gpytorch_model(mll)

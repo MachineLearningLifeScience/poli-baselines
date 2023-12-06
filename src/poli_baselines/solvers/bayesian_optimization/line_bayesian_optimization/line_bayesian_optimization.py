@@ -91,6 +91,10 @@ class LineBO(BaseBayesianOptimization):
             # defining the line, especially since we're
             # interested in clipping the line to the bounds.
             best_x = self.get_best_solution()[0]
+
+            # TODO: fix this:
+            best_x = best_x.clip(*self.bounds)
+
             _, one_intersection = ray_box_intersection(
                 best_x, l, [self.bounds] * self.x0.shape[1]
             )
