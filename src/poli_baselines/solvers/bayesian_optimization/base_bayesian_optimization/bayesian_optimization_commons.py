@@ -1,6 +1,6 @@
 """This is a module of utilities containing common functions for
 the Bayesian optimization solvers."""
-from typing import Literal, Type, Tuple
+from typing import Literal, Tuple
 
 import numpy as np
 import torch
