@@ -1,4 +1,5 @@
-from typing import List, Tuple, Dict, Any
+from typing import List, Tuple, Dict, Any, Iterable, Callable
+from typing_extensions import Self
 from pathlib import Path
 import json
 
@@ -22,6 +23,8 @@ class AbstractSolver:
             "x": [x0],
             "y": [y0],
         }
+
+        self.iteration = 0
 
     def next_candidate(self) -> np.ndarray:
         """
@@ -51,6 +54,7 @@ class AbstractSolver:
         y = self.black_box(x)
 
         self.update(x, y)
+        self.iteration += 1
 
         return x, y
 
@@ -59,6 +63,8 @@ class AbstractSolver:
         max_iter: int = 100,
         break_at_performance: float = None,
         verbose: bool = False,
+        pre_step_callbacks: Iterable[Callable[[Self], None]] = None,
+        post_step_callbacks: Iterable[Callable[[Self], None]] = None,
     ) -> np.ndarray:
         """
         Runs the solver for the given number of iterations.
@@ -68,11 +74,21 @@ class AbstractSolver:
         :rtype:
         """
         # TODO: add logging, link it to the observer logic.
-        # TODO: should we add a callback?
         # TODO: should we add a progress bar?
         # TODO: should we add a try-except block?
         for i in range(max_iter):
+            # Call the pre-step callbacks
+            if pre_step_callbacks is not None:
+                for callback in pre_step_callbacks:
+                    callback(self)
+
+            # Take a step, which in turn updates the local history.
             _, y = self.step()
+
+            # Call the post-step callbacks
+            if post_step_callbacks is not None:
+                for callback in post_step_callbacks:
+                    callback(self)
 
             if verbose:
                 print(
