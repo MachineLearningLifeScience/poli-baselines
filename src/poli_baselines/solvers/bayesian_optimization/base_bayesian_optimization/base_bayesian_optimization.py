@@ -24,6 +24,58 @@ from .bayesian_optimization_commons import (
 
 
 class BaseBayesianOptimization(AbstractSolver):
+    """
+    Base class for Bayesian Optimization solvers.
+
+    Parameters
+    ----------
+    black_box : AbstractBlackBox
+        The black box function to optimize.
+    x0 : np.ndarray
+        The initial input data.
+    y0 : np.ndarray
+        The initial output data.
+    mean : Mean, optional
+        The mean function of the Gaussian process model, by default None.
+    kernel : Kernel, optional
+        The kernel function of the Gaussian process model, by default None.
+    acq_function : Type[AcquisitionFunction], optional
+        The acquisition function to use, by default ExpectedImprovement.
+    bounds : Tuple[float, float], optional
+        The bounds of the input space, by default (-2.0, 2.0).
+    penalize_nans_with : float, optional
+        The value to assign to NaNs in the objective function, by default -10.0.
+
+    Attributes
+    ----------
+    mean : Mean
+        The mean function of the Gaussian process model.
+    kernel : Kernel
+        The kernel function of the Gaussian process model.
+    acq_function : Type[AcquisitionFunction]
+        The acquisition function to use.
+    bounds : Tuple[float, float]
+        The bounds of the input space.
+    penalize_nans_with : float
+        The value to assign to NaNs in the objective function.
+
+    Methods
+    -------
+    _fit_model(model, x, y)
+        Fits a Gaussian process model.
+    _optimize_acquisition_function(acquisition_function)
+        Optimizes an already instantiated acquisition function.
+    _instantiate_acquisition_function(model)
+        Instantiates the acquisition function.
+    next_candidate()
+        Runs one loop of Bayesian Optimization.
+
+    Notes
+    -----
+    This class serves as a base class for implementing Bayesian Optimization solvers.
+    It provides common functionality and methods that can be used by derived classes.
+    """
+
     def __init__(
         self,
         black_box: AbstractBlackBox,
@@ -36,7 +88,26 @@ class BaseBayesianOptimization(AbstractSolver):
         penalize_nans_with: float = -10.0,
     ):
         """
-        TODO: add docstring
+        Initialize the BaseBayesianOptimization class.
+
+        Parameters
+        ----------
+        black_box : AbstractBlackBox
+            The black box function to be optimized.
+        x0 : np.ndarray
+            The initial input points.
+        y0 : np.ndarray
+            The initial output values corresponding to the input points.
+        mean : Mean, optional
+            The mean function used in the Gaussian process, by default None.
+        kernel : Kernel, optional
+            The kernel function used in the Gaussian process, by default None.
+        acq_function : Type[AcquisitionFunction], optional
+            The acquisition function used for selecting the next point to evaluate, by default ExpectedImprovement.
+        bounds : Tuple[float, float], optional
+            The bounds of the input space, by default (-2.0, 2.0).
+        penalize_nans_with : float, optional
+            The value used to penalize NaN values in the acquisition function, by default -10.0.
         """
         super().__init__(black_box, x0, y0)
         self.mean = mean
@@ -48,12 +119,13 @@ class BaseBayesianOptimization(AbstractSolver):
     def _fit_model(
         self, model: Type[SingleTaskGP], x: np.ndarray, y: np.ndarray
     ) -> SingleTaskGP:
-        """Fits a GP model.
+        """
+        Fits a Gaussian process model.
 
         Parameters
         ----------
         model : Type[SingleTaskGP]
-            The GP model to fit as a class, without being instantiated.
+            The Gaussian process model to fit as a class, without being instantiated.
         x : np.ndarray
             The input data.
         y : np.ndarray
@@ -62,7 +134,7 @@ class BaseBayesianOptimization(AbstractSolver):
         Returns
         -------
         model : SingleTaskGP
-            The fitted GP model.
+            The fitted Gaussian process model.
         """
         model_instance = model(
             torch.from_numpy(x).to(torch.float32),
@@ -79,7 +151,8 @@ class BaseBayesianOptimization(AbstractSolver):
     def _optimize_acquisition_function(
         self, acquisition_function: AcquisitionFunction
     ) -> np.ndarray:
-        """Optimizes an already instantiated acquisition function.
+        """
+        Optimizes an already instantiated acquisition function.
 
         Parameters
         ----------
@@ -91,17 +164,9 @@ class BaseBayesianOptimization(AbstractSolver):
         candidate : np.ndarray
             The next candidate to evaluate.
         """
-        # Compute the number of dimensions of the input.
-        # In this case, we can infer d from
-        # the size of x.
         n_dimensions = self.x0.shape[1]
 
-        # Optimize the acquisition function
-        # Bounds needs to be a 2xd tensor.
         if n_dimensions in [1, 2]:
-            # We get the candidate by running a grid search
-            # on the acquisition function.
-            # TODO: implement this for d = 1.
             candidate = optimize_acquisition_function_using_grid_search(
                 n_dimension=n_dimensions,
                 acquisition_function=acquisition_function,
@@ -127,12 +192,13 @@ class BaseBayesianOptimization(AbstractSolver):
     def _instantiate_acquisition_function(
         self, model: SingleTaskGP
     ) -> AcquisitionFunction:
-        """Instantiates the acquisition function.
+        """
+        Instantiates the acquisition function.
 
         Parameters
         ----------
         model : SingleTaskGP
-            The GP model.
+            The Gaussian process model.
 
         Returns
         -------
@@ -147,7 +213,8 @@ class BaseBayesianOptimization(AbstractSolver):
         return acq_func
 
     def next_candidate(self) -> np.ndarray:
-        """An abstract method that runs one loop of Bayesian Optimization.
+        """
+        Runs one loop of Bayesian Optimization.
 
         Returns
         -------
@@ -156,7 +223,6 @@ class BaseBayesianOptimization(AbstractSolver):
 
         Notes
         -----
-        We penalize the NaNs in the objective function by
-        assigning them a value stored in self.penalize_nans_with.
+        NaNs in the objective function are penalized by assigning them a value stored in self.penalize_nans_with.
         """
         raise NotImplementedError

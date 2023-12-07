@@ -1,9 +1,17 @@
-"""
-A simple solver that takes an encoder function,
-encodes all the data points to latent space,
-and runs Bayesian Optimization in latent space.
+"""A solver that implements Line Bayesian Optimization [1].
 
-We use BoTorch as the backend for Bayesian Optimization.
+Line Bayesian Optimization modifies the usual loop by only optimizing
+the acquisition function along a single line in latent space. This line
+can either be selected at random, be a coordinate direction, or use local
+gradient information to choose a direction of likely descent. So far, we
+only implement the random line and coordinate line search.
+
+References
+----------
+[1] Kirschner, Johannes, Mojmir Mutny, Nicole Hiller, Rasmus Ischebeck, and Andreas Krause.
+    “Adaptive and Safe Bayesian Optimization in High Dimensions via One-Dimensional Subspaces.”
+    In Proceedings of the 36th International Conference on Machine Learning, 3429-38. PMLR, 2019.
+    https://proceedings.mlr.press/v97/kirschner19a.html.
 """
 
 from typing import Tuple, Literal
@@ -31,6 +39,65 @@ from .utilities import ray_box_intersection
 
 
 class LineBO(BaseBayesianOptimization):
+    """
+    LineBO class represents a Bayesian Optimization solver that optimizes
+    a black box function along a single line in the search space.
+
+    Parameters
+    ----------
+    black_box : AbstractBlackBox
+        The black box function to be optimized.
+    x0 : np.ndarray
+        The initial input points.
+    y0 : np.ndarray
+        The corresponding function values at the initial input points.
+    mean : Mean, optional
+        The mean function of the Gaussian process model, by default None.
+    kernel : Kernel, optional
+        The kernel function of the Gaussian process model, by default None.
+    acq_function : type[AcquisitionFunction], optional
+        The type of acquisition function to be used, by default ExpectedImprovement.
+    bounds : Tuple[float, float], optional
+        The bounds of the input space, by default (-2.0, 2.0).
+    penalize_nans_with : float, optional
+        The value to penalize NaN values in the acquisition function, by default -10.
+    type_of_line : Literal["random", "coordinate"], optional
+        The type of line to be used (random or coordinate), by default "random".
+
+    Attributes
+    ----------
+    acq_function : type[AcquisitionFunction]
+        The type of acquisition function to be used.
+    bounds : Tuple[float, float]
+        The bounds of the input space.
+    type_of_line : Literal["random", "coordinate"]
+        The type of line to be used (random or coordinate).
+    gp_model_of_objective : None
+        The GP model of the objective function.
+    current_line : None
+        The points in the current line.
+    current_acq_values : None
+        The values of the acquisition function in the current line.
+
+    Methods
+    -------
+    _optimize_acquisition_function(acquisition_function)
+        Optimizes the acquisition function along a single line in latent space.
+    next_candidate()
+        Encodes data to latent space, fits a Gaussian Process, and maximizes the acquisition function.
+    plot_model_predictions(ax)
+        Plots the model predictions in latent space.
+    plot_acquisition_function_in_line(ax)
+        Plots the acquisition function values along a line.
+
+    References
+    ----------
+    [1] Kirschner, Johannes, Mojmir Mutny, Nicole Hiller, Rasmus Ischebeck, and Andreas Krause.
+        “Adaptive and Safe Bayesian Optimization in High Dimensions via One-Dimensional Subspaces.”
+        In Proceedings of the 36th International Conference on Machine Learning, 3429-38. PMLR, 2019.
+        https://proceedings.mlr.press/v97/kirschner19a.html.
+    """
+
     def __init__(
         self,
         black_box: AbstractBlackBox,
@@ -43,13 +110,40 @@ class LineBO(BaseBayesianOptimization):
         penalize_nans_with: float = -10,
         type_of_line: Literal["random", "coordinate"] = "random",
     ):
+        """
+        Initialize the LineBayesianOptimization object.
+
+        Parameters
+        ----------
+        black_box : AbstractBlackBox
+            The black box function to be optimized.
+        x0 : np.ndarray
+            The initial input points.
+        y0 : np.ndarray
+            The corresponding function values at the initial input points.
+        mean : Mean, optional
+            The mean function of the Gaussian process model, by default None.
+        kernel : Kernel, optional
+            The kernel function of the Gaussian process model, by default None.
+        acq_function : type[AcquisitionFunction], optional
+            The type of acquisition function to be used, by default ExpectedImprovement.
+        bounds : Tuple[float, float], optional
+            The bounds of the input space, by default (-2.0, 2.0).
+        penalize_nans_with : float, optional
+            The value to penalize NaN values in the acquisition function, by default -10.
+        type_of_line : Literal["random", "coordinate"], optional
+            The type of line to be used (random or coordinate), by default "random".
+        """
         super().__init__(
-            black_box, x0, y0, mean, kernel, acq_function, bounds, penalize_nans_with
+            black_box=black_box,
+            x0=x0,
+            y0=y0,
+            mean=mean,
+            kernel=kernel,
+            acq_function=acq_function,
+            bounds=bounds,
+            penalize_nans_with=penalize_nans_with,
         )
-        """
-        TODO: add docstring
-        """
-        super().__init__(black_box, x0, y0)
         self.acq_function = acq_function
         self.bounds = bounds
 
@@ -73,6 +167,20 @@ class LineBO(BaseBayesianOptimization):
         self, acquisition_function: AcquisitionFunction
     ) -> np.ndarray:
         """
+        Optimizes the acquisition function along a single line in latent space.
+
+        The type of line is determined by the type_of_line attribute, which
+        can be either "random" or "coordinate".
+
+        Parameters
+        ----------
+        acquisition_function : AcquisitionFunction
+            The acquisition function to optimize.
+
+        Returns
+        -------
+        candidate : np.ndarray
+            The candidate point.
 
         Notes
         -----
@@ -140,8 +248,8 @@ class LineBO(BaseBayesianOptimization):
         # Build up the history
         x, y = self.get_history_as_arrays()
 
-        # Penalize NaNs (TODO: add a flag for this)
-        y[np.isnan(y)] = -10.0
+        # Penalize NaNs
+        y[np.isnan(y)] = self.penalize_nans_with
 
         # Fit a GP
         model = self._fit_model(SingleTaskGP, x, y)
@@ -160,6 +268,11 @@ class LineBO(BaseBayesianOptimization):
     def plot_model_predictions(self, ax: plt.Axes) -> None:
         """
         Plots the model predictions in latent space.
+
+        Parameters:
+        ----------
+        ax: plt.Axes
+            The matplotlib Axes object to plot the model predictions.
         """
         # TODO: assert that the x values are 2D.
         # TODO: add support for 1D spaces.
@@ -183,7 +296,12 @@ class LineBO(BaseBayesianOptimization):
 
     def plot_acquisition_function_in_line(self, ax: plt.Axes):
         """
-        TODO: implement.
+        Plots the acquisition function values along a line.
+
+        Parameters:
+        ----------
+        ax: plt.Axes
+            The matplotlib Axes object to plot the acquisition function.
         """
         assert self.current_acq_values is not None
         ax.plot(

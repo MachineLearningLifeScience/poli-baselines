@@ -16,8 +16,6 @@ import torch
 from botorch.models import SingleTaskGP
 from botorch.fit import fit_gpytorch_model
 from botorch.acquisition import ExpectedImprovement, AcquisitionFunction
-from botorch.optim import optimize_acqf
-from botorch.generation.gen import gen_candidates_torch
 
 from gpytorch.mlls import ExactMarginalLogLikelihood
 
@@ -25,7 +23,58 @@ from poli.core.abstract_black_box import AbstractBlackBox
 from poli_baselines.core.abstract_solver import AbstractSolver
 
 
+# TODO: this solver should inherit from BaseBayesianOptimization instead.
 class LatentSpaceLineBO(AbstractSolver):
+    """
+    Bayesian optimization solver that operates in the latent space using line
+    Bayesian Optimization [1].
+
+    Parameters
+    ----------
+    black_box : AbstractBlackBox
+        The black box function to be optimized.
+    x0 : np.ndarray
+        Initial input data.
+    y0 : np.ndarray
+        Initial output data.
+    encoder : Callable[[np.ndarray], np.ndarray]
+        Encoder function that maps input data to latent space.
+    decoder : Callable[[np.ndarray], np.ndarray]
+        Decoder function that maps latent space to input data.
+    acq_function : Type[AcquisitionFunction], optional
+        The acquisition function to be used, by default ExpectedImprovement.
+    bounds : Tuple[float, float], optional
+        The bounds of the latent space, by default (-2.0, 2.0).
+    type_of_line : str, optional
+        The type of line search to be performed, by default "random".
+
+    Attributes
+    ----------
+    encoder : Callable[[np.ndarray], np.ndarray]
+        Encoder function that maps input data to latent space.
+    decoder : Callable[[np.ndarray], np.ndarray]
+        Decoder function that maps latent space to input data.
+    acq_function : Type[AcquisitionFunction]
+        The acquisition function to be used.
+    bounds : Tuple[float, float]
+        The bounds of the latent space.
+    type_of_line : str
+        The type of line search to be performed.
+
+    Methods
+    -------
+    next_candidate() -> np.ndarray
+        Generates the next candidate point in the latent space.
+
+    References
+    ----------
+    [1] Kirschner, Johannes, Mojmir Mutny, Nicole Hiller, Rasmus Ischebeck, and Andreas Krause.
+        “Adaptive and Safe Bayesian Optimization in High Dimensions via One-Dimensional Subspaces.”
+        In Proceedings of the 36th International Conference on Machine Learning, 3429–38. PMLR, 2019.
+        https://proceedings.mlr.press/v97/kirschner19a.html.
+
+    """
+
     def __init__(
         self,
         black_box: AbstractBlackBox,
@@ -38,9 +87,28 @@ class LatentSpaceLineBO(AbstractSolver):
         type_of_line: str = "random",
     ):
         """
-        TODO: add docstring
+        Initialize the LatentSpaceLineBO solver.
 
-        encoder is a callable that takes [ints of classes] (np.array) -> [latent codes] (np.array)
+        Parameters
+        ----------
+        black_box : AbstractBlackBox
+            The black box function to be optimized.
+        x0 : np.ndarray
+            Initial input data.
+        y0 : np.ndarray
+            Initial output data.
+        encoder : Callable[[np.ndarray], np.ndarray]
+            Encoder function that maps input data to latent space.
+        decoder : Callable[[np.ndarray], np.ndarray]
+            Decoder function that maps latent space to input data.
+        acq_function : Type[AcquisitionFunction], optional
+            The acquisition function to be used, by default ExpectedImprovement.
+        bounds : Tuple[float, float], optional
+            The bounds of the latent space, by default (-2.0, 2.0).
+        type_of_line : str, optional
+            The type of line selection to be performed, by default "random".
+            Options are: {"random", "coordinate"}
+
         """
         super().__init__(black_box, x0, y0)
         self.encoder = encoder
@@ -51,21 +119,20 @@ class LatentSpaceLineBO(AbstractSolver):
 
     def next_candidate(self) -> np.ndarray:
         """
-        Encodes whatever data we have to latent space,
-        fits a Gaussian Process, and maximizies the acquisition
-        function.
+        Generates the next candidate point in the search space.
+
+        Returns
+        -------
+        np.ndarray
+            The next candidate point (not in latent space, but
+            in search space).
+
         """
         # Encode the data to latent space
         x = np.concatenate(self.history["x"], axis=0)
         y = np.concatenate(self.history["y"], axis=0)
 
         z = self.encoder(x)
-
-        # Normalize the data
-        # scaler_z = MinMaxScaler().fit(z)
-        # scaler_y = MinMaxScaler().fit(y)
-        # z = scaler_z.transform(z)
-        # y = scaler_y.transform(y)
 
         # Penalize NaNs (TODO: add a flag for this)
         y[np.isnan(y)] = -10.0

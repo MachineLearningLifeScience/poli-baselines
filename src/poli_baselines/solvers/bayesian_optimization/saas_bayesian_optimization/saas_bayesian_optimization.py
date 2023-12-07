@@ -23,13 +23,73 @@ from botorch.acquisition import ExpectedImprovement, AcquisitionFunction
 from botorch.models.fully_bayesian import SaasFullyBayesianSingleTaskGP
 
 from poli.core.abstract_black_box import AbstractBlackBox
-from poli_baselines.core.abstract_solver import AbstractSolver
 from poli_baselines.solvers.bayesian_optimization.base_bayesian_optimization.base_bayesian_optimization import (
     BaseBayesianOptimization,
 )
 
 
 class SAASBO(BaseBayesianOptimization):
+    """
+    SAASBO (Sparse Axis-Aligned Bayesian Optimization) is
+    a solver that uses a SAAS prior on the Gaussian
+    Process' kernel hyperparameters to encourage
+    lengthscales to be sparse and axis-aligned [1].
+
+    This implementation is based on the BoTorch tutorial
+    on SAASBO [2].
+
+    Parameters
+    ----------
+    black_box : AbstractBlackBox
+        The black box function to be optimized.
+    x0 : np.ndarray
+        The initial input samples.
+    y0 : np.ndarray
+        The corresponding output values of the initial input samples.
+    mean : Mean, optional
+        The mean function of the Gaussian process, by default None.
+    kernel : Kernel, optional
+        The kernel function of the Gaussian process, by default None.
+    acq_function : type[AcquisitionFunction], optional
+        The acquisition function to be used, by default ExpectedImprovement.
+    bounds : Tuple[float, float], optional
+        The bounds of the input space, by default (-2.0, 2.0).
+    penalize_nans_with : float, optional
+        The value to penalize NaN values in the acquisition function, by default -10.
+    warmup_steps : int, optional
+        The number of warm-up steps for the acquisition function, by default 256.
+    num_samples : int, optional
+        The number of samples when fitting the Gaussian Process using NUTS, by default 128.
+    thinning : int, optional
+        The thinning factor when fitting the Gaussian Process using NUTS, by default 16.
+
+    Attributes
+    ----------
+    warmup_steps : int
+        The number of warm-up steps for the acquisition function.
+    num_samples : int
+        The number of samples when fitting the Gaussian Process using NUTS.
+    thinning : int
+        The thinning factor when fitting the Gaussian Process using NUTS.
+
+    Methods
+    -------
+    next_candidate()
+        Returns the next candidate solution after checking the history. It fits
+        a SaasFullyBayesianSingleTaskGP model.
+
+    Notes
+    -----
+    This implementation is based on BoTorch, and their tutorial
+
+    References
+    ----------
+    [1] High-Dimensional Bayesian Optimization with Sparse
+        Axis-Aligned Subspaces, by Eriksson and Jankowiak, 2021.
+        https://arxiv.org/abs/2103.00349
+    [2] https://botorch.org/tutorials/saasbo
+    """
+
     def __init__(
         self,
         black_box: AbstractBlackBox,
@@ -44,6 +104,36 @@ class SAASBO(BaseBayesianOptimization):
         num_samples: int = 128,
         thinning: int = 16,
     ):
+        """
+        Initialize the SAASBayesianOptimization solver.
+
+        Parameters
+        ----------
+        black_box : AbstractBlackBox
+            The black box function to be optimized.
+        x0 : np.ndarray
+            The initial input samples.
+        y0 : np.ndarray
+            The corresponding output values of the initial input samples.
+        mean : Mean, optional
+            The mean function of the Gaussian process, by default None.
+        kernel : Kernel, optional
+            The kernel function of the Gaussian process, by default None.
+        acq_function : type[AcquisitionFunction], optional
+            The acquisition function to be used, by default ExpectedImprovement.
+        bounds : Tuple[float, float], optional
+            The bounds of the input space, by default (-2.0, 2.0).
+        penalize_nans_with : float, optional
+            The value to penalize NaN values in the acquisition function, by default -10.
+        warmup_steps : int, optional
+            The number of warm-up steps for the acquisition function, by default 256.
+        num_samples : int, optional
+            The number of samples when fitting the
+            Gaussian Process using NUTS, by default 128.
+        thinning : int, optional
+            The thinning factor when fitting the Gaussian
+            Process using NUTS, by default 16.
+        """
         super().__init__(
             black_box=black_box,
             x0=x0,
@@ -61,6 +151,23 @@ class SAASBO(BaseBayesianOptimization):
     def _fit_model(
         self, model: Type[SaasFullyBayesianSingleTaskGP], x: np.ndarray, y: np.ndarray
     ) -> SaasFullyBayesianSingleTaskGP:
+        """
+        Fits a SAASGP model to the data provided.
+
+        Parameters
+        ----------
+        model : Type[SaasFullyBayesianSingleTaskGP]
+            The model to be fitted.
+        x : np.ndarray
+            The input data.
+        y : np.ndarray
+            The output data.
+
+        Returns
+        -------
+        gp : SaasFullyBayesianSingleTaskGP
+            The fitted model.
+        """
         gp = model(
             train_X=torch.from_numpy(x).to(torch.float32),
             train_Y=torch.from_numpy(y).to(torch.float32),
@@ -78,7 +185,14 @@ class SAASBO(BaseBayesianOptimization):
 
     def next_candidate(self) -> np.ndarray:
         """
-        TODO: implement.
+        Returns the next candidate solution
+        after checking the history. It fits
+        a SaasFullyBayesianSingleTaskGP model.
+
+        Returns
+        -------
+        candidate: np.ndarray
+            The next candidate solution.
         """
         # Build up the history
         x, y = self.get_history_as_arrays()

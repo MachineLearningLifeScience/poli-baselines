@@ -1,10 +1,5 @@
 """
-This module implements a solver for vanilla Bayesian Optimization.
-
-The BO backend will be BoTorch.
-
-TODO: refactor the usual BO loop outside of these classes,
-      using a generic implementation.
+This module provides the VanillaBayesianOptimization class, which performs Bayesian Optimization using a SingleTaskGP model.
 """
 
 from typing import Type, Tuple
