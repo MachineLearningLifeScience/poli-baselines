@@ -2,4 +2,6 @@
 
 from botorch.generation import MaxPosteriorSampling
 
-...
+
+class ThompsonSampling:
+    pass
