@@ -122,7 +122,14 @@ class AbstractSolver:
         stacked_inputs = np.vstack(inputs)
         stacked_outputs = np.vstack(outputs)
 
-        return stacked_inputs[np.nanargmax(stacked_outputs)]
+        nanargmax = np.nanargmax(stacked_outputs)
+
+        if isinstance(nanargmax, np.ndarray):
+            nanargmax = nanargmax[0]
+
+        one_best_solution = stacked_inputs[nanargmax]
+
+        return one_best_solution.reshape(1, -1)
 
     def get_best_performance(self) -> np.ndarray:
         """

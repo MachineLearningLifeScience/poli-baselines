@@ -9,10 +9,11 @@ candidate solutions [2].
 References
 ----------
 [1] pycma: https://github.com/CMA-ES/pycma
-[2] Hansen, N., and A. Ostermeier. “Completely Derandomized
-    Self-Adaptation in Evolution Strategies.” Evolutionary
-    Computation 9, no. 2 (2001): 159-95.
-    https://doi.org/10.1162/106365601750190398.
+[2] N. Hansen and A. Ostermeier, "Adapting arbitrary normal
+    mutation distributions in evolution strategies: the covariance
+    matrix adaptation," Proceedings of IEEE International Conference
+    on Evolutionary Computation, Nagoya, Japan, 1996, pp. 312-317,
+    doi: 10.1109/ICEC.1996.542381.
 
 """
 from typing import Tuple
@@ -50,6 +51,10 @@ class CMA_ES(AbstractSolver):
 
     Methods:
     --------
+    step() -> Tuple[np.ndarray, np.ndarray]
+        Runs the solver for one iteration. This
+        method overrides the step method from the
+        AbstractSolver class.
     next_candidate() -> np.ndarray
         Returns the next candidate solutions.
 
