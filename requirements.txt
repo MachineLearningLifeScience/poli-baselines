@@ -3,3 +3,4 @@ poli @ git+https://github.com/MachineLearningLifeScience/poli.git@dev
 pymoo
 torch
 botorch
+pycma

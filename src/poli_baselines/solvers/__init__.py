@@ -10,3 +10,5 @@ from .bayesian_optimization.saas_bayesian_optimization import SAASBO
 from .bayesian_optimization.latent_space_bayesian_optimization import (
     LatentSpaceBayesianOptimization,
 )
+
+from .evolutionary_strategies.cma_es import CMA_ES
