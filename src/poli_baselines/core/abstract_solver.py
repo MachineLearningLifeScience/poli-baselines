@@ -91,9 +91,7 @@ class AbstractSolver:
                     callback(self)
 
             if verbose:
-                print(
-                    f"Iteration {i}: {y}, best so far: {np.max([y_i for y_i in self.history['y'] if not np.isnan(y_i)])}"
-                )
+                print(f"Iteration {i}: {y}, best so far: {self.get_best_performance()}")
 
             if break_at_performance is not None:
                 if y >= break_at_performance:
@@ -118,13 +116,29 @@ class AbstractSolver:
         """
         Returns the best solution found so far.
         """
-        return self.history["x"][np.nanargmax(self.history["y"])]
+        inputs = [x for x in self.history["x"]]
+        outputs = [y for y in self.history["y"]]
+
+        stacked_inputs = np.vstack(inputs)
+        stacked_outputs = np.vstack(outputs)
+
+        nanargmax = np.nanargmax(stacked_outputs)
+
+        if isinstance(nanargmax, np.ndarray):
+            nanargmax = nanargmax[0]
+
+        one_best_solution = stacked_inputs[nanargmax]
+
+        return one_best_solution.reshape(1, -1)
 
     def get_best_performance(self) -> np.ndarray:
         """
         Returns the best performance found so far.
         """
-        return np.nanmax(self.history["y"])
+        outputs = [y for y in self.history["y"]]
+        stacked_outputs = np.vstack(outputs)
+
+        return np.nanmax(stacked_outputs)
 
     def get_history_as_arrays(self) -> Tuple[np.ndarray, np.ndarray]:
         """
