@@ -11,6 +11,7 @@ References
 
 from typing import Tuple, Type, Union
 
+import torch
 import numpy as np
 
 from gpytorch.kernels import Kernel
@@ -38,6 +39,8 @@ class BAxUS(BaseBayesianOptimization):
         acq_function: Type[AcquisitionFunction] = ThompsonSampling,
         bounds: Tuple[float, float] = (-2.0, 2.0),
         penalize_nans_with: float = -10,
+        initial_subspace_dimension: int = 2,
+        n_new_bins_per_dimension: int = 1,
     ):
         super().__init__(
             black_box=black_box,
@@ -50,15 +53,46 @@ class BAxUS(BaseBayesianOptimization):
             penalize_nans_with=penalize_nans_with,
         )
 
+        self.current_gp_model = None
+        self.current_trust_region_length = None
+        self.current_embedding_matrix = None
+        self.current_observations = None
+        self.current_subspace_dimension = initial_subspace_dimension
+        self.n_new_bins_per_dimension = n_new_bins_per_dimension
+
     def _compute_trust_region(self) -> Tuple[np.ndarray, np.ndarray]:
-        """Computes the lower and upper bounds of the trust region."""
-        ...
+        """Computes the lower and upper bounds of the trust region.
+
+        This implementation is taken from the function "create_candidate" in [1].
+
+        References
+        ----------
+        [1] https://botorch.org/tutorials/baxus
+        """
+        X, Y = self.get_history_as_arrays()
+
+        # Scale the TR to be proportional to the lengthscales
+        x_center = X[Y.argmax(), :].clone()
+        weights = (
+            self.current_gp_model.covar_module.base_kernel.lengthscale.detach().view(-1)
+        )
+        weights = weights / weights.mean()
+        weights = weights / torch.prod(weights.pow(1.0 / len(weights)))
+        tr_lb = torch.clamp(
+            x_center - weights * self.current_trust_region_length, *self.bounds
+        )
+        tr_ub = torch.clamp(
+            x_center + weights * self.current_trust_region_length, *self.bounds
+        )
+
+        return tr_lb, tr_ub
 
     def _optimize_acquisition_function(
         self, acquisition_function: ThompsonSampling
     ) -> np.ndarray:
         if isinstance(acquisition_function, ThompsonSampling):
-            return acquisition_function()
+            # TODO: we need to pass the current dimension of the subspace here.
+            return acquisition_function(self.current_subspace_dimension)
         elif isinstance(acquisition_function, ExpectedImprovement):
             trust_region_bounds = self._compute_trust_region()
             return super()._optimize_acquisition_function(
@@ -73,7 +107,10 @@ class BAxUS(BaseBayesianOptimization):
         self, model: SingleTaskGP
     ) -> Union[Type[ThompsonSampling], Type[ExpectedImprovement]]:
         if self.acq_function == ThompsonSampling:
-            thomspon_sampling_acq_function = self.acq_function(model=model)
+            # TODO: modify n_candidates here.
+            thomspon_sampling_acq_function = self.acq_function(
+                model=model, trust_region=self._compute_trust_region(), n_candidates=100
+            )
             return thomspon_sampling_acq_function
         elif self.acq_function == ExpectedImprovement:
             return super()._instantiate_acquisition_function(model=model)
@@ -253,4 +290,38 @@ class BAxUS(BaseBayesianOptimization):
         return embedding_matrix_update, observations_update
 
     def next_candidate(self) -> np.ndarray:
-        ...
+        """Computes the next candidate.
+
+        This implementation is based on the function "create_candidate" in [1].
+
+        Returns
+        -------
+        candidate : np.ndarray
+            Next candidate.
+
+        References
+        ----------
+        [1] https://botorch.org/tutorials/baxus
+        """
+        # Build up the history
+        X, Y = self.get_history_as_arrays()
+
+        # Penalize the NaNs in the objective function by assigning them a value
+        # stored in self.penalize_nans_with.
+        Y[np.isnan(Y)] = self.penalize_nans_with
+
+        # Fit a GP
+        model = self._fit_model(SingleTaskGP, X, Y)
+
+        # Update the stored model
+        self.current_gp_model = model
+
+        # Instantiate the acquisition function
+        acq_function = self._instantiate_acquisition_function(model=model)
+
+        # Optimize the acquisition function
+        candidate = self._optimize_acquisition_function(
+            acquisition_function=acq_function
+        )
+
+        return candidate
