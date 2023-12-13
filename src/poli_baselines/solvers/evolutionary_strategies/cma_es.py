@@ -15,6 +15,7 @@ References
     https://doi.org/10.1162/106365601750190398.
 
 """
+from typing import Tuple
 import numpy as np
 from poli.core.abstract_black_box import AbstractBlackBox
 
@@ -59,6 +60,7 @@ class CMA_ES(AbstractSolver):
         black_box: AbstractBlackBox,
         x0: np.ndarray,
         y0: np.ndarray,
+        initial_mean: np.ndarray,
         initial_sigma: float = 1.0,
         population_size: int = 10,
     ):
@@ -79,16 +81,21 @@ class CMA_ES(AbstractSolver):
             The number of individuals in the population, by default 10.
         """
         super().__init__(black_box, x0, y0)
+
         self.initial_sigma = initial_sigma
         self.population_size = population_size
 
         self._internal_cma = cma.CMAEvolutionStrategy(
-            x0,
+            initial_mean,
             initial_sigma,
             {
                 "popsize": population_size,
             },
         )
+
+        # Include the x0 and y0
+        _ = self._internal_cma.ask()
+        self._internal_cma.tell(x0, -y0)
 
     def next_candidate(self) -> np.ndarray:
         """
@@ -103,3 +110,28 @@ class CMA_ES(AbstractSolver):
         arrays = self._internal_cma.ask()
 
         return np.vstack(arrays)
+
+    def step(self) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Runs the solver for one iteration.
+
+        Returns:
+        --------
+        x: np.ndarray
+            The next candidate solutions.
+        y: np.ndarray
+            The fitness values of the next sample from the population.
+        """
+        x = self.next_candidate()
+        y = self.black_box(x)
+
+        # Since the CMA-ES is expecting a function
+        # to minimize, we need to negate the objective
+        # function inside the tell method.
+        self._internal_cma.tell(x, -y)
+
+        # We update the history
+        self.update(x, y)
+        self.iteration += 1
+
+        return x, y
