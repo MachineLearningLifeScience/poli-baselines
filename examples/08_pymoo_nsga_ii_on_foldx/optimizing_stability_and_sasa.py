@@ -104,7 +104,7 @@ if __name__ == "__main__":
     # Since PyMoo is used to minimizing instead of maximizing (our convention),
     # we pass -f instead of f.
     problem = DiscretePymooProblem(
-        black_box=-f_stability_and_sasa,
+        black_box=f_stability_and_sasa,
         x0=x_0,
         y0=y_0,
     )

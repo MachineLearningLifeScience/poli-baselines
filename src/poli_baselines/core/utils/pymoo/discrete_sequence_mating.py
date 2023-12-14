@@ -4,7 +4,7 @@ from pymoo.core.population import Population
 from pymoo.core.infill import InfillCriterion
 
 
-class WildtypeMating(InfillCriterion):
+class DiscreteSequenceMating(InfillCriterion):
     def __init__(
         self,
         num_mutations: int = 1,

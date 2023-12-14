@@ -115,6 +115,12 @@ class AbstractSolver:
     def get_best_solution(self) -> np.ndarray:
         """
         Returns the best solution found so far.
+
+        Returns:
+        --------
+        one_best_solution: np.ndarray
+            The best solution (or one of the best solutions)
+            found so far.
         """
         inputs = [x for x in self.history["x"]]
         outputs = [y for y in self.history["y"]]

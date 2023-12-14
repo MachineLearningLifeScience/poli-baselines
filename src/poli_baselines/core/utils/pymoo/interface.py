@@ -15,6 +15,34 @@ from pymoo.core.population import Population
 from poli.core.multi_objective_black_box import MultiObjectiveBlackBox
 
 
+def _from_dict_to_array(x: List[dict]) -> np.ndarray:
+    """
+    Transforms a list of dicts {x_i: value}
+    to an array of shape [n, sequence_length]
+    """
+    if isinstance(x, dict):
+        new_x = np.array([x[f"x_{i}"] for i in range(len(x))])
+    else:
+        new_x = np.array([[x_[f"x_{i}"] for i in range(len(x_))] for x_ in x])
+
+    return new_x
+
+
+def _from_array_to_dict(x: np.ndarray) -> List[dict]:
+    """Transforms an array [[x_0, x_1, ...]_i] to a dict {x_0: value, x_1: value, ...}"""
+    dicts = []
+    for row in x:
+        dict_ = {}
+        for i in range(len(row)):
+            dict_[f"x_{i}"] = row[i]
+
+        dicts.append(dict_)
+
+    return dicts
+
+    ...
+
+
 class DiscretePymooProblem(Problem):
     def __init__(
         self,
@@ -22,11 +50,14 @@ class DiscretePymooProblem(Problem):
         x0: np.ndarray,
         y0: np.ndarray,
         checkpoint_path: Path = None,
+        initialize_with_x0: bool = True,
         **kwargs,
     ):
         """
         TODO: Document
         """
+        self.black_box = black_box
+        self.black_box_for_minimization = -black_box
         self.x0 = x0
         self.y0 = y0
 
@@ -38,6 +69,8 @@ class DiscretePymooProblem(Problem):
             alphabet = list(alphabet.keys())
             assert isinstance(alphabet[0], str)
 
+        self.alphabet = alphabet
+
         sequence_length = x0.shape[1]
         variables = {f"x_{i}": Choice(options=alphabet) for i in range(sequence_length)}
 
@@ -47,7 +80,11 @@ class DiscretePymooProblem(Problem):
             pop = Population.new("X", X)
             pop.set("F", F)
         else:
-            pop = None
+            if initialize_with_x0:
+                pop = Population.new("X", x0)
+                pop.set("F", -y0)
+            else:
+                pop = None
 
         super().__init__(
             vars=variables,
@@ -55,19 +92,6 @@ class DiscretePymooProblem(Problem):
             sampling=pop,
             **kwargs,
         )
-        self.black_box = black_box
-
-    def _from_dict_to_array(self, x: List[dict]) -> np.ndarray:
-        """
-        Transforms a list of dicts {x_i: value}
-        to an array of shape [n, sequence_length]
-        """
-        if isinstance(x, dict):
-            new_x = np.array([x[f"x_{i}"] for i in range(len(x))])
-        else:
-            new_x = np.array([[x_[f"x_{i}"] for i in range(len(x_))] for x_ in x])
-
-        return new_x
 
     def _evaluate(self, x, out, *args, **kwargs):
         """
@@ -78,11 +102,11 @@ class DiscretePymooProblem(Problem):
         # and we assume that were evaluating a single x at a time.
         # TODO: is there a way to parallelize? To implement this,
         # using Problem instead of ElementwiseProblem might be necessary.
-        x = self._from_dict_to_array(x)
+        x = _from_dict_to_array(x)
         # x = np.array([x[f"x_{i}"] for i in range(len(x))]).reshape(1, -1)
 
         # The output is a [1, n] array, where n is the number of objectives
-        f = self.black_box(x, context=kwargs.get("context", None))
+        f = self.black_box_for_minimization(x, context=kwargs.get("context", None))
         out["F"] = f
 
     def save_checkpoint(self, saving_path: Path):
@@ -132,8 +156,9 @@ if __name__ == "__main__":
 
     # Since PyMoo is used to minimizing instead of maximizing (our convention),
     # we pass -f instead of f.
+    # UPDATE: we handle this inside the wrapper now.
     problem = DiscretePymooProblem(
-        black_box=-f,
+        black_box=f,
         x0=x_0_aloha,
         y0=y_0,
     )

@@ -5,7 +5,7 @@ import numpy as np
 from pymoo.core.sampling import Sampling
 
 
-class WildtypeMutationSampling(Sampling):
+class DiscreteSequenceSampling(Sampling):
     """
     TODO: document
     """
@@ -25,8 +25,8 @@ class WildtypeMutationSampling(Sampling):
 
     def _do(self, problem, n_samples, **kwargs):
         """
-        This mutation takes a random wildtype (i.e. a row
-        of self.x_0), and mutates it at a random place
+        This mutation takes a random discrete sequence (i.e. a
+        row of self.x_0), and mutates it at a random place
         self.num_mutations times.
 
         To comply with what pymoo expects for discrete
