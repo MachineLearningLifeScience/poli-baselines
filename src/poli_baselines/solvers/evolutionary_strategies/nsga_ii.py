@@ -7,7 +7,7 @@ a crowding distance to maintain diversity (TODO: fact-check and cite).
 We leverage the implementation inside pymoo, and our wrapper for discrete
 problems s.t. they can be used as pymoo Problems.
 """
-from typing import Tuple, Type
+from typing import Tuple
 
 import numpy as np
 
@@ -22,17 +22,12 @@ from pymoo.core.mixed import (
     MixedVariableMating,
     MixedVariableSampling,
 )
-from pymoo.core.variable import Choice
 
 from poli.core.abstract_black_box import AbstractBlackBox
 from poli_baselines.core.abstract_solver import AbstractSolver
 from poli_baselines.core.utils.pymoo.interface import DiscretePymooProblem
 from poli_baselines.core.utils.pymoo import (
-    DiscreteSequenceSampling,
-    DiscreteSequenceMating,
     DiscreteSequenceMutation,
-    NoMutation,
-    _from_dict_to_array,
     _from_array_to_dict,
 )
 
@@ -63,8 +58,8 @@ class Discrete_NSGA_II(AbstractSolver):
             initialize_with_x0=initialize_with_x0,
         )
 
-        # if mutation is None:
-        #     mutation = MixedVariableMutation()
+        if mutation is None:
+            mutation = DiscreteSequenceMutation()
 
         if sampling is None:
             sampling = MixedVariableSampling()

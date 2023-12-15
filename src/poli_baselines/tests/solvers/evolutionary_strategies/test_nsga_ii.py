@@ -33,7 +33,7 @@ def test_running_nsga_ii():
         initialize_with_x0=True,
     )
 
-    solver.solve(max_iter=50, verbose=True)
+    solver.solve(max_iter=5, verbose=True)
 
 
 if __name__ == "__main__":

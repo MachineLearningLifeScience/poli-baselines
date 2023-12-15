@@ -6,6 +6,7 @@ import json
 import numpy as np
 
 from poli.core.abstract_black_box import AbstractBlackBox
+from .utils.saving.json_encoders import NumpyToListEncoder
 
 
 class AbstractSolver:
@@ -110,6 +111,7 @@ class AbstractSolver:
             json.dump(
                 {"x": x_to_save, "y": y_to_save, "metadata": metadata},
                 fp,
+                cls=NumpyToListEncoder,
             )
 
     def get_best_solution(self) -> np.ndarray:
