@@ -1,0 +1,5 @@
+from .discrete_sequence_mating import DiscreteSequenceMating
+from .discrete_sequence_mutation import DiscreteSequenceMutation, NoMutation
+from .discrete_sequence_sampling import DiscreteSequenceSampling
+
+from .interface import _from_array_to_dict, _from_dict_to_array
