@@ -6,6 +6,7 @@ import json
 import numpy as np
 
 from poli.core.abstract_black_box import AbstractBlackBox
+from .utils.saving.json_encoders import NumpyToListEncoder
 
 
 class AbstractSolver:
@@ -110,11 +111,18 @@ class AbstractSolver:
             json.dump(
                 {"x": x_to_save, "y": y_to_save, "metadata": metadata},
                 fp,
+                cls=NumpyToListEncoder,
             )
 
     def get_best_solution(self) -> np.ndarray:
         """
         Returns the best solution found so far.
+
+        Returns:
+        --------
+        one_best_solution: np.ndarray
+            The best solution (or one of the best solutions)
+            found so far.
         """
         inputs = [x for x in self.history["x"]]
         outputs = [y for y in self.history["y"]]

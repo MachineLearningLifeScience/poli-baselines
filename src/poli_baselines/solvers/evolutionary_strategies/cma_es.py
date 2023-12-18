@@ -37,6 +37,8 @@ class CMA_ES(AbstractSolver):
         The initial solution vector.
     y0 : np.ndarray
         The initial objective function values corresponding to x0.
+    initial_mean : np.ndarray
+        The initial mean of the multivariate normal distribution.
     initial_sigma : float, optional
         The initial step size for the CMA-ES algorithm. Default is 1.0.
     population_size : int, optional

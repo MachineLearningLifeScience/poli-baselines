@@ -17,8 +17,12 @@ from pymoo.core.population import Population
 from poli import objective_factory
 
 from poli_baselines.core.utils.pymoo.interface import DiscretePymooProblem
-from poli_baselines.core.utils.pymoo.wildtype_sampling import WildtypeMutationSampling
-from poli_baselines.core.utils.pymoo.wildtype_mating import WildtypeMating
+from poli_baselines.core.utils.pymoo.discrete_sequence_sampling import (
+    DiscreteSequenceSampling,
+)
+from poli_baselines.core.utils.pymoo.discrete_sequence_mating import (
+    DiscreteSequenceMating,
+)
 from poli_baselines.core.utils.pymoo.save_history import (
     _from_dict_to_list,
     _from_list_to_dict,
@@ -112,14 +116,14 @@ if __name__ == "__main__":
         F = np.array(history["y"])
         sampling = Population.new("X", X, "F", F)
     else:
-        sampling = WildtypeMutationSampling(
+        sampling = DiscreteSequenceSampling(
             x_0=x0, alphabet=problem_info.alphabet, num_mutations=5
         )
 
     method = NSGA2(
         pop_size=population_size,
         sampling=sampling,
-        mating=WildtypeMating(num_mutations=4),
+        mating=DiscreteSequenceMating(num_mutations=4),
         eliminate_duplicates=MixedVariableDuplicateElimination(),
     )
 
