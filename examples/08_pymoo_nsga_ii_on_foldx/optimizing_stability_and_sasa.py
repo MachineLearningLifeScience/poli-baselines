@@ -101,8 +101,10 @@ if __name__ == "__main__":
         name="foldx_stability_and_sasa", wildtype_pdb_path=path_to_wildtype
     )
 
-    # Since PyMoo is used to minimizing instead of maximizing (our convention),
-    # we pass -f instead of f.
+    # The DiscretePymooProblem class is a wrapper around the black box
+    # function that allows us to use it with pymoo. It takes care of
+    # converting the inputs and outputs to the right format, and of
+    # the fact that pymoo expects minimization instead of maximization.
     problem = DiscretePymooProblem(
         black_box=f_stability_and_sasa,
         x0=x_0,

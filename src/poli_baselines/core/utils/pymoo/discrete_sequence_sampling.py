@@ -7,14 +7,53 @@ from pymoo.core.sampling import Sampling
 
 class DiscreteSequenceSampling(Sampling):
     """
-    TODO: document
+    A class for generating mutations of discrete sequences.
+
+    Parameters
+    ----------
+    x_0 : np.ndarray
+        The initial set of discrete sequences.
+    alphabet : List[str]
+        The list of possible elements in the sequences.
+    num_mutations : int, optional
+        The number of mutations to apply to each sequence. Default is 1.
+
+    Attributes
+    ----------
+    x_0 : np.ndarray
+        The initial set of discrete sequences.
+    num_mutations : int
+        The number of mutations to apply to each sequence.
+    alphabet : List[str]
+        The list of possible elements in the sequences.
+
+    Methods
+    -------
+    _do(problem, n_samples, **kwargs)
+        Generates mutated sequences based on the initial set of sequences.
+
+    Notes
+    -----
+    This class is designed to work with pymoo's discrete (choice) problems.
+    The output of the `_do` method is a list of dictionaries, where each dictionary
+    represents a mutated sequence and has keys "x_0", "x_1", etc., and values that
+    are elements of the alphabet.
     """
 
     def __init__(
         self, x_0: np.ndarray, alphabet: List[str], num_mutations: int = 1
     ) -> None:
         """
-        TODO: document
+        Initialize the DiscreteSequenceSampling class.
+
+        Parameters
+        ----------
+        x_0 : np.ndarray
+            The initial set of discrete sequences.
+        alphabet : List[str]
+            The list of possible elements in the sequences.
+        num_mutations : int, optional
+            The number of mutations to apply to each sequence. Default is 1.
         """
         # We assume a shape [b, L], where some of the rows
         # have been padded with empty strings.

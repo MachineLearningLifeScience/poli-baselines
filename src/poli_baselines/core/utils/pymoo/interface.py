@@ -40,10 +40,42 @@ def _from_array_to_dict(x: np.ndarray) -> List[dict]:
 
     return dicts
 
-    ...
-
 
 class DiscretePymooProblem(Problem):
+    """
+    A class representing a discrete optimization problem using the Pymoo library.
+
+    Parameters:
+    -----------
+    black_box : MultiObjectiveBlackBox
+        The black box function to be optimized.
+    x0 : np.ndarray
+        The initial population of solutions.
+    y0 : np.ndarray
+        The corresponding objective values for the initial population.
+    checkpoint_path : Path, optional
+        The path to the checkpoint file for saving and loading the population.
+    initialize_with_x0 : bool, optional
+        Whether to initialize the population with the provided x0 and y0.
+    **kwargs : dict
+        Additional keyword arguments to be passed to the base class.
+
+    Attributes:
+    -----------
+    black_box : MultiObjectiveBlackBox
+        The black box function to be optimized.
+    black_box_for_minimization : MultiObjectiveBlackBox
+        The black box function for minimization (negative of the original black box function).
+    x0 : np.ndarray
+        The initial population of solutions.
+    y0 : np.ndarray
+        The corresponding objective values for the initial population.
+    alphabet : List[str]
+        The list of possible choices for each variable.
+    checkpoint_path : Path or None
+        The path to the checkpoint file for saving and loading the population.
+    """
+
     def __init__(
         self,
         black_box: MultiObjectiveBlackBox,
@@ -54,7 +86,22 @@ class DiscretePymooProblem(Problem):
         **kwargs,
     ):
         """
-        TODO: Document
+        Initializes a DiscretePymooProblem instance.
+
+        Parameters:
+        -----------
+        black_box : MultiObjectiveBlackBox
+            The black box function to be optimized.
+        x0 : np.ndarray
+            The initial population of solutions.
+        y0 : np.ndarray
+            The corresponding objective values for the initial population.
+        checkpoint_path : Path, optional
+            The path to the checkpoint file for saving and loading the population.
+        initialize_with_x0 : bool, optional
+            Whether to initialize the population with the provided x0 and y0.
+        **kwargs : dict
+            Additional keyword arguments to be passed to the base class.
         """
         self.black_box = black_box
         self.black_box_for_minimization = -black_box
@@ -100,16 +147,21 @@ class DiscretePymooProblem(Problem):
         """
         # At this point, x is a dictionary with keys "x_0", "x_1", etc.
         # and we assume that were evaluating a single x at a time.
-        # TODO: is there a way to parallelize? To implement this,
-        # using Problem instead of ElementwiseProblem might be necessary.
         x = _from_dict_to_array(x)
-        # x = np.array([x[f"x_{i}"] for i in range(len(x))]).reshape(1, -1)
 
         # The output is a [1, n] array, where n is the number of objectives
         f = self.black_box_for_minimization(x, context=kwargs.get("context", None))
         out["F"] = f
 
     def save_checkpoint(self, saving_path: Path):
+        """
+        Saves the current population to a checkpoint file (using pickle).
+
+        Parameters:
+        -----------
+        saving_path : Path
+            The path to the checkpoint file.
+        """
         X = self.pop.get("X")
         F = self.pop.get("F")
 
@@ -117,79 +169,17 @@ class DiscretePymooProblem(Problem):
             pickle.dump((X, F), fp)
 
     def _load_checkpoint(self) -> Tuple[dict, list]:
+        """
+        Loads the current population from a checkpoint file (using pickle).
+
+        Returns:
+        --------
+        X : dict
+            The current population.
+        F : list
+            The corresponding objective values.
+        """
         with open(self.checkpoint_path, "rb") as fp:
             X, F = pickle.load(fp)
 
         return X, F
-
-
-if __name__ == "__main__":
-    """
-    The following is an example of how to register and use
-    this DiscretePymooProblem using poli's objective functions.
-    """
-    from poli import objective_factory
-    from poli.core.multi_objective_black_box import MultiObjectiveBlackBox
-
-    from pymoo.algorithms.moo.nsga2 import NSGA2
-    from pymoo.operators.crossover.sbx import SBX
-    from pymoo.operators.mutation.pm import PM
-    from pymoo.operators.repair.rounding import RoundingRepair
-    from pymoo.operators.sampling.rnd import IntegerRandomSampling
-    from pymoo.optimize import minimize
-    from pymoo.core.mixed import (
-        MixedVariableMating,
-        MixedVariableSampling,
-        MixedVariableDuplicateElimination,
-    )
-
-    # Creating e.g. the aloha problem. We require that the black
-    # box objective function takes integers as inputs.
-    problem_info, f_aloha, x_0_aloha, _, _ = objective_factory.create(name="aloha")
-
-    # Creating a multi-objective black box using two copies
-    # of aloha
-    f = MultiObjectiveBlackBox(
-        info=problem_info, objective_functions=[f_aloha, f_aloha]
-    )
-    y_0 = f(x_0_aloha)
-
-    # Since PyMoo is used to minimizing instead of maximizing (our convention),
-    # we pass -f instead of f.
-    # UPDATE: we handle this inside the wrapper now.
-    problem = DiscretePymooProblem(
-        black_box=f,
-        x0=x_0_aloha,
-        y0=y_0,
-    )
-
-    # Now we can use PyMoo's NSGA-II to solve the problem.
-    # The cross-over and mutation are defined in such a way
-    # that they manipulate integers instead of floats.
-    # See e.g. https://pymoo.org/customization/discrete.html
-    method = NSGA2(
-        pop_size=100,
-        sampling=MixedVariableSampling(),
-        mating=MixedVariableMating(
-            eliminate_duplicates=MixedVariableDuplicateElimination()
-        ),
-        eliminate_duplicates=MixedVariableDuplicateElimination(),
-    )
-
-    # Now we can minimize the problem
-    res = minimize(
-        problem,
-        method,
-        termination=("n_gen", 50),
-        seed=1,
-        save_history=True,
-        verbose=True,
-    )
-
-    # And print the results
-    best_solution = res.X[0]
-    best_solution_as_string = "".join(
-        [best_solution[f"x_{i}"] for i in range(len(best_solution))]
-    )
-    print(f"Best solution found: {res.X} ({best_solution_as_string})")
-    print(f"Function value: {res.F}")
