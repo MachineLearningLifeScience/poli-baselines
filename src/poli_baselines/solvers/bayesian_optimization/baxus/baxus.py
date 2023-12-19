@@ -276,8 +276,7 @@ class BAxUS(BaseBayesianOptimization):
         Y = torch.from_numpy(Y).float()
 
         # Scale the TR to be proportional to the lengthscales
-        x_center = self.get_best_solution()
-        x_center = torch.from_numpy(x_center).float()
+        x_center = X[Y.argmax(), :].clone()
         weights = self.gp_model.covar_module.base_kernel.lengthscale.detach().view(-1)
         weights = weights / weights.mean()
         weights = weights / torch.prod(weights.pow(1.0 / len(weights)))
