@@ -1,11 +1,18 @@
-"""This module implements 'Bayesian Optimization with adaptively expanding subspaces' (BAXUS) [1].
+"""This module implements 'Bayesian Optimization with adaptively expanding subspaces' (BAxUS).
+
+BAxUS (Bayesian Optimization with adaptively expanding subspaces) [1] is a
+Bayesian optimization algorithm that considers a sequence of nested subspaces
+of the input space, and adaptively expands the subspace dimension as the
+algorithm progresses. The algorithm starts with a random embedding matrix,
+and updates it (alongside the observations) as the algorithm progresses.
 
 This implementation is based on the tutorial provided inside BoTorch [2].
 
 References
 ----------
-[1] Increasing the scope as you learn: adaptive Bayesian
-    Optimization in Nested Subspaces (TODO: complete).
+[1] Papenmeier, Leonard, Luigi Nardi, and Matthias Poloczek. “Increasing the
+    Scope as You Learn: Adaptive Bayesian Optimization in Nested Subspaces,”
+    2022. https://openreview.net/forum?id=e4Wf6112DI.
 [2] https://botorch.org/tutorials/baxus
 """
 
@@ -14,6 +21,7 @@ from typing import Tuple, Type, Union
 import torch
 import numpy as np
 
+import gpytorch
 from gpytorch.kernels import Kernel
 from gpytorch.means import Mean
 from gpytorch.constraints import Interval
@@ -21,8 +29,11 @@ from gpytorch.kernels import MaternKernel, ScaleKernel
 from gpytorch.likelihoods import GaussianLikelihood
 from gpytorch.mlls import ExactMarginalLogLikelihood
 
+
 from botorch.acquisition import AcquisitionFunction, ExpectedImprovement
 from botorch.models import SingleTaskGP
+from botorch.fit import fit_gpytorch_mll
+from botorch.exceptions import ModelFittingError
 
 from poli.core.abstract_black_box import AbstractBlackBox
 
@@ -31,8 +42,109 @@ from poli_baselines.solvers.bayesian_optimization.base_bayesian_optimization imp
     BaseBayesianOptimization,
 )
 
+MAX_CHOLESKY_SIZE = float("inf")
+
 
 class BAxUS(BaseBayesianOptimization):
+    """Implements 'Bayesian Optimization with adaptively expanding subspaces' (BAxUS).
+
+    BAxUS (Bayesian Optimization in Adaptive Subspaces) [1] is a class
+    that implements the BAxUS algorithm for Bayesian optimization in
+    nested subspaces.
+
+    This implementation is based on the tutorial provided inside BoTorch [2].
+
+    Parameters
+    ----------
+    black_box : AbstractBlackBox
+        The black box function to be optimized.
+    x0 : np.ndarray
+        The initial input points for the optimization.
+    y0 : np.ndarray
+        The corresponding function values for the initial input points.
+    mean : Mean, optional
+        The mean function of the Gaussian process model. Default is None.
+    kernel : Kernel, optional
+        The kernel function of the Gaussian process model. Default is None.
+    acq_function : Type[AcquisitionFunction], optional
+        The type of acquisition function to be used. Default is ThompsonSampling.
+    bounds : Tuple[float, float], optional
+        The lower and upper bounds of the input space. Default is (-2.0, 2.0).
+    penalize_nans_with : float, optional
+        The value to penalize NaN function values with. Default is -10.
+    initial_subspace_dimension : int, optional
+        The initial dimension of the subspace. Default is 2.
+    n_new_bins_per_dimension : int, optional
+        The number of new bins to split each dimension into. Default is 3.
+    initial_trust_region_length : float, optional
+        The initial length of the trust region. Default is 0.8.
+    success_tolerance : int, optional
+        The tolerance for the success counter. Default is 3.
+    failure_tolerance : int, optional
+        The tolerance for the failure counter. Default is 3.
+    trust_region_min_length : float, optional
+        The minimum length of the trust region. Default is 0.5**7.
+    trust_region_max_length : float, optional
+        The maximum length of the trust region. Default is 1.6.
+    n_candidates_for_acquisition : int, optional
+        The number of candidates to be used for the acquisition function. Default is 100.
+
+    Attributes
+    ----------
+    gp_model : SingleTaskGP
+        The Gaussian process model.
+    initial_trust_region_length : float
+        The initial length of the trust region.
+    trust_region_length : float
+        The current length of the trust region.
+    trust_region_min_length : float
+        The minimum length of the trust region.
+    trust_region_max_length : float
+        The maximum length of the trust region.
+    input_dimension : int
+        The dimension of the input space.
+    subspace_dimension : int
+        The current dimension of the subspace.
+    n_new_bins_per_dimension : int
+        The number of new bins to split each dimension into.
+    embedding_matrix : np.ndarray
+        The embedding matrix that maps the input space to the subspace.
+    history : dict
+        The history of observations in the subspace.
+    original_observations : list
+        The observations in the original input space.
+    success_counter : int
+        The counter for successful iterations.
+    failure_counter : int
+        The counter for failed iterations.
+    success_tolerance : int
+        The tolerance for the success counter.
+    failure_tolerance : int
+        The tolerance for the failure counter.
+    n_candidates_for_acquisition : int
+        The number of candidates to be used for the acquisition function.
+
+    Methods
+    -------
+    _compute_trust_region() -> Tuple[np.ndarray, np.ndarray]
+        Computes the lower and upper bounds of the trust region.
+    _optimize_acquisition_function(acquisition_function: Union[ThompsonSampling, ExpectedImprovement]) -> np.ndarray
+        Optimizes the acquisition function.
+    _instantiate_acquisition_function(model: SingleTaskGP) -> Union[ThompsonSampling, ExpectedImprovement]
+        Instantiates the acquisition function based on the given model.
+    _compute_random_embedding_matrix(input_dim: int, subspace_dim: int) -> np.ndarray
+        Computes an initial random embedding matrix.
+    _expand_embedding_matrix_and_observations() -> Tuple[np.ndarray, np.ndarray]
+        Expands the embedding matrix and the current observations.
+
+    References
+    ----------
+    [1] Papenmeier, Leonard, Luigi Nardi, and Matthias Poloczek. “Increasing the
+        Scope as You Learn: Adaptive Bayesian Optimization in Nested Subspaces,”
+        2022. https://openreview.net/forum?id=e4Wf6112DI.
+    [2] https://botorch.org/tutorials/baxus
+    """
+
     def __init__(
         self,
         black_box: AbstractBlackBox,
@@ -50,7 +162,46 @@ class BAxUS(BaseBayesianOptimization):
         failure_tolerance: int = 3,
         trust_region_min_length: float = 0.5**7,
         trust_region_max_length: float = 1.6,
+        n_candidates_for_acquisition: int = 100,
     ):
+        """
+        Initialize the BAxUS solver.
+
+        Parameters:
+        ----------
+        black_box : AbstractBlackBox
+            The black box function to be optimized.
+        x0 : np.ndarray
+            The initial input points for the optimization.
+        y0 : np.ndarray
+            The corresponding function values for the initial input points.
+        mean : Mean, optional
+            The mean function of the Gaussian process model. Default is None.
+        kernel : Kernel, optional
+            The kernel function of the Gaussian process model. Default is None.
+        acq_function : Type[AcquisitionFunction], optional
+            The type of acquisition function to be used. Default is ThompsonSampling.
+        bounds : Tuple[float, float], optional
+            The lower and upper bounds of the input space. Default is (-2.0, 2.0).
+        penalize_nans_with : float, optional
+            The value to penalize NaN function values with. Default is -10.
+        initial_subspace_dimension : int, optional
+            The initial dimension of the subspace. Default is 2.
+        n_new_bins_per_dimension : int, optional
+            The number of new bins to split each dimension into. Default is 3.
+        initial_trust_region_length : float, optional
+            The initial length of the trust region. Default is 0.8.
+        success_tolerance : int, optional
+            The tolerance for the success counter. Default is 3.
+        failure_tolerance : int, optional
+            The tolerance for the failure counter. Default is 3.
+        trust_region_min_length : float, optional
+            The minimum length of the trust region. Default is 0.5**7.
+        trust_region_max_length : float, optional
+            The maximum length of the trust region. Default is 1.6.
+        n_candidates_for_acquisition : int, optional
+            The number of candidates to be used for the acquisition function. Default is 100.
+        """
         super().__init__(
             black_box=black_box,
             x0=x0,
@@ -90,8 +241,9 @@ class BAxUS(BaseBayesianOptimization):
         self.history["x"] = [z0]
 
         # These observations will be conserved with the original dimension
-        # in which they were evaluated. history["x"], on the other hand, will
-        # have its dimensions augmented to match the subspace dimension.
+        # in which they were evaluated. history["x"], on the other hand,
+        # will have its dimensions augmented to match the subspace
+        # dimension.
         self.original_observations = [z0]
 
         # These will hold the success and failure counters, which
@@ -100,8 +252,13 @@ class BAxUS(BaseBayesianOptimization):
         self.failure_counter = 0
 
         # We also include a tolerance for the success and failure counters.
+        # TODO: Ideally, we would be including the adaptive failure
+        # tolerance described in Sec. 3.4. of the BAxUS paper.
         self.success_tolerance = success_tolerance
         self.failure_tolerance = failure_tolerance
+
+        # The number of candidates to be used for the acquisition function.
+        self.n_candidates_for_acquisition = n_candidates_for_acquisition
 
     def _compute_trust_region(self) -> Tuple[np.ndarray, np.ndarray]:
         """Computes the lower and upper bounds of the trust region.
@@ -124,16 +281,36 @@ class BAxUS(BaseBayesianOptimization):
         weights = self.gp_model.covar_module.base_kernel.lengthscale.detach().view(-1)
         weights = weights / weights.mean()
         weights = weights / torch.prod(weights.pow(1.0 / len(weights)))
+
+        # We compute the trust regions, and clamp them to the bounds.
         tr_lb = torch.clamp(x_center - weights * self.trust_region_length, *self.bounds)
         tr_ub = torch.clamp(x_center + weights * self.trust_region_length, *self.bounds)
 
         return tr_lb, tr_ub
 
     def _optimize_acquisition_function(
-        self, acquisition_function: ThompsonSampling
+        self, acquisition_function: Union[ThompsonSampling, ExpectedImprovement]
     ) -> np.ndarray:
+        """Optimizes the acquisition function.
+
+        This implementation is based on the function "create_candidate" in [1].
+
+        Parameters
+        ----------
+        acquisition_function : Union[ThompsonSampling, ExpectedImprovement]
+            Acquisition function to be optimized.
+
+        Returns
+        -------
+        candidate : np.ndarray
+            Next candidate.
+
+        References
+        ----------
+        [1] https://botorch.org/tutorials/baxus
+        """
         if isinstance(acquisition_function, ThompsonSampling):
-            return acquisition_function(self.subspace_dimension)
+            return acquisition_function(self.subspace_dimension).numpy(force=True)
         elif isinstance(acquisition_function, ExpectedImprovement):
             trust_region_bounds = self._compute_trust_region()
             return super()._optimize_acquisition_function(
@@ -146,11 +323,27 @@ class BAxUS(BaseBayesianOptimization):
 
     def _instantiate_acquisition_function(
         self, model: SingleTaskGP
-    ) -> Union[Type[ThompsonSampling], Type[ExpectedImprovement]]:
+    ) -> Union[ThompsonSampling, ExpectedImprovement]:
+        """
+        Instantiate the acquisition function based on the given model.
+
+        Parameters:
+        ----------
+            model (SingleTaskGP): The Gaussian process model.
+
+        Returns:
+        --------
+            Union[ThompsonSampling, ExpectedImprovement]: The instantiated acquisition function.
+
+        Raises:
+        -------
+            NotImplementedError: If the acquisition function is neither ThompsonSampling nor ExpectedImprovement.
+        """
         if self.acq_function == ThompsonSampling:
-            # TODO: modify n_candidates here.
             thomspon_sampling_acq_function = self.acq_function(
-                model=model, trust_region=self._compute_trust_region(), n_candidates=100
+                model=model,
+                trust_region=self._compute_trust_region(),
+                n_candidates=self.n_candidates_for_acquisition,
             )
             return thomspon_sampling_acq_function
         elif self.acq_function == ExpectedImprovement:
@@ -185,8 +378,10 @@ class BAxUS(BaseBayesianOptimization):
 
         References
         ----------
-        [1] Increasing the scope as you learn: adaptive Bayesian
-            Optimization in Nested Subspaces (TODO: complete).
+        [1] Papenmeier, Leonard, Luigi Nardi, and Matthias Poloczek. “Increasing the
+            Scope as You Learn: Adaptive Bayesian Optimization in Nested Subspaces,”
+            2022. https://openreview.net/forum?id=e4Wf6112DI.
+
         [2] https://botorch.org/tutorials/baxus
         """
         if (
@@ -265,8 +460,9 @@ class BAxUS(BaseBayesianOptimization):
 
         References
         ----------
-        [1] Increasing the scope as you learn: adaptive Bayesian
-            Optimization in Nested Subspaces (TODO: complete).
+        [1] Papenmeier, Leonard, Luigi Nardi, and Matthias Poloczek. “Increasing the
+            Scope as You Learn: Adaptive Bayesian Optimization in Nested Subspaces,”
+            2022. https://openreview.net/forum?id=e4Wf6112DI.
         [2] https://botorch.org/tutorials/baxus
         """
         current_observations, _ = self.get_history_as_arrays()
@@ -294,10 +490,6 @@ class BAxUS(BaseBayesianOptimization):
             # Step 2: Split the current bin in the row into {n_new_bins} new bins,
             # and keep approximately half of them (to encourage balance between
             # the number of dimensions in each bin).
-            n_row_bins = min(
-                n_new_bins, len(non_zero_elements)
-            )  # number of new bins is always less or equal than the contributing input dims in the row minus one
-
             new_bins = np.array_split(non_zero_elements, n_new_bins)[
                 n_new_bins // 2 :
             ]  # the dims in the first bin won't be moved
@@ -327,12 +519,12 @@ class BAxUS(BaseBayesianOptimization):
                 (embedding_matrix_update, new_submatrix)
             )
 
-        # TODO: adapt these in-place, as well as the current embedding dim.
+        # Update the embedding matrix and the observations.
         self.embedding_matrix = embedding_matrix_update
         self.history["x"] = [arr.reshape(1, -1) for arr in observations_update]
         self.subspace_dimension = len(self.embedding_matrix)
 
-        # Check if the current subspace dimensions is equal to
+        # Check if the current subspace dimensions is >= to
         # the input dimension. If so, then we should be replacing
         # the embedding matrix with the identity matrix.
         if self.subspace_dimension >= self.input_dimension:
@@ -352,33 +544,70 @@ class BAxUS(BaseBayesianOptimization):
     def _fit_model(
         self, model: type[SingleTaskGP], x: np.ndarray, y: np.ndarray
     ) -> SingleTaskGP:
+        """Fits a single-task Gaussian Process to the data.
+
+        This implementation is based on the optimization loop of the BAxUS
+        tutorial of BoTorch [2].
+
+        The default Gaussian Process used is a SingleTaskGP with a Matern kernel
+        and a Gaussian likelihood. The Matern kernel has a fixed nu=2.5, and
+        the lengthscale is constrained to be between 0.005 and 10. The outputscale
+        is constrained to be between 0.05 and 10. The noise is constrained to be
+        between 1e-8 and 1e-3. These constraints are, according to the authors of
+        the tutorial, taken from the TuRBO paper [3].
+
+        Parameters
+        ----------
+        model : type[SingleTaskGP]
+            Type of the model to be fitted.
+        x : np.ndarray
+            Input data.
+        y : np.ndarray
+            Output data.
+
+        Returns
+        -------
+        model : SingleTaskGP
+            Fitted model.
+
+        References
+        ----------
+        [1] Papenmeier, Leonard, Luigi Nardi, and Matthias Poloczek. “Increasing the
+            Scope as You Learn: Adaptive Bayesian Optimization in Nested Subspaces,”
+            2022. https://openreview.net/forum?id=e4Wf6112DI.
+        [2] https://botorch.org/tutorials/baxus
+        [3] Eriksson, David, et al. “Scalable Global Optimization via Local Bayesian
+            Optimization.” Advances in Neural Information Processing Systems, vol. 32,
+            2019.
+        """
         # Mapping to torch
         x = torch.from_numpy(x).float()
         y = torch.from_numpy(y).float()
 
         # Defining the model and the likelihood
         likelihood = GaussianLikelihood(noise_constraint=Interval(1e-8, 1e-3))
-        covar_module = (
-            ScaleKernel(  # Use the same lengthscale prior as in the TuRBO paper
-                MaternKernel(
-                    nu=2.5,
-                    ard_num_dims=self.subspace_dimension,
-                    lengthscale_constraint=Interval(0.005, 10),
-                ),
-                outputscale_constraint=Interval(0.05, 10),
+        if self.kernel is None:
+            kernel = (
+                ScaleKernel(  # Use the same lengthscale prior as in the TuRBO paper
+                    MaternKernel(
+                        nu=2.5,
+                        ard_num_dims=self.subspace_dimension,
+                        lengthscale_constraint=Interval(0.005, 10),
+                    ),
+                    outputscale_constraint=Interval(0.05, 10),
+                )
             )
+        else:
+            kernel = self.kernel
+
+        # The following code is taken verbatim from the BAxUS tutorial of BoTorch [2].
+        model = SingleTaskGP(
+            x, y, mean_module=self.mean, covar_module=kernel, likelihood=likelihood
         )
-        model = SingleTaskGP(x, y, covar_module=covar_module, likelihood=likelihood)
         mll = ExactMarginalLogLikelihood(model.likelihood, model)
 
         # Do the fitting and acquisition function optimization inside the Cholesky context
-        import gpytorch
-
-        max_cholesky_size = float("inf")
-        from botorch.fit import fit_gpytorch_mll
-        from botorch.exceptions import ModelFittingError
-
-        with gpytorch.settings.max_cholesky_size(max_cholesky_size):
+        with gpytorch.settings.max_cholesky_size(MAX_CHOLESKY_SIZE):
             # Fit the model
             try:
                 fit_gpytorch_mll(mll)
@@ -400,8 +629,32 @@ class BAxUS(BaseBayesianOptimization):
         return model
 
     def post_update(self, x: np.ndarray, y: np.ndarray) -> None:
+        """Updates the BAxUS state after a new observation.
+
+        Adapting the original implementation in the BAxUS tutorial of BoTorch [1],
+        we update the trust region after each observation, and we also update the
+        embedding matrix and the observations if the trust region falls below a
+        certain threshold (as per the usual TuRBO update rules, see [2]).
+
+        Parameters
+        ----------
+        x : np.ndarray
+            input point.
+        y : np.ndarray
+            output objective value for x.
+
+        References
+        ----------
+        [1] https://botorch.org/tutorials/baxus
+        [2] Eriksson, David, et al. “Scalable Global Optimization via Local Bayesian
+            Optimization.” Advances in Neural Information Processing Systems, vol. 32,
+            2019.
+        """
         self.original_observations.append(x)
 
+        # This code is mostly taken verbatim from the BAxUS tutorial of BoTorch [1].
+        # It has been adapted to work with the current implementation of the
+        # BAxUS algorithm.
         previous_best_value = self.get_best_performance(until=-1)
         if max(y) > previous_best_value + 1e-3 * (previous_best_value):
             self.success_counter += 1
@@ -424,7 +677,12 @@ class BAxUS(BaseBayesianOptimization):
             self._reset_trust_region()
 
     def _reset_trust_region(self) -> None:
-        """Resets the trust region to its initial value."""
+        """Resets the trust region to its initial value.
+
+        This method is called when the trust region falls below a certain threshold,
+        and it resets the trust region to its initial value. It also updates the
+        success and failure counters.
+        """
         self.trust_region_length = self.initial_trust_region_length
         self.failure_counter = 0
         self.success_counter = 0
@@ -466,7 +724,4 @@ class BAxUS(BaseBayesianOptimization):
 
         # The update state is handled by post_update, which will run automatically
         # as part of the abstract step method.
-        return candidate.numpy(force=True)
-
-    def step(self) -> Tuple[np.ndarray, np.ndarray]:
-        return super().step()
+        return candidate

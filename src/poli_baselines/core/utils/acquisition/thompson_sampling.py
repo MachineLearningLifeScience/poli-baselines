@@ -10,15 +10,55 @@ from botorch.acquisition import AcquisitionFunction
 from botorch.models.model import Model
 
 
-# TODO: This shouldn't inherit from acquisition function,
-# because it's a completely different interface.
 class ThompsonSampling(AcquisitionFunction):
+    """Thompson Sampling acquisition function.
+
+    This acquisition function is used to implement Thompson Sampling
+    as an acquisition function inside BoTorch. It is used to sample
+    the next point to evaluate in the trust region.
+
+    This implementation adapts the code from the "create_candidate"
+    function in the BoTorch tutorial on BAxUS [1].
+
+    Parameters
+    ----------
+    model : Model
+        The model to use for the acquisition function.
+    trust_region : Tuple[torch.Tensor, torch.Tensor]
+        The trust region to sample from.
+    n_candidates : int, optional
+        The number of candidates to sample from the trust region.
+        Defaults to 100.
+
+    References
+    ----------
+    [1] https://botorch.org/tutorials/baxus
+
+    Notes
+    -----
+    - Even though we inherit from AcquisitionFunction, the
+      "forward" method is slightly different: it takes as input
+      the dimensionality of the problem.
+    """
+
     def __init__(
         self,
         model: Model,
         trust_region: Tuple[torch.Tensor, torch.Tensor],
         n_candidates: int = 100,
     ) -> None:
+        """Initializes the Thompson Sampling acquisition function.
+
+        Parameters
+        ----------
+        model : Model
+            The model to use for the acquisition function.
+        trust_region : Tuple[torch.Tensor, torch.Tensor]
+            The trust region to sample from.
+        n_candidates : int, optional
+            The number of candidates to sample from the trust region.
+            Defaults to 100.
+        """
         super().__init__(model)
         self.n_candidates = n_candidates
         self.trust_region = trust_region
@@ -28,9 +68,19 @@ class ThompsonSampling(AcquisitionFunction):
         return (tr_lb + tr_ub) / 2.0
 
     def forward(self, dim: int) -> torch.Tensor:
-        """TODO: document.
+        """Computes the next point to evaluate using Thompson Sampling.
 
-        This implementation is taken from the BoTorch tutorial on BAxUS.
+        This implementation is taken from the "create_candidate" function
+        in the BoTorch tutorial on BAxUS [1].
+
+        Parameters
+        ----------
+        dim : int
+            The dimensionality of the problem.
+
+        References
+        ----------
+        [1] https://botorch.org/tutorials/baxus
         """
         tr_lb, tr_ub = self.trust_region
 
