@@ -16,6 +16,10 @@ import numpy as np
 
 from gpytorch.kernels import Kernel
 from gpytorch.means import Mean
+from gpytorch.constraints import Interval
+from gpytorch.kernels import MaternKernel, ScaleKernel
+from gpytorch.likelihoods import GaussianLikelihood
+from gpytorch.mlls import ExactMarginalLogLikelihood
 
 from botorch.acquisition import AcquisitionFunction, ExpectedImprovement
 from botorch.models import SingleTaskGP
@@ -40,7 +44,12 @@ class BAxUS(BaseBayesianOptimization):
         bounds: Tuple[float, float] = (-2.0, 2.0),
         penalize_nans_with: float = -10,
         initial_subspace_dimension: int = 2,
-        n_new_bins_per_dimension: int = 1,
+        n_new_bins_per_dimension: int = 3,
+        initial_trust_region_length: float = 0.8,
+        success_tolerance: int = 3,
+        failure_tolerance: int = 3,
+        trust_region_min_length: float = 0.5**7,
+        trust_region_max_length: float = 1.6,
     ):
         super().__init__(
             black_box=black_box,
@@ -53,12 +62,46 @@ class BAxUS(BaseBayesianOptimization):
             penalize_nans_with=penalize_nans_with,
         )
 
-        self.current_gp_model = None
-        self.current_trust_region_length = None
-        self.current_embedding_matrix = None
-        self.current_observations = None
-        self.current_subspace_dimension = initial_subspace_dimension
+        # These will hold the model and the trust region's length.
+        self.gp_model = None
+
+        # These will hold the initial and current trust region lengths.
+        # The trust region length will be updated adaptively, and will
+        # eventually be re-set to the initial value if it falls too low.
+        self.initial_trust_region_length = initial_trust_region_length
+        self.trust_region_length = initial_trust_region_length
+        self.trust_region_min_length = trust_region_min_length
+        self.trust_region_max_length = trust_region_max_length
+
+        # These will hold the subspace dimension and the number of new bins per dimension.
+        self.input_dimension = x0.shape[1]
+        self.subspace_dimension = initial_subspace_dimension
         self.n_new_bins_per_dimension = n_new_bins_per_dimension
+
+        # As part of the init, we should be projecting the given x0 into
+        # the subspace by multiplying it by the embedding matrix.
+        # In other words, we should be overwriting the history, and keeping
+        # track of the observations in the subspace.
+        self.embedding_matrix = self._compute_random_embedding_matrix(
+            input_dim=x0.shape[1],
+            subspace_dim=initial_subspace_dimension,
+        )
+        z0 = x0 @ self.embedding_matrix.T
+        self.history["x"] = [z0]
+
+        # These observations will be conserved with the original dimension
+        # in which they were evaluated. history["x"], on the other hand, will
+        # have its dimensions augmented to match the subspace dimension.
+        self.original_observations = [z0]
+
+        # These will hold the success and failure counters, which
+        # will be used to adaptively expand or shrink the trust region.
+        self.success_counter = 0
+        self.failure_counter = 0
+
+        # We also include a tolerance for the success and failure counters.
+        self.success_tolerance = success_tolerance
+        self.failure_tolerance = failure_tolerance
 
     def _compute_trust_region(self) -> Tuple[np.ndarray, np.ndarray]:
         """Computes the lower and upper bounds of the trust region.
@@ -71,19 +114,18 @@ class BAxUS(BaseBayesianOptimization):
         """
         X, Y = self.get_history_as_arrays()
 
+        # Transform these to torch
+        X = torch.from_numpy(X).float()
+        Y = torch.from_numpy(Y).float()
+
         # Scale the TR to be proportional to the lengthscales
-        x_center = X[Y.argmax(), :].clone()
-        weights = (
-            self.current_gp_model.covar_module.base_kernel.lengthscale.detach().view(-1)
-        )
+        x_center = self.get_best_solution()
+        x_center = torch.from_numpy(x_center).float()
+        weights = self.gp_model.covar_module.base_kernel.lengthscale.detach().view(-1)
         weights = weights / weights.mean()
         weights = weights / torch.prod(weights.pow(1.0 / len(weights)))
-        tr_lb = torch.clamp(
-            x_center - weights * self.current_trust_region_length, *self.bounds
-        )
-        tr_ub = torch.clamp(
-            x_center + weights * self.current_trust_region_length, *self.bounds
-        )
+        tr_lb = torch.clamp(x_center - weights * self.trust_region_length, *self.bounds)
+        tr_ub = torch.clamp(x_center + weights * self.trust_region_length, *self.bounds)
 
         return tr_lb, tr_ub
 
@@ -91,8 +133,7 @@ class BAxUS(BaseBayesianOptimization):
         self, acquisition_function: ThompsonSampling
     ) -> np.ndarray:
         if isinstance(acquisition_function, ThompsonSampling):
-            # TODO: we need to pass the current dimension of the subspace here.
-            return acquisition_function(self.current_subspace_dimension)
+            return acquisition_function(self.subspace_dimension)
         elif isinstance(acquisition_function, ExpectedImprovement):
             trust_region_bounds = self._compute_trust_region()
             return super()._optimize_acquisition_function(
@@ -197,10 +238,7 @@ class BAxUS(BaseBayesianOptimization):
 
     def _expand_embedding_matrix_and_observations(
         self,
-        embedding_matrix: np.ndarray,
-        current_observations: np.ndarray,
-        n_new_bins: int,
-    ) -> np.ndarray:
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """Expands the embedding matrix, and the current observations.
 
         This method expands the embedding matrix by adding a new column to it,
@@ -225,22 +263,24 @@ class BAxUS(BaseBayesianOptimization):
         5. For each observation column associated with this row, repeat it as many
            times as the number of bins in the latter half of the original row.
 
-        Returns
-        -------
-        S : np.ndarray
-            Expanded embedding matrix.
-        X : np.ndarray
-            Expanded observations.
-
         References
         ----------
         [1] Increasing the scope as you learn: adaptive Bayesian
             Optimization in Nested Subspaces (TODO: complete).
         [2] https://botorch.org/tutorials/baxus
         """
+        current_observations, _ = self.get_history_as_arrays()
+        embedding_matrix = self.embedding_matrix
+        n_new_bins = self.n_new_bins_per_dimension
+
         assert (
             current_observations.shape[1] == embedding_matrix.shape[0]
         ), "Observations don't lie in row space of S"
+
+        # If the current observations and embedding matrix are
+        # already of input_dimension, then we skip.
+        if self.subspace_dimension == self.input_dimension:
+            return
 
         embedding_matrix_update = embedding_matrix.copy()
         observations_update = current_observations.copy()
@@ -287,7 +327,107 @@ class BAxUS(BaseBayesianOptimization):
                 (embedding_matrix_update, new_submatrix)
             )
 
-        return embedding_matrix_update, observations_update
+        # TODO: adapt these in-place, as well as the current embedding dim.
+        self.embedding_matrix = embedding_matrix_update
+        self.history["x"] = [arr.reshape(1, -1) for arr in observations_update]
+        self.subspace_dimension = len(self.embedding_matrix)
+
+        # Check if the current subspace dimensions is equal to
+        # the input dimension. If so, then we should be replacing
+        # the embedding matrix with the identity matrix.
+        if self.subspace_dimension >= self.input_dimension:
+            # Re-compute the current observations, and store them
+            # in the history as (b, self.input_dimension) arrays.
+            self.history["x"] = [
+                x.reshape(1, -1) @ self.embedding_matrix for x in observations_update
+            ]
+
+            # From now on, we'll work on self.input_dimension dimensions,
+            # so we no longer need to project.
+            self.embedding_matrix = np.eye(self.input_dimension)
+
+            # We also need to update the subspace dimension.
+            self.subspace_dimension = self.input_dimension
+
+    def _fit_model(
+        self, model: type[SingleTaskGP], x: np.ndarray, y: np.ndarray
+    ) -> SingleTaskGP:
+        # Mapping to torch
+        x = torch.from_numpy(x).float()
+        y = torch.from_numpy(y).float()
+
+        # Defining the model and the likelihood
+        likelihood = GaussianLikelihood(noise_constraint=Interval(1e-8, 1e-3))
+        covar_module = (
+            ScaleKernel(  # Use the same lengthscale prior as in the TuRBO paper
+                MaternKernel(
+                    nu=2.5,
+                    ard_num_dims=self.subspace_dimension,
+                    lengthscale_constraint=Interval(0.005, 10),
+                ),
+                outputscale_constraint=Interval(0.05, 10),
+            )
+        )
+        model = SingleTaskGP(x, y, covar_module=covar_module, likelihood=likelihood)
+        mll = ExactMarginalLogLikelihood(model.likelihood, model)
+
+        # Do the fitting and acquisition function optimization inside the Cholesky context
+        import gpytorch
+
+        max_cholesky_size = float("inf")
+        from botorch.fit import fit_gpytorch_mll
+        from botorch.exceptions import ModelFittingError
+
+        with gpytorch.settings.max_cholesky_size(max_cholesky_size):
+            # Fit the model
+            try:
+                fit_gpytorch_mll(mll)
+            except ModelFittingError:
+                # Right after increasing the target dimensionality, the covariance matrix becomes indefinite
+                # In this case, the Cholesky decomposition might fail due to numerical instabilities
+                # In this case, we revert to Adam-based optimization
+                optimizer = torch.optim.Adam([{"params": model.parameters()}], lr=0.1)
+
+                for _ in range(100):
+                    optimizer.zero_grad()
+                    output = model(x)
+                    loss = -mll(output, y.flatten())
+                    loss.backward()
+                    optimizer.step()
+
+        model.eval()
+
+        return model
+
+    def post_update(self, x: np.ndarray, y: np.ndarray) -> None:
+        self.original_observations.append(x)
+
+        previous_best_value = self.get_best_performance(until=-1)
+        if max(y) > previous_best_value + 1e-3 * (previous_best_value):
+            self.success_counter += 1
+            self.failure_counter = 0
+        else:
+            self.success_counter = 0
+            self.failure_counter += 1
+
+        if self.success_counter == self.success_tolerance:  # Expand trust region
+            self.trust_region_length = min(
+                2.0 * self.trust_region_length, self.trust_region_max_length
+            )
+            self.success_counter = 0
+        elif self.failure_counter == self.failure_tolerance:  # Shrink trust region
+            self.trust_region_length /= 2.0
+            self.failure_counter = 0
+
+        if self.trust_region_length < self.trust_region_min_length:
+            self._expand_embedding_matrix_and_observations()
+            self._reset_trust_region()
+
+    def _reset_trust_region(self) -> None:
+        """Resets the trust region to its initial value."""
+        self.trust_region_length = self.initial_trust_region_length
+        self.failure_counter = 0
+        self.success_counter = 0
 
     def next_candidate(self) -> np.ndarray:
         """Computes the next candidate.
@@ -314,7 +454,7 @@ class BAxUS(BaseBayesianOptimization):
         model = self._fit_model(SingleTaskGP, X, Y)
 
         # Update the stored model
-        self.current_gp_model = model
+        self.gp_model = model
 
         # Instantiate the acquisition function
         acq_function = self._instantiate_acquisition_function(model=model)
@@ -324,4 +464,9 @@ class BAxUS(BaseBayesianOptimization):
             acquisition_function=acq_function
         )
 
-        return candidate
+        # The update state is handled by post_update, which will run automatically
+        # as part of the abstract step method.
+        return candidate.numpy(force=True)
+
+    def step(self) -> Tuple[np.ndarray, np.ndarray]:
+        return super().step()

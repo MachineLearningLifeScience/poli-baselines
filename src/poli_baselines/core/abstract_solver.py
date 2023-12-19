@@ -38,6 +38,12 @@ class AbstractSolver:
             "This method is abstract, and should be implemented by a subclass."
         )
 
+    def post_update(self, x: np.ndarray, y: np.ndarray) -> None:
+        """
+        This method is called after the history is updated.
+        """
+        pass
+
     def update(self, x: np.ndarray, y: np.ndarray) -> None:
         """
         Updates the history with the given
@@ -46,6 +52,8 @@ class AbstractSolver:
         # TODO: assert shapes.
         self.history["x"].append(x)
         self.history["y"].append(y)
+
+        self.post_update(x, y)
 
     def step(self) -> Tuple[np.ndarray, np.ndarray]:
         """
@@ -139,11 +147,15 @@ class AbstractSolver:
 
         return one_best_solution.reshape(1, -1)
 
-    def get_best_performance(self) -> np.ndarray:
+    def get_best_performance(self, until: int = None) -> np.ndarray:
         """
         Returns the best performance found so far.
         """
         outputs = [y for y in self.history["y"]]
+
+        if until is not None:
+            outputs = outputs[:until]
+
         stacked_outputs = np.vstack(outputs)
 
         return np.nanmax(stacked_outputs)
