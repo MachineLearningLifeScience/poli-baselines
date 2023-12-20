@@ -169,8 +169,8 @@ class SAASBO(BaseBayesianOptimization):
             The fitted model.
         """
         gp = model(
-            train_X=torch.from_numpy(x).to(torch.float32),
-            train_Y=torch.from_numpy(y).to(torch.float32),
+            train_X=torch.from_numpy(x).to(torch.get_default_dtype()),
+            train_Y=torch.from_numpy(y).to(torch.get_default_dtype()),
         )
         fit_fully_bayesian_model_nuts(
             gp,

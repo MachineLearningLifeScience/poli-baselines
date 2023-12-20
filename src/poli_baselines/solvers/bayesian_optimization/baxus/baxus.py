@@ -29,11 +29,8 @@ from gpytorch.kernels import MaternKernel, ScaleKernel
 from gpytorch.likelihoods import GaussianLikelihood
 from gpytorch.mlls import ExactMarginalLogLikelihood
 
-
 from botorch.acquisition import AcquisitionFunction, ExpectedImprovement
 from botorch.models import SingleTaskGP
-from botorch.fit import fit_gpytorch_mll
-from botorch.exceptions import ModelFittingError
 
 from poli.core.abstract_black_box import AbstractBlackBox
 
@@ -541,7 +538,12 @@ class BAxUS(BaseBayesianOptimization):
             self.subspace_dimension = self.input_dimension
 
     def _fit_model(
-        self, model: type[SingleTaskGP], x: np.ndarray, y: np.ndarray
+        self,
+        model: type[SingleTaskGP],
+        x: np.ndarray,
+        y: np.ndarray,
+        n_epochs: int = 1500,
+        learning_rate: float = 0.01,
     ) -> SingleTaskGP:
         """Fits a single-task Gaussian Process to the data.
 
@@ -554,6 +556,9 @@ class BAxUS(BaseBayesianOptimization):
         is constrained to be between 0.05 and 10. The noise is constrained to be
         between 1e-8 and 1e-3. These constraints are, according to the authors of
         the tutorial, taken from the TuRBO paper [3].
+
+        Instead of fitting the SingleTaskGP using quasi-Newton methods, we use
+        Adam with a default learning rate of 0.01. We also use 1500 epochs by default.
 
         Parameters
         ----------
@@ -580,8 +585,8 @@ class BAxUS(BaseBayesianOptimization):
             2019.
         """
         # Mapping to torch
-        x = torch.from_numpy(x).float()
-        y = torch.from_numpy(y).float()
+        x = torch.from_numpy(x).to(torch.get_default_dtype())
+        y = torch.from_numpy(y).to(torch.get_default_dtype())
 
         # Defining the model and the likelihood
         likelihood = GaussianLikelihood(noise_constraint=Interval(1e-8, 1e-3))
@@ -607,21 +612,16 @@ class BAxUS(BaseBayesianOptimization):
 
         # Do the fitting and acquisition function optimization inside the Cholesky context
         with gpytorch.settings.max_cholesky_size(MAX_CHOLESKY_SIZE):
-            # Fit the model
-            try:
-                fit_gpytorch_mll(mll)
-            except ModelFittingError:
-                # Right after increasing the target dimensionality, the covariance matrix becomes indefinite
-                # In this case, the Cholesky decomposition might fail due to numerical instabilities
-                # In this case, we revert to Adam-based optimization
-                optimizer = torch.optim.Adam([{"params": model.parameters()}], lr=0.1)
-
-                for _ in range(100):
-                    optimizer.zero_grad()
-                    output = model(x)
-                    loss = -mll(output, y.flatten())
-                    loss.backward()
-                    optimizer.step()
+            optimizer = torch.optim.Adam(
+                [{"params": model.parameters()}], lr=learning_rate
+            )
+            for _ in range(n_epochs):
+                optimizer.zero_grad()
+                output = model(x)
+                loss = -mll(output, y.flatten())
+                # print(f"-mll: {loss}")
+                loss.backward()
+                optimizer.step()
 
         model.eval()
 
