@@ -31,6 +31,7 @@ from gpytorch.mlls import ExactMarginalLogLikelihood
 
 from botorch.acquisition import AcquisitionFunction, ExpectedImprovement
 from botorch.models import SingleTaskGP
+from botorch.fit import fit_gpytorch_mll_scipy
 
 from poli.core.abstract_black_box import AbstractBlackBox
 
@@ -216,7 +217,9 @@ class BAxUS(BaseBayesianOptimization):
         # These will hold the initial and current trust region lengths.
         # The trust region length will be updated adaptively, and will
         # eventually be re-set to the initial value if it falls too low.
-        self.initial_trust_region_length = initial_trust_region_length
+        self.initial_trust_region_length = initial_trust_region_length * (
+            self.bounds[1] - self.bounds[0]
+        )
         self.trust_region_length = initial_trust_region_length
         self.trust_region_min_length = trust_region_min_length
         self.trust_region_max_length = trust_region_max_length
@@ -585,8 +588,8 @@ class BAxUS(BaseBayesianOptimization):
             2019.
         """
         # Mapping to torch
-        x = torch.from_numpy(x).to(torch.get_default_dtype())
-        y = torch.from_numpy(y).to(torch.get_default_dtype())
+        x = torch.from_numpy(x).to(torch.float64)
+        y = torch.from_numpy(y).to(torch.float64)
 
         # Defining the model and the likelihood
         likelihood = GaussianLikelihood(noise_constraint=Interval(1e-8, 1e-3))
@@ -612,16 +615,17 @@ class BAxUS(BaseBayesianOptimization):
 
         # Do the fitting and acquisition function optimization inside the Cholesky context
         with gpytorch.settings.max_cholesky_size(MAX_CHOLESKY_SIZE):
-            optimizer = torch.optim.Adam(
-                [{"params": model.parameters()}], lr=learning_rate
-            )
-            for _ in range(n_epochs):
-                optimizer.zero_grad()
-                output = model(x)
-                loss = -mll(output, y.flatten())
-                # print(f"-mll: {loss}")
-                loss.backward()
-                optimizer.step()
+            # optimizer = torch.optim.Adam(
+            #     [{"params": model.parameters()}], lr=learning_rate
+            # )
+            # for _ in range(n_epochs):
+            #     optimizer.zero_grad()
+            #     output = model(x)
+            #     loss = -mll(output, y.flatten())
+            #     # print(f"-mll: {loss}")
+            #     loss.backward()
+            #     optimizer.step()
+            fit_gpytorch_mll_scipy(mll)
 
         model.eval()
 

@@ -6,7 +6,11 @@ import torch
 
 
 from botorch.models import SingleTaskGP
-from botorch.fit import fit_gpytorch_mll_torch
+from botorch.fit import (
+    fit_gpytorch_mll_torch,
+    fit_gpytorch_mll_scipy,
+    fit_gpytorch_model,
+)
 from botorch.acquisition import ExpectedImprovement, AcquisitionFunction
 from botorch.optim import optimize_acqf
 from botorch.generation.gen import gen_candidates_torch
@@ -139,8 +143,8 @@ class BaseBayesianOptimization(AbstractSolver):
         model : SingleTaskGP
             The fitted Gaussian process model.
         """
-        x = torch.from_numpy(x).to(torch.get_default_dtype())
-        y = torch.from_numpy(y).to(torch.get_default_dtype())
+        x = torch.from_numpy(x).to(torch.float32)
+        y = torch.from_numpy(y).to(torch.float32)
         model_instance = model(
             x,
             y,
@@ -149,8 +153,7 @@ class BaseBayesianOptimization(AbstractSolver):
         )
         mll = ExactMarginalLogLikelihood(model_instance.likelihood, model_instance)
 
-        fit_gpytorch_mll_torch(mll)
-
+        fit_gpytorch_mll_scipy(mll)
         model_instance.eval()
 
         return model_instance
