@@ -121,8 +121,6 @@ class BaseBayesianOptimization(AbstractSolver):
         model: Type[SingleTaskGP],
         x: np.ndarray,
         y: np.ndarray,
-        n_epochs: int = 1500,
-        learning_rate: float = 0.01,
     ) -> SingleTaskGP:
         """
         Fits a Gaussian process model.
