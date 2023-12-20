@@ -21,8 +21,8 @@ class AbstractSolver:
         self.y0 = y0
 
         self.history = {
-            "x": [x0],
-            "y": [y0],
+            "x": [x0_i.reshape(1, -1) for x0_i in x0],
+            "y": [y0_i.reshape(1, -1) for y0_i in y0],
         }
 
         self.iteration = 0
@@ -50,8 +50,8 @@ class AbstractSolver:
         candidate solution and its evaluation.
         """
         # TODO: assert shapes.
-        self.history["x"].append(x)
-        self.history["y"].append(y)
+        self.history["x"] += [x_i.reshape(1, -1) for x_i in x]
+        self.history["y"] += [y_i.reshape(1, -1) for y_i in y]
 
         self.post_update(x, y)
 

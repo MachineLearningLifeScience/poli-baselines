@@ -37,6 +37,7 @@ from poli_baselines.core.utils.pymoo.interface import DiscretePymooProblem
 from poli_baselines.core.utils.pymoo import (
     DiscreteSequenceMutation,
     _from_array_to_dict,
+    _from_dict_to_array,
 )
 
 
@@ -216,7 +217,8 @@ class Discrete_NSGA_II(AbstractSolver):
         y = -self.algorithm.pop.get("F")  # minus, since we maximize
 
         # We update the history
-        self.update(x, y)
+        x_as_array = _from_dict_to_array(x)
+        self.update(x_as_array, y)
         self.iteration += 1
 
         return x, y

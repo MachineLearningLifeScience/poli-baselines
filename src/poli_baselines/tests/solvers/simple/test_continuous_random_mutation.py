@@ -18,3 +18,7 @@ def test_continuous_random_mutation_instantiates_and_runs_well():
     )
 
     solver.solve(max_iter=5)
+
+
+if __name__ == "__main__":
+    test_continuous_random_mutation_instantiates_and_runs_well()
