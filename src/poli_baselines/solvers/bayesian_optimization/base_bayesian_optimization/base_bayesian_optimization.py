@@ -6,7 +6,7 @@ import torch
 
 
 from botorch.models import SingleTaskGP
-from botorch.fit import fit_gpytorch_model
+from botorch.fit import fit_gpytorch_mll_torch
 from botorch.acquisition import ExpectedImprovement, AcquisitionFunction
 from botorch.optim import optimize_acqf
 from botorch.generation.gen import gen_candidates_torch
@@ -141,24 +141,17 @@ class BaseBayesianOptimization(AbstractSolver):
         model : SingleTaskGP
             The fitted Gaussian process model.
         """
+        x = torch.from_numpy(x).to(torch.get_default_dtype())
+        y = torch.from_numpy(y).to(torch.get_default_dtype())
         model_instance = model(
-            torch.from_numpy(x).to(torch.get_default_dtype()),
-            torch.from_numpy(y).to(torch.get_default_dtype()),
+            x,
+            y,
             mean_module=self.mean,
             covar_module=self.kernel,
         )
         mll = ExactMarginalLogLikelihood(model_instance.likelihood, model_instance)
 
-        # Instead of fitting the model using botorch's methods, we "normalize" the
-        # training across models. In particular, we use adam and a default learning rate
-        # of 0.01. We also use 1500 epochs by default.
-        optimizer = torch.optim.Adam(model_instance.parameters(), lr=learning_rate)
-        for _ in range(n_epochs):
-            optimizer.zero_grad()
-            output = model(x)
-            loss = -mll(output, y.flatten())
-            loss.backward()
-            optimizer.step()
+        fit_gpytorch_mll_torch(mll)
 
         model_instance.eval()
 
