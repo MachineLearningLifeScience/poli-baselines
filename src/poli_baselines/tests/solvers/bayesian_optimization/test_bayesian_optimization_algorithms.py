@@ -56,9 +56,3 @@ class TestBayesianOptimization:
             )
 
         assert mock_method.call_count == 2
-
-
-if __name__ == "__main__":
-    TestBayesianOptimization().test_solving_while_mocking_training(
-        LineBO, {"type_of_line": "random"}
-    )

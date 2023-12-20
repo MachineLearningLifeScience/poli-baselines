@@ -117,7 +117,12 @@ class BaseBayesianOptimization(AbstractSolver):
         self.penalize_nans_with = penalize_nans_with
 
     def _fit_model(
-        self, model: Type[SingleTaskGP], x: np.ndarray, y: np.ndarray
+        self,
+        model: Type[SingleTaskGP],
+        x: np.ndarray,
+        y: np.ndarray,
+        n_epochs: int = 1500,
+        learning_rate: float = 0.01,
     ) -> SingleTaskGP:
         """
         Fits a Gaussian process model.
@@ -137,13 +142,24 @@ class BaseBayesianOptimization(AbstractSolver):
             The fitted Gaussian process model.
         """
         model_instance = model(
-            torch.from_numpy(x).to(torch.float32),
-            torch.from_numpy(y).to(torch.float32),
+            torch.from_numpy(x).to(torch.get_default_dtype()),
+            torch.from_numpy(y).to(torch.get_default_dtype()),
             mean_module=self.mean,
             covar_module=self.kernel,
         )
         mll = ExactMarginalLogLikelihood(model_instance.likelihood, model_instance)
-        fit_gpytorch_model(mll)
+
+        # Instead of fitting the model using botorch's methods, we "normalize" the
+        # training across models. In particular, we use adam and a default learning rate
+        # of 0.01. We also use 1500 epochs by default.
+        optimizer = torch.optim.Adam(model_instance.parameters(), lr=learning_rate)
+        for _ in range(n_epochs):
+            optimizer.zero_grad()
+            output = model(x)
+            loss = -mll(output, y.flatten())
+            loss.backward()
+            optimizer.step()
+
         model_instance.eval()
 
         return model_instance
