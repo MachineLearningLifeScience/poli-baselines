@@ -721,10 +721,21 @@ class BAxUS(BaseBayesianOptimization):
         acq_function = self._instantiate_acquisition_function(model=model)
 
         # Optimize the acquisition function
-        candidate = self._optimize_acquisition_function(
+        candidate_in_z = self._optimize_acquisition_function(
             acquisition_function=acq_function
         )
 
         # The update state is handled by post_update, which will run automatically
         # as part of the abstract step method.
-        return candidate
+        return candidate_in_z
+
+    def step(self) -> Tuple[np.ndarray, np.ndarray]:
+        z = self.next_candidate()
+        x = z @ self.embedding_matrix
+        y = self.black_box(x)
+
+        self.update(z, y)
+        self.post_update(z, y)
+        self.iteration += 1
+
+        return x, y

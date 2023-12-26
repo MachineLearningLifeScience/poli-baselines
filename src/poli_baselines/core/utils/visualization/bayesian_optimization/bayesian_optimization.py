@@ -65,7 +65,7 @@ def plot_acquisition_in_2d(
     acq_function: AcquisitionFunction,
     ax: plt.Axes,
     limits: Tuple[float, float],
-    z: torch.Tensor = None,
+    historical_x: torch.Tensor = None,
     candidate: torch.Tensor = None,
     cmap: str = "Blues",
     plot_colorbar: bool = False,
@@ -87,9 +87,13 @@ def plot_acquisition_in_2d(
 
     plot = ax.imshow(acq_values_as_img, extent=[*limits, *limits], cmap=cmap)
 
-    if z is not None:
-        ax.scatter(z[:, 0], z[:, 1], c="white", edgecolors="black")
-        ax.scatter([z[-1, 0]], [z[-1, 1]], c="red", edgecolors="black")
+    if historical_x is not None:
+        ax.scatter(
+            historical_x[:, 0], historical_x[:, 1], c="white", edgecolors="black"
+        )
+        ax.scatter(
+            [historical_x[-1, 0]], [historical_x[-1, 1]], c="red", edgecolors="black"
+        )
 
     if candidate is not None:
         ax.scatter([candidate[0]], [candidate[1]], c="blue", edgecolors="black")
