@@ -54,7 +54,7 @@ def optimize_acquisition_function_using_grid_search(
         # and so we select one of these possible candidates at random
         candidate = possible_candidates[
             np.random.choice(len(possible_candidates), 1)[0]
-        ]
+        ].reshape(1, 2)
 
     elif n_dimension == 1:
         zs = torch.Tensor([[x] for x in torch.linspace(*bounds, n_points_in_acq_grid)])
@@ -66,6 +66,6 @@ def optimize_acquisition_function_using_grid_search(
         # and so we select one of these possible candidates at random
         candidate = possible_candidates[
             np.random.choice(len(possible_candidates), 1)[0]
-        ]
+        ].reshape(1, 1)
 
     return candidate.numpy(force=True)

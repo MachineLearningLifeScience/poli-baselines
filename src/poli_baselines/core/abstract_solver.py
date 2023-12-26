@@ -53,8 +53,6 @@ class AbstractSolver:
         self.history["x"] += [x_i.reshape(1, -1) for x_i in x]
         self.history["y"] += [y_i.reshape(1, -1) for y_i in y]
 
-        self.post_update(x, y)
-
     def step(self) -> Tuple[np.ndarray, np.ndarray]:
         """
         Runs the solver for one iteration.
@@ -63,6 +61,7 @@ class AbstractSolver:
         y = self.black_box(x)
 
         self.update(x, y)
+        self.post_update(x, y)
         self.iteration += 1
 
         return x, y

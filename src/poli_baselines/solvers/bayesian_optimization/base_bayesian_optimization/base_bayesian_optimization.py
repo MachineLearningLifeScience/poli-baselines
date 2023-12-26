@@ -1,6 +1,7 @@
 from typing import Callable, Type, Tuple
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 import torch
 
@@ -21,6 +22,10 @@ from gpytorch.mlls import ExactMarginalLogLikelihood
 
 from poli.core.abstract_black_box import AbstractBlackBox
 from poli_baselines.core.abstract_solver import AbstractSolver
+from poli_baselines.core.utils.visualization.bayesian_optimization import (
+    plot_prediction_in_2d,
+    plot_acquisition_in_2d,
+)
 
 from .bayesian_optimization_commons import (
     optimize_acquisition_function_using_grid_search,
@@ -62,6 +67,11 @@ class BaseBayesianOptimization(AbstractSolver):
         The bounds of the input space.
     penalize_nans_with : float
         The value to assign to NaNs in the objective function.
+    gp_model_of_objective : SingleTaskGP
+        The Gaussian process model of the objective function.
+        This starts being None, and is updated at every call
+        to self._fit_model(...) (which is itself called at every
+        call to self.next_candidate()).
 
     Methods
     -------
@@ -73,6 +83,9 @@ class BaseBayesianOptimization(AbstractSolver):
         Instantiates the acquisition function.
     next_candidate()
         Runs one loop of Bayesian Optimization.
+    plot_model_predictions(ax)
+        Plots the model predictions in latent space (if the
+        problem is 2D).
 
     Notes
     -----
@@ -120,6 +133,8 @@ class BaseBayesianOptimization(AbstractSolver):
         self.bounds = bounds
         self.penalize_nans_with = penalize_nans_with
 
+        self.gp_model_of_objective = None
+
     def _fit_model(
         self,
         model: Type[SingleTaskGP],
@@ -152,9 +167,10 @@ class BaseBayesianOptimization(AbstractSolver):
             covar_module=self.kernel,
         )
         mll = ExactMarginalLogLikelihood(model_instance.likelihood, model_instance)
-
-        fit_gpytorch_mll_scipy(mll)
+        fit_gpytorch_model(mll)
         model_instance.eval()
+
+        self.gp_model_of_objective = model_instance
 
         return model_instance
 
@@ -215,8 +231,9 @@ class BaseBayesianOptimization(AbstractSolver):
         acq_func : AcquisitionFunction
             The instantiated acquisition function.
         """
+        _, y = self.get_history_as_arrays()
         if self.acq_function == ExpectedImprovement:
-            acq_func = self.acq_function(model, best_f=self.y0.max())
+            acq_func = self.acq_function(model, best_f=y.max())
         else:
             raise NotImplementedError
 
@@ -236,3 +253,54 @@ class BaseBayesianOptimization(AbstractSolver):
         NaNs in the objective function are penalized by assigning them a value stored in self.penalize_nans_with.
         """
         raise NotImplementedError
+
+    def plot_model_predictions(self, ax: plt.Axes) -> None:
+        """
+        Plots the model predictions in latent space.
+
+        This method only works for problems with 2 dimensions, and
+        can be used as a sanity check to see if the acquisition
+        function is being computed correctly.
+
+        Parameters:
+        ----------
+        ax: plt.Axes
+            The matplotlib Axes object to plot the model predictions.
+        """
+        # TODO: assert that the x values are 2D.
+        # TODO: add support for 1D spaces.
+
+        # Plotting the model predictions in 2D.
+        plot_prediction_in_2d(
+            model=self.gp_model_of_objective,
+            ax=ax,
+            limits=self.bounds,
+            historical_x=np.concatenate(self.history["x"], axis=0),
+        )
+
+    def plot_acquisition_function(self, ax: plt.Axes):
+        """
+        Plots the acquisition function in the input space.
+
+        This method only works for problems with 2 dimensions, and
+        can be used as a sanity check to see if the acquisition
+        function is being computed correctly.
+
+        Parameters:
+        ----------
+        ax: plt.Axes
+            The matplotlib Axes object to plot the acquisition function.
+        """
+        # TODO: assert that the x values are 2D.
+        # TODO: add support for 1D spaces.
+
+        # Plotting the acquisition function in 2D.
+        acq_func = self._instantiate_acquisition_function(
+            model=self.gp_model_of_objective
+        )
+        plot_acquisition_in_2d(
+            acq_function=acq_func,
+            ax=ax,
+            limits=self.bounds,
+            historical_x=np.concatenate(self.history["x"], axis=0),
+        )
