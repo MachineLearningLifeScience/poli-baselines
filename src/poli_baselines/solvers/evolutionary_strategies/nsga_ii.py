@@ -19,9 +19,12 @@ from typing import Tuple
 
 import numpy as np
 
+from pymoo.core.variable import Choice
 from pymoo.core.mutation import Mutation
 from pymoo.core.sampling import Sampling
 from pymoo.core.mating import InfillCriterion
+from pymoo.core.crossover import Crossover
+from pymoo.core.selection import Selection
 from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.core.termination import NoTermination
 from pymoo.core.population import Population
@@ -30,6 +33,7 @@ from pymoo.core.mixed import (
     MixedVariableMating,
     MixedVariableSampling,
 )
+from pymoo.operators.crossover.sbx import SBX
 
 from poli.core.abstract_black_box import AbstractBlackBox
 from poli_baselines.core.abstract_solver import AbstractSolver
@@ -38,10 +42,13 @@ from poli_baselines.core.utils.pymoo import (
     DiscreteSequenceMutation,
     _from_array_to_dict,
     _from_dict_to_array,
+    NoCrossover,
+    DiscreteSequenceMating,
 )
+from poli_baselines.core.utils.mutations.random_mutations import add_random_mutations
 
 
-class Discrete_NSGA_II(AbstractSolver):
+class DiscreteNSGAII(AbstractSolver):
     """Discrete NSGA-II solver for multi-objective optimization problems.
 
     NSGA-II is a multi-objective genetic algorithm that uses a non-dominated
@@ -68,10 +75,14 @@ class Discrete_NSGA_II(AbstractSolver):
         Whether to initialize the algorithm with the provided x0, by default True.
     mutation : Mutation, optional
         The mutation operator to be used, by default None.
+        If provided, this overwrites the sampling, crossover,
+        and mating operators.
     sampling : Sampling, optional
         The sampling operator to be used, by default None.
+    crossover : Crossover, optional
+        The crossover operator to be used, by default None.
     mating : InfillCriterion, optional
-        The mating operator to be used, by default None.
+        The mutation operator to be used, by default None.
 
     Attributes:
     -----------
@@ -105,7 +116,9 @@ class Discrete_NSGA_II(AbstractSolver):
         initialize_with_x0: bool = True,
         mutation: Mutation = None,
         sampling: Sampling = None,
+        crossover: Crossover = None,
         mating: InfillCriterion = None,
+        padding_symbol: str = "",
     ):
         """
         Initialize the NSGA_II solver.
@@ -123,8 +136,8 @@ class Discrete_NSGA_II(AbstractSolver):
         initialize_with_x0 : bool, optional
             Whether to initialize the algorithm with the provided x0, by default True.
         mutation : Mutation, optional
-            The mutation operator. If None, we use a DiscreteSequenceMutation (see our
-            implementation in the API reference).
+            The mutation operator. If None, we use pymoo's
+            MixedVariableMutation. See pymoo for more details.
         sampling : Sampling, optional
             The sampling operator. If None, we use a MixedVariableSampling (see pymoo
             for more details)
@@ -134,10 +147,10 @@ class Discrete_NSGA_II(AbstractSolver):
         """
         super().__init__(black_box, x0, y0)
 
-        assert x0.shape[0] == population_size, (
-            f"Expected x0 to have shape[0]=={population_size}, "
-            f"but got {x0.shape[0]}."
-        )
+        # assert x0.shape[0] == population_size, (
+        #     f"Expected x0 to have shape[0]=={population_size}, "
+        #     f"but got {x0.shape[0]}."
+        # )
 
         self.pymoo_problem = DiscretePymooProblem(
             black_box=self.black_box,
@@ -146,26 +159,45 @@ class Discrete_NSGA_II(AbstractSolver):
             initialize_with_x0=initialize_with_x0,
         )
 
-        if mutation is None:
-            mutation = DiscreteSequenceMutation()
+        # if mutation is None:
+        #     mutation = {Choice: DiscreteSequenceMutation()}
+
+        # if mating is None:
+        #     mating = MixedVariableMating(
+        #         crossover=crossover,
+        #         mutation=mutation,
+        #         eliminate_duplicates=MixedVariableDuplicateElimination(),
+        #     )
 
         if sampling is None:
             sampling = MixedVariableSampling()
 
+        # if crossover is None:
+        #     crossover = SBX(prob_var=0.0, prob_bin=0.0, prob_exch=0.0)
+
         if mating is None:
-            mating = MixedVariableMating(
-                eliminate_duplicates=MixedVariableDuplicateElimination()
-            )
+            mating = DiscreteSequenceMating()
 
         termination = NoTermination()
 
         if initialize_with_x0:
-            x0_as_mixed_variable = _from_array_to_dict(self.x0)
+            # TODO: if x0 is smaller than population_size, we need to add random mutations to it.
+            if self.x0.shape[0] < population_size:
+                x_for_init = add_random_mutations(
+                    self.x0, self.black_box.info.alphabet, population_size
+                )
+            elif self.x0.shape[0] > population_size:
+                x_for_init = self.x0[:population_size]
+            else:
+                x_for_init = self.x0
+
+            x0_as_mixed_variable = _from_array_to_dict(x_for_init)
             sampling = Population.new("X", x0_as_mixed_variable)
 
         self.algorithm = NSGA2(
             pop_size=population_size,
             sampling=sampling,
+            mutation=mutation,
             mating=mating,
             eliminate_duplicates=MixedVariableDuplicateElimination(),
         )

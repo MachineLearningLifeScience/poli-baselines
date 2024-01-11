@@ -55,4 +55,4 @@ class DiscreteSequenceMutation(Mutation):
         super().__init__(prob, prob_var, **kwargs)
 
     def _do(self, problem, X, **kwargs):
-        return super()._do(problem, X, **kwargs)
+        return X

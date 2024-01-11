@@ -4,6 +4,30 @@ from pymoo.core.population import Population
 from pymoo.core.infill import InfillCriterion
 
 
+def _mutate(problem, x_as_dict, num_mutations):
+    new_x_as_dict = x_as_dict.copy()
+    for _ in range(num_mutations):
+        # Select a random position to mutate
+        random_position = np.random.randint(0, len(x_as_dict))
+        random_key = f"x_{random_position}"
+
+        # Make sure that the mutation is not on padding
+        while x_as_dict[random_key] == "":
+            random_position = np.random.randint(0, len(x_as_dict))
+            random_key = f"x_{random_position}"
+
+        # Mutate the child
+        mutant_at_position = problem.vars[random_key]._sample(1)[0]
+
+        # we need to make sure we don't mutate to the same value
+        while mutant_at_position == x_as_dict[random_key]:
+            mutant_at_position = problem.vars[random_key]._sample(1)[0]
+
+        new_x_as_dict[random_key] = mutant_at_position
+
+    return new_x_as_dict
+
+
 class DiscreteSequenceMating(InfillCriterion):
     """
     Class for performing discrete sequence mating.
@@ -17,8 +41,8 @@ class DiscreteSequenceMating(InfillCriterion):
         The number of mutations to perform on each offspring. Default is 1.
     repair : callable, optional
         A function used to repair the mutated offspring. Default is None.
-    eliminate_duplicates : callable, optional
-        A function used to eliminate duplicate offspring. Default is None.
+    eliminate_duplicates : bool, optional
+        Whether to eliminate duplicates. Default is True.
     n_max_iterations : int, optional
         The maximum number of iterations. Default is 100.
     **kwargs
@@ -68,25 +92,18 @@ class DiscreteSequenceMating(InfillCriterion):
 
         """
         # Copy the population
-        off = Population.new(X=pop.get("X")[:n_offsprings])
-        for child in off:
-            for _ in range(self.num_mutations):
-                # Select a random position to mutate
-                random_position = np.random.randint(0, len(child.X))
-                random_key = f"x_{random_position}"
+        pop = Population.new(X=pop.get("X")[:n_offsprings])
 
-                # Make sure that the mutation is not on padding
-                while child.X[random_key] == "":
-                    random_position = np.random.randint(0, len(child.X))
-                    random_key = f"x_{random_position}"
+        # Mutate the current population
+        current_pop = pop.get("X")
+        new_pop = []
+        for x_as_dict in current_pop:
+            mutant_x_as_dict = _mutate(problem, x_as_dict, self.num_mutations)
 
-                # Mutate the child
-                mutant_at_position = problem.vars[random_key]._sample(1)[0]
-                while mutant_at_position == child.X[random_key]:
-                    mutant_at_position = problem.vars[random_key]._sample(1)[0]
-                child.X[random_key] = mutant_at_position
+            while mutant_x_as_dict in new_pop or mutant_x_as_dict in current_pop:
+                mutant_x_as_dict = _mutate(problem, x_as_dict, self.num_mutations)
 
-            # Set X.
-            child.set("X", child.X)
+            new_pop.append(mutant_x_as_dict)
 
-        return off
+        pop = Population.new(X=np.array(new_pop))
+        return pop
