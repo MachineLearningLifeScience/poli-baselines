@@ -19,3 +19,4 @@ examples/09_replicating_nsga_ii_of_lambo_by_hand/repaired_pdbs
 examples/09_replicating_nsga_ii_of_lambo_by_hand/pHs.json
 examples/09_replicating_nsga_ii_of_lambo_by_hand/history/
 examples/09_replicating_nsga_ii_of_lambo_by_hand/history.json
+examples/ignore*

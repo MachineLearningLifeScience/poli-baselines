@@ -113,12 +113,11 @@ class DiscreteNSGAII(AbstractSolver):
         x0: np.ndarray,
         y0: np.ndarray,
         population_size: int = 10,
+        num_mutations: int = 1,
         initialize_with_x0: bool = True,
         mutation: Mutation = None,
         sampling: Sampling = None,
-        crossover: Crossover = None,
         mating: InfillCriterion = None,
-        padding_symbol: str = "",
     ):
         """
         Initialize the NSGA_II solver.
@@ -159,24 +158,13 @@ class DiscreteNSGAII(AbstractSolver):
             initialize_with_x0=initialize_with_x0,
         )
 
-        # if mutation is None:
-        #     mutation = {Choice: DiscreteSequenceMutation()}
-
-        # if mating is None:
-        #     mating = MixedVariableMating(
-        #         crossover=crossover,
-        #         mutation=mutation,
-        #         eliminate_duplicates=MixedVariableDuplicateElimination(),
-        #     )
-
         if sampling is None:
             sampling = MixedVariableSampling()
 
-        # if crossover is None:
-        #     crossover = SBX(prob_var=0.0, prob_bin=0.0, prob_exch=0.0)
-
         if mating is None:
-            mating = DiscreteSequenceMating()
+            mating = DiscreteSequenceMating(
+                num_mutations=num_mutations,
+            )
 
         termination = NoTermination()
 
@@ -197,7 +185,7 @@ class DiscreteNSGAII(AbstractSolver):
         self.algorithm = NSGA2(
             pop_size=population_size,
             sampling=sampling,
-            mutation=mutation,
+            mutation=None,
             mating=mating,
             eliminate_duplicates=MixedVariableDuplicateElimination(),
         )
