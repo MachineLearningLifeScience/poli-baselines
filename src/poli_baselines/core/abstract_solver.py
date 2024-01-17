@@ -112,7 +112,10 @@ class AbstractSolver:
         Saves the history of the solver to the given path.
         """
         x_to_save = [x.flatten().tolist() for x in self.history["x"]]
-        y_to_save = [float(y.flatten()[0]) for y in self.history["y"]]
+        y_to_save = [
+            float(y.flatten()[0]) if y.shape[1] == 1 else y.tolist()
+            for y in self.history["y"]
+        ]
 
         with open(path, "w") as fp:
             json.dump(
@@ -123,7 +126,7 @@ class AbstractSolver:
 
     def get_best_solution(self) -> np.ndarray:
         """
-        Returns the best solution found so far.
+        Returns the best solution found so far (assuming that the output is a scalar).
 
         Returns:
         --------
@@ -148,7 +151,7 @@ class AbstractSolver:
 
     def get_best_performance(self, until: int = None) -> np.ndarray:
         """
-        Returns the best performance found so far.
+        Returns the best performance found so far (assuming that the output is a scalar).
         """
         outputs = [y for y in self.history["y"]]
 
@@ -157,7 +160,7 @@ class AbstractSolver:
 
         stacked_outputs = np.vstack(outputs)
 
-        return np.nanmax(stacked_outputs)
+        return np.nanmax(stacked_outputs, axis=0)
 
     def get_history_as_arrays(self) -> Tuple[np.ndarray, np.ndarray]:
         """

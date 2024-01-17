@@ -61,11 +61,7 @@ print(solver.get_best_solution())  # Should be [["A", "L", "O", "H", "A"]]
 
 ## More examples
 
-The `examples` folder includes the optimization of more complex objective functions such as `foldx` stability (if you have `foldx` installed in your computer), `logp` and `qed` of small molecules (on either SMILES or SELFIES representations), and the use of advanced black box optimizers like latent space Bayesian Optimization, or NSGA-2.
-
-## Where can I find documentation?
-
-You can find documentation about both `poli` and `poli-baselines` on this repository: https://github.com/MachineLearningLifeScience/protein-optimization-docs
+The `examples` folder includes the optimization of more complex objective functions such as `foldx` stability (if you have `foldx` installed in your computer), and the use of advanced black box optimizers like (Line) Bayesian Optimization, or NSGA-2.
 
 ## Want to contribute?
 

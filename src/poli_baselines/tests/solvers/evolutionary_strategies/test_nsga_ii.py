@@ -4,7 +4,7 @@ import numpy as np
 
 
 def test_running_nsga_ii():
-    from poli_baselines.solvers import Discrete_NSGA_II
+    from poli_baselines.solvers import DiscreteNSGAII
     from poli import objective_factory
     from poli.core.multi_objective_black_box import MultiObjectiveBlackBox
 
@@ -25,7 +25,7 @@ def test_running_nsga_ii():
 
     y0 = f(x0)
 
-    solver = Discrete_NSGA_II(
+    solver = DiscreteNSGAII(
         black_box=f,
         x0=x0,
         y0=y0,
