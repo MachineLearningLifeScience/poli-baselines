@@ -13,4 +13,4 @@ from .bayesian_optimization.latent_space_bayesian_optimization import (
 )
 
 from .evolutionary_strategies.cma_es import CMA_ES
-from .evolutionary_strategies.nsga_ii import DiscreteNSGAII
+from .multi_objective.nsga_ii import DiscreteNSGAII

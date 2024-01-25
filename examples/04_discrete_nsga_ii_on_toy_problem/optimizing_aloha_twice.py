@@ -1,6 +1,8 @@
 """Example: NSGA-2 on discrete inputs using poli baselines."""
 import numpy as np
 
+import matplotlib.pyplot as plt
+
 from poli.objective_repository import AlohaProblemFactory
 from poli.core.multi_objective_black_box import MultiObjectiveBlackBox
 
@@ -31,11 +33,21 @@ if __name__ == "__main__":
     )
 
     # One way to run the solver: step by step.
+    _, ax = plt.subplots(1, 1)
     for _ in range(max_iterations):
+        ax.clear()
+        if len(solver.history["y"]) > 0:
+            all_previous_y = np.concatenate(solver.history["y"], axis=0)
+            ax.scatter(
+                all_previous_y[:, 0], all_previous_y[:, 1], color="gray", alpha=0.5
+            )
+
         population, fitnesses = solver.step()
 
         print(population)
         print(fitnesses)
+        ax.scatter(fitnesses[:, 0], fitnesses[:, 1], color="red")
+        plt.pause(0.1)
 
     # Another way to run the solver: all at once.
     # solver.solve(max_iter=max_iterations, verbose=True)

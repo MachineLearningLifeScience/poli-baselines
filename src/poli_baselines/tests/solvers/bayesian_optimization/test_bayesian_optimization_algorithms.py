@@ -56,3 +56,33 @@ class TestBayesianOptimization:
             )
 
         assert mock_method.call_count == 2
+
+
+def test_documentation_of_bo():
+    import numpy as np
+
+    from poli import objective_factory
+
+    from poli_baselines.solvers import VanillaBayesianOptimization
+
+    problem_info, f_ackley, _, _, _ = objective_factory.create(
+        name="toy_continuous_problem",
+        function_name="ackley_function_01",
+        n_dimensions=2,
+    )
+
+    x0 = np.random.randn(2).reshape(1, -1).clip(-2.0, 2.0)
+    y0 = f_ackley(x0)
+
+    bo_solver = VanillaBayesianOptimization(
+        black_box=f_ackley,
+        x0=x0,
+        y0=y0,
+    )
+
+    bo_solver.solve(max_iter=10)
+    print(bo_solver.get_best_solution())
+
+
+if __name__ == "__main__":
+    test_documentation_of_bo()
