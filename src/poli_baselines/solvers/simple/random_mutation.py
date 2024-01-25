@@ -39,7 +39,8 @@ class RandomMutation(AbstractSolver):
         best performing solution so far.
         """
         # Get the best performing solution so far
-        best_x = self.history["x"][np.argmax(self.history["y"])]
+        best_x = self.get_best_solution()
+        # best_x = self.history["x"][np.argmax(self.history["y"])]
 
         # Perform a random mutation
         # TODO: this assumes that x has shape [1, L],
