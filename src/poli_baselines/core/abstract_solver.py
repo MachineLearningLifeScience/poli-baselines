@@ -73,15 +73,39 @@ class AbstractSolver:
         verbose: bool = False,
         pre_step_callbacks: Iterable[Callable[[Self], None]] = None,
         post_step_callbacks: Iterable[Callable[[Self], None]] = None,
-    ) -> np.ndarray:
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
-        Runs the solver for the given number of iterations.
-        :param max_iter:
-        :type max_iter:
-        :return:
-        :rtype:
+        Optimizes the problem for a given number of iterations.
+
+        Parameters
+        ----------
+        max_iter: int, optional
+            The maximum number of iterations to run. By default, 100.
+        break_at_performance: float, optional
+            If given, the algorithm will stop when the best performance
+            is greater than or equal to this value. By default, we don't
+            break (i.e. None).
+        verbose: bool, optional
+            If True, prints the current iteration and the best performance
+            found so far. By default, False.
+        pre_step_callbacks: Iterable[Callable[[Self], None]], optional
+            A list of callbacks to be called before each step. By default,
+            None. These callbacks are simply functions that take the solver as
+            an argument, and don't return anything. Pre-step callbacks are
+            called before self.step() (i.e. before self.next_candidate()).
+        post_step_callbacks: Iterable[Callable[[Self], None]], optional
+            A list of callbacks to be called after each step. By default,
+            None. These callbacks are simply functions that take the solver as
+            an argument, and don't return anything. Post-step callbacks are
+            called after self.step() (i.e. after self.next_candidate()).
+
+        Returns
+        -------
+        x: np.ndarray
+            The final best-performing solution.
+        y: np.ndarray
+            The performance of the best-performing solution.
         """
-        # TODO: add logging, link it to the observer logic.
         # TODO: should we add a progress bar?
         # TODO: should we add a try-except block?
         for i in range(max_iter):
@@ -104,6 +128,8 @@ class AbstractSolver:
             if break_at_performance is not None:
                 if y >= break_at_performance:
                     break
+
+        return self.get_best_solution(), self.get_best_performance()
 
     def save_history(
         self, path: Path, alphabet: List[str] = None, metadata: Dict[str, Any] = None
