@@ -117,6 +117,7 @@ class GeneticAlgorithm(AbstractSolver):
         initialize_with_x0: bool = True,
     ):
         super().__init__(black_box, x0, y0)
+        self.pop_size = pop_size
         # TODO: make sure that the padding is not in the alphabet.
 
         self.pymoo_problem = DiscretePymooProblem(
@@ -127,42 +128,7 @@ class GeneticAlgorithm(AbstractSolver):
         )
 
         if initialize_with_x0:
-            # Pad x_0/subsample x_0 depending on pop_size
-            x0_for_initialization = None
-            if x0.shape[0] > pop_size:
-                # Subsample.
-                logging.warning(
-                    "Warning: initializing with an x0 that is larger than the population size. We will subsample the best performing starting points"
-                )
-
-                best_performing_indices = reversed(np.argsort(y0))
-                x0_for_initialization = x0[best_performing_indices[:pop_size]]
-                y0_for_initialization = y0[best_performing_indices[:pop_size]]
-            elif x0.shape[0] < pop_size:
-                # Pad using random mutations (?).
-                x0_for_initialization = add_random_mutations_to_reach_pop_size(
-                    x0, self.black_box.info.alphabet, pop_size
-                )
-                missing_evaluations = self.black_box(
-                    x0_for_initialization[x0.shape[0] :]
-                )
-                y0_for_initialization = np.vstack([y0, missing_evaluations])
-            else:
-                # We're golden.
-                x0_for_initialization = x0
-                y0_for_initialization = y0
-
-            # TODO: Will this be enough?
-            x0_for_initialization_as_dicts = _from_array_to_dict(x0_for_initialization)
-            initial_individuals = [
-                Individual(X=x_i, F=y_i)
-                for (x_i, y_i) in zip(
-                    x0_for_initialization_as_dicts, y0_for_initialization.flatten()
-                )
-            ]
-
-            initial_population = Population(individuals=initial_individuals)
-
+            initial_population = self._compute_initial_population_from_x0()
             sampling = initial_population
         else:
             sampling = MixedVariableSampling()
@@ -199,6 +165,44 @@ class GeneticAlgorithm(AbstractSolver):
         )
 
         return _from_dict_to_array([res.X]), -res.F
+
+    def _compute_initial_population_from_x0(self) -> Population:
+        # Pad x_0/subsample x_0 depending on pop_size
+        x0 = self.x0
+        pop_size = self.pop_size
+
+        x0_for_initialization = None
+        if x0.shape[0] > pop_size:
+            # Subsample.
+            logging.warning(
+                "Warning: initializing with an x0 that is larger than the population size. We will subsample the best performing starting points"
+            )
+
+            best_performing_indices = reversed(np.argsort(y0))
+            x0_for_initialization = x0[best_performing_indices[:pop_size]]
+            y0_for_initialization = y0[best_performing_indices[:pop_size]]
+        elif x0.shape[0] < pop_size:
+            # Pad using random mutations (?).
+            x0_for_initialization = add_random_mutations_to_reach_pop_size(
+                x0, self.black_box.info.alphabet, pop_size
+            )
+            missing_evaluations = self.black_box(x0_for_initialization[x0.shape[0] :])
+            y0_for_initialization = np.vstack([y0, missing_evaluations])
+        else:
+            # We're golden.
+            x0_for_initialization = x0
+            y0_for_initialization = y0
+
+        # TODO: Will this be enough?
+        x0_for_initialization_as_dicts = _from_array_to_dict(x0_for_initialization)
+        initial_individuals = [
+            Individual(X=x_i, F=y_i)
+            for (x_i, y_i) in zip(
+                x0_for_initialization_as_dicts, y0_for_initialization.flatten()
+            )
+        ]
+
+        return Population(individuals=initial_individuals)
 
 
 if __name__ == "__main__":
