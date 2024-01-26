@@ -5,6 +5,7 @@ Implements a genetic algorithm solver using pymoo as a backend.
 from typing import Callable, Iterable
 from typing_extensions import Self
 from collections import defaultdict
+import logging
 
 import numpy as np
 from numpy import ndarray
@@ -130,8 +131,13 @@ class GeneticAlgorithm(AbstractSolver):
             x0_for_initialization = None
             if x0.shape[0] > pop_size:
                 # Subsample.
-                ...
-                x0_for_initialization = None
+                logging.warning(
+                    "Warning: initializing with an x0 that is larger than the population size. We will subsample the best performing starting points"
+                )
+
+                best_performing_indices = reversed(np.argsort(y0))
+                x0_for_initialization = x0[best_performing_indices[:pop_size]]
+                y0_for_initialization = y0[best_performing_indices[:pop_size]]
             elif x0.shape[0] < pop_size:
                 # Pad using random mutations (?).
                 x0_for_initialization = add_random_mutations_to_reach_pop_size(
@@ -196,7 +202,10 @@ class GeneticAlgorithm(AbstractSolver):
 
 
 if __name__ == "__main__":
+    from poli.core.util.seeding import seed_python_numpy_and_torch
     from poli.objective_repository import AlohaProblemFactory
+
+    seed_python_numpy_and_torch(13)
 
     f, x0, y0 = AlohaProblemFactory().create()
 
@@ -204,5 +213,6 @@ if __name__ == "__main__":
         black_box=f, x0=x0, y0=y0, pop_size=10, initialize_with_x0=True
     )
 
-    x = solver.solve(max_iter=100, verbose=True)
+    x = solver.solve(max_iter=100, verbose=False)
     print(x)
+    print(solver.get_history_as_arrays()[0])
