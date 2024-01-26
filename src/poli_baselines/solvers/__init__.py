@@ -1,5 +1,6 @@
 from .simple.random_mutation import RandomMutation
 from .simple.continuous_random_mutation import ContinuousRandomMutation
+from .simple.genetic_algorithm import GeneticAlgorithm
 
 from .bayesian_optimization.vanilla_bayesian_optimization import (
     VanillaBayesianOptimization,

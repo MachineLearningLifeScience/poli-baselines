@@ -45,7 +45,9 @@ from poli_baselines.core.utils.pymoo import (
     NoCrossover,
     DiscreteSequenceMating,
 )
-from poli_baselines.core.utils.mutations.random_mutations import add_random_mutations
+from poli_baselines.core.utils.mutations.random_mutations import (
+    add_random_mutations_to_reach_pop_size,
+)
 
 
 class DiscreteNSGAII(AbstractSolver):
@@ -171,7 +173,7 @@ class DiscreteNSGAII(AbstractSolver):
         if initialize_with_x0:
             # TODO: if x0 is smaller than population_size, we need to add random mutations to it.
             if self.x0.shape[0] < population_size:
-                x_for_init = add_random_mutations(
+                x_for_init = add_random_mutations_to_reach_pop_size(
                     self.x0, self.black_box.info.alphabet, population_size
                 )
             elif self.x0.shape[0] > population_size:
