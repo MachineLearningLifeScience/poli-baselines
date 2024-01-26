@@ -1,1 +1,0 @@
-UNMUTABLE_TOKENS = set([""])

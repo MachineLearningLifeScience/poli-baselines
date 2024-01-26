@@ -30,7 +30,7 @@ from poli_baselines.core.utils.pymoo.interface import (
     _from_dict_to_array,
     _from_array_to_dict,
 )
-from poli_baselines.core.utils.constants import UNMUTABLE_TOKENS
+from poli_baselines.core.utils.constants import INMUTABLE_TOKENS
 from poli_baselines.core.utils.mutations import add_random_mutations_to_reach_pop_size
 
 from poli_baselines.core.abstract_solver import AbstractSolver
@@ -67,7 +67,7 @@ class ChoiceRandomMutationWithUnmutableTokenAwareness(ChoiceRandomMutation):
             var = problem.vars[k]
             mut = np.where(
                 np.logical_and(
-                    np.random.random(len(X)) < prob_var, ~np.isin(X, UNMUTABLE_TOKENS)
+                    np.random.random(len(X)) < prob_var, ~np.isin(X, INMUTABLE_TOKENS)
                 )
             )[0]
             X[mut, k] = var.sample(len(mut))
@@ -90,7 +90,8 @@ class RandomSelectionOfSameLength(Selection):
         # to their length
         subpopulations_of_same_length = defaultdict(list)
         for i, individual in enumerate(pop):
-            subpopulations_of_same_length[len(individual.x)].append(i)
+            individuals_length = len([v for v in individual.x.values() if v != ""])
+            subpopulations_of_same_length[individuals_length].append(i)
 
         # For each n_select, we randomly choose a length and select two
         # random parents from said subset.
@@ -115,6 +116,7 @@ class GeneticAlgorithm(AbstractSolver):
         y0: ndarray,
         pop_size: int = 100,
         initialize_with_x0: bool = True,
+        prob_of_mutation: float = 0.05,
     ):
         super().__init__(black_box, x0, y0)
         self.pop_size = pop_size
@@ -138,7 +140,7 @@ class GeneticAlgorithm(AbstractSolver):
             sampling=sampling,
             mating=MixedVariableMating(
                 mutation={
-                    Choice: ChoiceRandomMutation(),
+                    Choice: ChoiceRandomMutation(prob_var=prob_of_mutation),
                 },
                 selection=RandomSelectionOfSameLength(),
                 eliminate_duplicates=MixedVariableDuplicateElimination(),
@@ -169,6 +171,7 @@ class GeneticAlgorithm(AbstractSolver):
     def _compute_initial_population_from_x0(self) -> Population:
         # Pad x_0/subsample x_0 depending on pop_size
         x0 = self.x0
+        y0 = self.y0
         pop_size = self.pop_size
 
         x0_for_initialization = None
