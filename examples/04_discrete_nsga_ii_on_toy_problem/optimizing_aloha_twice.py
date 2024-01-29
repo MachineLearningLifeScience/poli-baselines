@@ -1,4 +1,5 @@
 """Example: NSGA-2 on discrete inputs using poli baselines."""
+
 import numpy as np
 
 import matplotlib.pyplot as plt

@@ -1,5 +1,6 @@
 """This module implements continuous random search by mutating
 the best performing candidate, adding Gaussian noise."""
+
 from typing import Tuple
 import numpy as np
 

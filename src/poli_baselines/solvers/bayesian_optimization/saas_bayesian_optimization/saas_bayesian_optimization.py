@@ -11,6 +11,7 @@ on applying SAASBO [2].
     https://arxiv.org/abs/2103.00349
 [2] https://botorch.org/tutorials/saasbo
 """
+
 from typing import Type, Tuple
 from gpytorch.kernels import Kernel
 from gpytorch.means import Mean

@@ -1,4 +1,5 @@
 """This module implements tools for visualizing 2D objective functions."""
+
 from itertools import product
 from typing import Tuple
 
