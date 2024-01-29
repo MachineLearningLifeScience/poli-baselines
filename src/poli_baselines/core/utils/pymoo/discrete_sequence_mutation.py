@@ -1,5 +1,13 @@
 from pymoo.core.mutation import Mutation
 
+import math
+
+import numpy as np
+
+from pymoo.operators.mutation.rm import ChoiceRandomMutation
+
+from poli_baselines.core.utils.constants import INMUTABLE_TOKENS
+
 
 class NoMutation(Mutation):
     """
@@ -55,4 +63,36 @@ class DiscreteSequenceMutation(Mutation):
         super().__init__(prob, prob_var, **kwargs)
 
     def _do(self, problem, X, **kwargs):
+        return X
+
+
+class ChoiceRandomMutationWithUnmutableTokenAwareness(ChoiceRandomMutation):
+    def __init__(self, prob=1, prob_var=None, n_mutations=None, **kwargs) -> None:
+        """
+        If n_mutations is provided, it overwrites the choice of mutations
+        using prob_var, and instead randomly choses an index to mutate.
+        """
+
+        super().__init__(prob, prob_var, **kwargs)
+
+    def _do(self, problem, X, **kwargs):
+        """
+        This is a slight modification of the _do method for
+        ChoiceRandomMutation
+        """
+        # TODO: should we have a global padding token?,
+        # or a list of tokens to not-mutate.
+        assert problem.vars is not None
+
+        prob_var = self.get_prob_var(problem, size=len(X))
+
+        for k in range(problem.n_var):
+            var = problem.vars[k]
+            mut = np.where(
+                np.logical_and(
+                    np.random.random(len(X)) < prob_var, ~np.isin(X, INMUTABLE_TOKENS)
+                )
+            )[0]
+            X[mut, k] = var.sample(len(mut))
+
         return X

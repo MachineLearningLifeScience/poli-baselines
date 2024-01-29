@@ -18,11 +18,10 @@ from pymoo.core.mixed import (
 from pymoo.optimize import minimize
 from pymoo.core.callback import Callback
 from pymoo.core.population import Population
-from pymoo.core.mutation import Mutation
 from pymoo.core.variable import Choice
 from pymoo.core.individual import Individual
-
 from pymoo.operators.mutation.rm import ChoiceRandomMutation
+from pymoo.core.selection import Selection
 
 from poli.core.abstract_black_box import AbstractBlackBox
 from poli_baselines.core.utils.pymoo.interface import (
@@ -30,7 +29,6 @@ from poli_baselines.core.utils.pymoo.interface import (
     _from_dict_to_array,
     _from_array_to_dict,
 )
-from poli_baselines.core.utils.constants import INMUTABLE_TOKENS
 from poli_baselines.core.utils.mutations import add_random_mutations_to_reach_pop_size
 
 from poli_baselines.core.abstract_solver import AbstractSolver
@@ -49,33 +47,6 @@ class SaveHistoryCallback(Callback):
         )
 
         self.solver.update(x_as_array, -algorithm.pop.get("F"))
-
-
-class ChoiceRandomMutationWithUnmutableTokenAwareness(ChoiceRandomMutation):
-    def _do(self, problem, X, **kwargs):
-        """
-        This is a slight modification of the _do method for
-        ChoiceRandomMutation
-        """
-        # TODO: should we have a global padding token?,
-        # or a list of tokens to not-mutate.
-        assert problem.vars is not None
-
-        prob_var = self.get_prob_var(problem, size=len(X))
-
-        for k in range(problem.n_var):
-            var = problem.vars[k]
-            mut = np.where(
-                np.logical_and(
-                    np.random.random(len(X)) < prob_var, ~np.isin(X, INMUTABLE_TOKENS)
-                )
-            )[0]
-            X[mut, k] = var.sample(len(mut))
-
-        return X
-
-
-from pymoo.core.selection import Selection
 
 
 class RandomSelectionOfSameLength(Selection):
@@ -108,7 +79,7 @@ class RandomSelectionOfSameLength(Selection):
         return np.array(parents_, dtype=int)
 
 
-class GeneticAlgorithm(AbstractSolver):
+class FixedLengthGeneticAlgorithm(AbstractSolver):
     def __init__(
         self,
         black_box: AbstractBlackBox,
@@ -116,7 +87,7 @@ class GeneticAlgorithm(AbstractSolver):
         y0: ndarray,
         pop_size: int = 100,
         initialize_with_x0: bool = True,
-        prob_of_mutation: float = 0.05,
+        prob_of_mutation: float = 0.5,
     ):
         super().__init__(black_box, x0, y0)
         self.pop_size = pop_size
@@ -216,7 +187,7 @@ if __name__ == "__main__":
 
     f, x0, y0 = AlohaProblemFactory().create()
 
-    solver = GeneticAlgorithm(
+    solver = FixedLengthGeneticAlgorithm(
         black_box=f, x0=x0, y0=y0, pop_size=10, initialize_with_x0=True
     )
 
