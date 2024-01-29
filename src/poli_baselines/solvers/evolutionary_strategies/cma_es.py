@@ -16,6 +16,7 @@ References
     doi: 10.1109/ICEC.1996.542381.
 
 """
+
 from typing import Tuple
 import numpy as np
 from poli.core.abstract_black_box import AbstractBlackBox

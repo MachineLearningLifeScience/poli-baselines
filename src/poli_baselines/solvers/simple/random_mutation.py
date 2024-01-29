@@ -8,6 +8,7 @@ are performed by randomly selecting a
 position in the input and randomly selecting
 a new value for that position.
 """
+
 from typing import Dict
 
 import numpy as np

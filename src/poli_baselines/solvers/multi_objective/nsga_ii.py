@@ -15,6 +15,7 @@ References:
     https://doi.org/10.1109/4235.996017.
 
 """
+
 from typing import Tuple
 
 import numpy as np

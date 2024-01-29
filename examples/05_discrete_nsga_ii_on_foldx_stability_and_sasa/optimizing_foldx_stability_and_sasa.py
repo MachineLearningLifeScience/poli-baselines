@@ -15,6 +15,7 @@ The PDB files were taken from LaMBO's assets [1].
 [1] Accelerating Bayesian Optimization for Protein Design with Denoising Autoencoders
     by Stanton et al. (2022). https://github.com/samuelstanton/lambo
 """
+
 from pathlib import Path
 
 import numpy as np

@@ -1,4 +1,5 @@
 """This module implements Thompson Sampling (TS) as an acquisition function inside BoTorch."""
+
 from typing import Tuple
 
 import torch

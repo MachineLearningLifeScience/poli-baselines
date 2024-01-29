@@ -8,6 +8,7 @@ This example requires you to have foldx installed. We expect
 
 For more information, check the documentation of the `foldx_stability` objective.
 """
+
 from pathlib import Path
 
 from poli import objective_factory

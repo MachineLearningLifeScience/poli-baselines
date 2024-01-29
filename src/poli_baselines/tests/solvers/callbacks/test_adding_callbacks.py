@@ -1,4 +1,5 @@
 """Tests adding callbacks to solvers."""
+
 from unittest.mock import MagicMock
 
 import numpy as np

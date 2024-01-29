@@ -1,4 +1,5 @@
 """Tests all Bayesian Optimization algorithms together under the same class"""
+
 import pytest
 from unittest.mock import patch
 

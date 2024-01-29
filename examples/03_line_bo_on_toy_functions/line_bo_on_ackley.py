@@ -2,6 +2,7 @@
 This script tests Line Bayesian Optimization [1] on the Ackley function
 in several dimensions.
 """
+
 import warnings
 
 warnings.filterwarnings("ignore", module="botorch")
