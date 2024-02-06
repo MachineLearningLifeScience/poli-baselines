@@ -6,7 +6,7 @@ import numpy as np
 
 from pymoo.operators.mutation.rm import ChoiceRandomMutation
 
-from poli_baselines.core.utils.constants import INMUTABLE_TOKENS
+from poli_baselines.core.utils.constants import IMMUTABLE_TOKENS
 
 
 class NoMutation(Mutation):
@@ -90,7 +90,7 @@ class ChoiceRandomMutationWithUnmutableTokenAwareness(ChoiceRandomMutation):
             var = problem.vars[k]
             mut = np.where(
                 np.logical_and(
-                    np.random.random(len(X)) < prob_var, ~np.isin(X, INMUTABLE_TOKENS)
+                    np.random.random(len(X)) < prob_var, ~np.isin(X, IMMUTABLE_TOKENS)
                 )
             )[0]
             X[mut, k] = var.sample(len(mut))

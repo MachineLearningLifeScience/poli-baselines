@@ -1,1 +1,1 @@
-from .inmutable_tokens import INMUTABLE_TOKENS
+from .immutable_tokens import IMMUTABLE_TOKENS
