@@ -85,12 +85,12 @@ class FixedLengthGeneticAlgorithm(AbstractSolver):
         black_box: AbstractBlackBox,
         x0: ndarray,
         y0: ndarray,
-        pop_size: int = 100,
+        population_size: int = 100,
         initialize_with_x0: bool = True,
         prob_of_mutation: float = 0.5,
     ):
         super().__init__(black_box, x0, y0)
-        self.pop_size = pop_size
+        self.population_size = population_size
         # TODO: make sure that the padding is not in the alphabet.
 
         self.pymoo_problem = DiscretePymooProblem(
@@ -107,7 +107,7 @@ class FixedLengthGeneticAlgorithm(AbstractSolver):
             sampling = MixedVariableSampling()
 
         self.optimizer = MixedVariableGA(
-            pop_size=pop_size,
+            pop_size=population_size,
             sampling=sampling,
             mating=MixedVariableMating(
                 mutation={
@@ -134,7 +134,7 @@ class FixedLengthGeneticAlgorithm(AbstractSolver):
             self.optimizer,
             ("n_gen", max_iter),
             verbose=verbose,
-            callback=SaveHistoryCallback(self),
+            callback=SaveHistoryAndCallOtherCallbacks(self, post_step_callbacks),
         )
 
         return _from_dict_to_array([res.X]), -res.F
@@ -143,7 +143,7 @@ class FixedLengthGeneticAlgorithm(AbstractSolver):
         # Pad x_0/subsample x_0 depending on pop_size
         x0 = self.x0
         y0 = self.y0
-        pop_size = self.pop_size
+        pop_size = self.population_size
 
         x0_for_initialization = None
         if x0.shape[0] > pop_size:
@@ -152,7 +152,8 @@ class FixedLengthGeneticAlgorithm(AbstractSolver):
                 "Warning: initializing with an x0 that is larger than the population size. We will subsample the best performing starting points"
             )
 
-            best_performing_indices = reversed(np.argsort(y0))
+            # TODO: this assumes a single objective.
+            best_performing_indices = np.argsort(y0.flatten())[::-1]
             x0_for_initialization = x0[best_performing_indices[:pop_size]]
             y0_for_initialization = y0[best_performing_indices[:pop_size]]
         elif x0.shape[0] < pop_size:
@@ -179,6 +180,26 @@ class FixedLengthGeneticAlgorithm(AbstractSolver):
         return Population(individuals=initial_individuals)
 
 
+class SaveHistoryAndCallOtherCallbacks(Callback):
+    def __init__(
+        self, solver: FixedLengthGeneticAlgorithm, callbacks: Iterable[Callback]
+    ):
+        super().__init__()
+        self.solver = solver
+        self.callbacks = callbacks
+
+    def notify(self, algorithm):
+        x_as_array = np.vstack(
+            [_from_dict_to_array(x_i) for x_i in algorithm.pop.get("X")]
+        )
+
+        self.solver.update(x_as_array, -algorithm.pop.get("F"))
+
+        if self.callbacks is not None:
+            for callback in self.callbacks:
+                callback(self.solver)
+
+
 if __name__ == "__main__":
     from poli.core.util.seeding import seed_python_numpy_and_torch
     from poli.objective_repository import AlohaProblemFactory
@@ -188,7 +209,7 @@ if __name__ == "__main__":
     f, x0, y0 = AlohaProblemFactory().create()
 
     solver = FixedLengthGeneticAlgorithm(
-        black_box=f, x0=x0, y0=y0, pop_size=10, initialize_with_x0=True
+        black_box=f, x0=x0, y0=y0, population_size=10, initialize_with_x0=True
     )
 
     x = solver.solve(max_iter=100, verbose=False)

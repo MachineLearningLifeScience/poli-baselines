@@ -1,6 +1,7 @@
 """
 This module tests the implementation of a genetic algorithm inside poli-baselines.
 """
+
 from pathlib import Path
 
 import pytest
@@ -12,7 +13,7 @@ def test_genetic_algorithm_interface():
 
     f, x0, y0 = AlohaProblemFactory().create()
 
-    solver = FixedLengthGeneticAlgorithm(black_box=f, x0=x0, y0=y0, pop_size=10)
+    solver = FixedLengthGeneticAlgorithm(black_box=f, x0=x0, y0=y0, population_size=10)
 
     solver.solve(max_iter=100)
 
@@ -23,7 +24,7 @@ def test_genetic_algorithm_improves_over_time():
 
     f, x0, y0 = AlohaProblemFactory().create()
 
-    solver = FixedLengthGeneticAlgorithm(black_box=f, x0=x0, y0=y0, pop_size=10)
+    solver = FixedLengthGeneticAlgorithm(black_box=f, x0=x0, y0=y0, population_size=10)
 
     solver.solve(max_iter=20)
     assert y0 < solver.get_best_performance()
@@ -46,7 +47,7 @@ def test_genetic_algorithm_on_foldx_stability_with_several_wildtypes():
         wildtype_pdb_path=wildtype_pdb_paths, verbose=False
     )
 
-    solver = FixedLengthGeneticAlgorithm(black_box=f, x0=x0, y0=y0, pop_size=4)
+    solver = FixedLengthGeneticAlgorithm(black_box=f, x0=x0, y0=y0, population_size=4)
     solver.solve(max_iter=2, verbose=True)
     print(solver.get_best_solution())
 

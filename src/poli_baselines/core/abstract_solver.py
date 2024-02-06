@@ -150,7 +150,7 @@ class AbstractSolver:
                 cls=NumpyToListEncoder,
             )
 
-    def get_best_solution(self) -> np.ndarray:
+    def get_best_solution(self, top_k: int = 1) -> np.ndarray:
         """
         Returns the best solution found so far (assuming that the output is a scalar).
 
@@ -166,14 +166,20 @@ class AbstractSolver:
         stacked_inputs = np.vstack(inputs)
         stacked_outputs = np.vstack(outputs)
 
-        nanargmax = np.nanargmax(stacked_outputs)
+        n_objectives = stacked_outputs.shape[1]
+        if n_objectives == 1:
+            # If we can only return less than top_k solutions,
+            # we return the ones we have.
+            _top_k = min(top_k, stacked_outputs.shape[0])
+            nanargmax = np.argsort(stacked_outputs.flatten())
+            best_solutions = stacked_inputs[nanargmax[-_top_k:]]
+        else:
+            pareto_front = self.get_pareto_front()
+            _top_k = min(top_k, pareto_front.shape[0])
 
-        if isinstance(nanargmax, np.ndarray):
-            nanargmax = nanargmax[0]
+            best_solutions = pareto_front[:_top_k]
 
-        one_best_solution = stacked_inputs[nanargmax]
-
-        return one_best_solution.reshape(1, -1)
+        return best_solutions.reshape(_top_k, -1)
 
     def get_best_performance(self, until: int = None) -> np.ndarray:
         """
@@ -187,6 +193,20 @@ class AbstractSolver:
         stacked_outputs = np.vstack(outputs)
 
         return np.nanmax(stacked_outputs, axis=0)
+
+    def get_pareto_front(self) -> np.ndarray:
+        import torch
+        from botorch.utils.multi_objective.pareto import is_non_dominated
+
+        x, y = self.get_history_as_arrays()
+
+        assert y.shape[1] >= 2, "This method only works for multi-objective problems."
+
+        y = torch.tensor(y)
+        pareto_mask = is_non_dominated(y)
+        pareto_front = x[pareto_mask.numpy(force=True)]
+
+        return pareto_front
 
     def get_history_as_arrays(self) -> Tuple[np.ndarray, np.ndarray]:
         """
