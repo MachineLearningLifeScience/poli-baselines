@@ -4,7 +4,7 @@ Implements a genetic algorithm solver using pymoo as a backend.
 
 from typing import Callable, Iterable
 from typing_extensions import Self
-from collections import defaultdict
+
 import logging
 
 import numpy as np
@@ -16,12 +16,10 @@ from pymoo.core.mixed import (
     MixedVariableDuplicateElimination,
 )
 from pymoo.optimize import minimize
-from pymoo.core.callback import Callback
 from pymoo.core.population import Population
 from pymoo.core.variable import Choice
 from pymoo.core.individual import Individual
 from pymoo.operators.mutation.rm import ChoiceRandomMutation
-from pymoo.core.selection import Selection
 
 from poli.core.abstract_black_box import AbstractBlackBox
 from poli_baselines.core.utils.pymoo.interface import (
@@ -29,54 +27,13 @@ from poli_baselines.core.utils.pymoo.interface import (
     _from_dict_to_array,
     _from_array_to_dict,
 )
+from poli_baselines.core.utils.pymoo import (
+    RandomSelectionOfSameLength,
+    SaveHistoryAndCallOtherCallbacks,
+)
 from poli_baselines.core.utils.mutations import add_random_mutations_to_reach_pop_size
 
 from poli_baselines.core.abstract_solver import AbstractSolver
-
-
-class SaveHistoryCallback(Callback):
-    def __init__(self, solver: AbstractSolver):
-        super().__init__()
-        self.solver = solver
-
-    def notify(self, algorithm):
-        # Since we're dealing with MixedVariables, we need to convert the
-        # population of dicts {"x_i": value} to an array of shape [n, sequence_length].
-        x_as_array = np.vstack(
-            [_from_dict_to_array(x_i) for x_i in algorithm.pop.get("X")]
-        )
-
-        self.solver.update(x_as_array, -algorithm.pop.get("F"))
-
-
-class RandomSelectionOfSameLength(Selection):
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-
-    def _do(self, _, pop, n_select, n_parents, **kwargs):
-        # TODO: implement this by sub-selecting the parents that have a certain length, and forming pairs thereof.
-
-        # This dict will be of the form {length: [index_of_pop_element]},
-        # separating the elements of the population according
-        # to their length
-        subpopulations_of_same_length = defaultdict(list)
-        for i, individual in enumerate(pop):
-            individuals_length = len([v for v in individual.x.values() if v != ""])
-            subpopulations_of_same_length[individuals_length].append(i)
-
-        # For each n_select, we randomly choose a length and select two
-        # random parents from said subset.
-        # TODO: What should we do if there's only one element of a certain length?
-        parents_ = []
-        for _ in range(n_select):
-            random_length = np.random.choice(list(subpopulations_of_same_length.keys()))
-            index_1, index_2 = np.random.choice(
-                subpopulations_of_same_length[random_length],
-                size=2,
-            )
-            parents_.append((index_1, index_2))
-
-        return np.array(parents_, dtype=int)
 
 
 class FixedLengthGeneticAlgorithm(AbstractSolver):
@@ -129,6 +86,8 @@ class FixedLengthGeneticAlgorithm(AbstractSolver):
         pre_step_callbacks: Iterable[Callable[[Self], None]] = None,
         post_step_callbacks: Iterable[Callable[[Self], None]] = None,
     ) -> ndarray:
+        # TODO: implement break at performance.
+        # TODO: add pre-step callbacks.
         res = minimize(
             self.pymoo_problem,
             self.optimizer,
@@ -140,6 +99,8 @@ class FixedLengthGeneticAlgorithm(AbstractSolver):
         return _from_dict_to_array([res.X]), -res.F
 
     def _compute_initial_population_from_x0(self) -> Population:
+        # TODO: Implement this as a general function. It can be used
+        # e.g. in other genetic algorithms.
         # Pad x_0/subsample x_0 depending on pop_size
         x0 = self.x0
         y0 = self.y0
@@ -178,26 +139,6 @@ class FixedLengthGeneticAlgorithm(AbstractSolver):
         ]
 
         return Population(individuals=initial_individuals)
-
-
-class SaveHistoryAndCallOtherCallbacks(Callback):
-    def __init__(
-        self, solver: FixedLengthGeneticAlgorithm, callbacks: Iterable[Callback]
-    ):
-        super().__init__()
-        self.solver = solver
-        self.callbacks = callbacks
-
-    def notify(self, algorithm):
-        x_as_array = np.vstack(
-            [_from_dict_to_array(x_i) for x_i in algorithm.pop.get("X")]
-        )
-
-        self.solver.update(x_as_array, -algorithm.pop.get("F"))
-
-        if self.callbacks is not None:
-            for callback in self.callbacks:
-                callback(self.solver)
 
 
 if __name__ == "__main__":
