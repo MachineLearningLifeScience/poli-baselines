@@ -73,15 +73,39 @@ class AbstractSolver:
         verbose: bool = False,
         pre_step_callbacks: Iterable[Callable[[Self], None]] = None,
         post_step_callbacks: Iterable[Callable[[Self], None]] = None,
-    ) -> np.ndarray:
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
-        Runs the solver for the given number of iterations.
-        :param max_iter:
-        :type max_iter:
-        :return:
-        :rtype:
+        Optimizes the problem for a given number of iterations.
+
+        Parameters
+        ----------
+        max_iter: int, optional
+            The maximum number of iterations to run. By default, 100.
+        break_at_performance: float, optional
+            If given, the algorithm will stop when the best performance
+            is greater than or equal to this value. By default, we don't
+            break (i.e. None).
+        verbose: bool, optional
+            If True, prints the current iteration and the best performance
+            found so far. By default, False.
+        pre_step_callbacks: Iterable[Callable[[Self], None]], optional
+            A list of callbacks to be called before each step. By default,
+            None. These callbacks are simply functions that take the solver as
+            an argument, and don't return anything. Pre-step callbacks are
+            called before self.step() (i.e. before self.next_candidate()).
+        post_step_callbacks: Iterable[Callable[[Self], None]], optional
+            A list of callbacks to be called after each step. By default,
+            None. These callbacks are simply functions that take the solver as
+            an argument, and don't return anything. Post-step callbacks are
+            called after self.step() (i.e. after self.next_candidate()).
+
+        Returns
+        -------
+        x: np.ndarray
+            The final best-performing solution.
+        y: np.ndarray
+            The performance of the best-performing solution.
         """
-        # TODO: add logging, link it to the observer logic.
         # TODO: should we add a progress bar?
         # TODO: should we add a try-except block?
         for i in range(max_iter):
@@ -105,6 +129,8 @@ class AbstractSolver:
                 if y >= break_at_performance:
                     break
 
+        return self.get_best_solution(), self.get_best_performance()
+
     def save_history(
         self, path: Path, alphabet: List[str] = None, metadata: Dict[str, Any] = None
     ) -> None:
@@ -124,7 +150,7 @@ class AbstractSolver:
                 cls=NumpyToListEncoder,
             )
 
-    def get_best_solution(self) -> np.ndarray:
+    def get_best_solution(self, top_k: int = 1) -> np.ndarray:
         """
         Returns the best solution found so far (assuming that the output is a scalar).
 
@@ -140,14 +166,20 @@ class AbstractSolver:
         stacked_inputs = np.vstack(inputs)
         stacked_outputs = np.vstack(outputs)
 
-        nanargmax = np.nanargmax(stacked_outputs)
+        n_objectives = stacked_outputs.shape[1]
+        if n_objectives == 1:
+            # If we can only return less than top_k solutions,
+            # we return the ones we have.
+            _top_k = min(top_k, stacked_outputs.shape[0])
+            nanargmax = np.argsort(stacked_outputs.flatten())
+            best_solutions = stacked_inputs[nanargmax[-_top_k:]]
+        else:
+            pareto_front = self.get_pareto_front()
+            _top_k = min(top_k, pareto_front.shape[0])
 
-        if isinstance(nanargmax, np.ndarray):
-            nanargmax = nanargmax[0]
+            best_solutions = pareto_front[:_top_k]
 
-        one_best_solution = stacked_inputs[nanargmax]
-
-        return one_best_solution.reshape(1, -1)
+        return best_solutions.reshape(_top_k, -1)
 
     def get_best_performance(self, until: int = None) -> np.ndarray:
         """
@@ -161,6 +193,20 @@ class AbstractSolver:
         stacked_outputs = np.vstack(outputs)
 
         return np.nanmax(stacked_outputs, axis=0)
+
+    def get_pareto_front(self) -> np.ndarray:
+        import torch
+        from botorch.utils.multi_objective.pareto import is_non_dominated
+
+        x, y = self.get_history_as_arrays()
+
+        assert y.shape[1] >= 2, "This method only works for multi-objective problems."
+
+        y = torch.tensor(y)
+        pareto_mask = is_non_dominated(y)
+        pareto_front = x[pareto_mask.numpy(force=True)]
+
+        return pareto_front
 
     def get_history_as_arrays(self) -> Tuple[np.ndarray, np.ndarray]:
         """

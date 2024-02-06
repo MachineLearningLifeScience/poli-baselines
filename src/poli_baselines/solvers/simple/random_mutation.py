@@ -10,6 +10,7 @@ a new value for that position.
 """
 
 from typing import Dict
+import random
 
 import numpy as np
 
@@ -23,14 +24,22 @@ class RandomMutation(AbstractSolver):
         black_box: AbstractBlackBox,
         x0: np.ndarray,
         y0: np.ndarray,
+        n_mutations: int = 1,
+        top_k: int = 1,
+        batch_size: int = 1,
+        greedy: bool = True,
     ):
         super().__init__(black_box, x0, y0)
         self.alphabet = black_box.info.alphabet
         self.string_to_idx = {symbol: i for i, symbol in enumerate(self.alphabet)}
         self.alphabet_size = len(self.alphabet)
         self.idx_to_string = {v: k for k, v in self.string_to_idx.items()}
+        self.n_mutations = n_mutations
+        self.top_k = top_k
+        self.greedy = greedy
+        self.batch_size = batch_size
 
-    def next_candidate(self) -> np.ndarray:
+    def _next_candidate(self) -> np.ndarray:
         """
         Returns the next candidate solution
         after checking the history.
@@ -39,27 +48,58 @@ class RandomMutation(AbstractSolver):
         simply returns a random mutation of the
         best performing solution so far.
         """
-        # Get the best performing solution so far
-        best_x = self.get_best_solution()
-        # best_x = self.history["x"][np.argmax(self.history["y"])]
+        if self.greedy:
+            # Get the best performing solution so far
+            best_xs = self.get_best_solution(top_k=self.top_k)
+
+            # Select one of the best solutions at random
+            best_x = random.choice(best_xs)
+        else:
+            xs, _ = self.get_history_as_arrays()
+
+            random_indices = np.random.permutation(len(xs))
+            best_xs = xs[random_indices[: self.top_k]]
 
         # Perform a random mutation
         # TODO: this assumes that x has shape [1, L],
         # what happens with batches? So far, POLi is
         # implemented without batching in mind.
-        next_x = best_x.copy()
-        pos = np.random.randint(0, len(next_x.flatten()))
+        next_x = best_x.copy().reshape(1, -1)
 
-        if next_x.dtype.kind in ("i", "f"):
-            mutant = np.random.randint(0, self.alphabet_size)
-        elif next_x.dtype.kind in ("U", "S"):
-            mutant = np.random.choice(list(self.string_to_idx.keys()))
-        else:
-            raise ValueError(
-                f"Unknown dtype for the input: {next_x.dtype}. "
-                "Only integer, float and unicode dtypes are supported."
-            )
+        for _ in range(self.n_mutations):
+            pos = np.random.randint(0, len(next_x.flatten()))
+            while next_x[0][pos] == "":
+                pos = np.random.randint(0, len(next_x.flatten()))
 
-        next_x[0][pos] = mutant
+            if next_x.dtype.kind in ("i", "f"):
+                mutant = np.random.randint(0, self.alphabet_size)
+            elif next_x.dtype.kind in ("U", "S"):
+                mutant = np.random.choice(list(self.string_to_idx.keys()))
+            else:
+                raise ValueError(
+                    f"Unknown dtype for the input: {next_x.dtype}. "
+                    "Only integer, float and unicode dtypes are supported."
+                )
+
+            next_x[0][pos] = mutant
+
+            # if next_x.dtype.kind in ("i", "f"):
+            #     mutant = np.random.randint(0, self.alphabet_size)
+            # elif next_x.dtype.kind in ("U", "S"):
+            #     mutant = np.random.choice(list(self.string_to_idx.keys()))
+            # else:
+            #     raise ValueError(
+            #         f"Unknown dtype for the input: {next_x.dtype}. "
+            #         "Only integer, float and unicode dtypes are supported."
+            #     )
+
+            # next_x[0][pos] = mutant
 
         return next_x
+
+    def next_candidate(self) -> np.ndarray:
+        mutations = [
+            self._next_candidate().reshape(1, -1) for _ in range(self.batch_size)
+        ]
+
+        return np.concatenate(mutations, axis=0)

@@ -2,6 +2,9 @@
 
 [![Test (conda, python 3.9)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml)
 
+> [!WARNING]  
+> This package is a work in progress. Some solvers have not been properly tested. For an authoritative list of the stable solvers, check [our documentation](https://machinelearninglifescience.github.io/poli-docs/#black-box-optimization-algorithms).
+
 `poli-baselines` is a collection of **black box optimization algorithms**, aimed mostly at optimizing discrete sequences. These optimization algorithms are meant to optimize objective functions defined using [`poli`](https://github.com/MachineLearningLifeScience/poli), a tool for instantiating complex, difficult-to-query functions.
 
 ## Installation
@@ -61,7 +64,7 @@ print(solver.get_best_solution())  # Should be [["A", "L", "O", "H", "A"]]
 
 ## More examples
 
-The `examples` folder includes the optimization of more complex objective functions such as `foldx` stability (if you have `foldx` installed in your computer), and the use of advanced black box optimizers like (Line) Bayesian Optimization, or NSGA-2.
+The `examples` folder includes the optimization of more complex objective functions such as `foldx` stability (if you have `foldx` installed in your computer), and the use of advanced black box optimizers like (Line) Bayesian Optimization.
 
 ## Want to contribute?
 

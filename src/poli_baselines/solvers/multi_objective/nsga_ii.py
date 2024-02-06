@@ -26,7 +26,7 @@ from pymoo.core.sampling import Sampling
 from pymoo.core.mating import InfillCriterion
 from pymoo.core.crossover import Crossover
 from pymoo.core.selection import Selection
-from pymoo.algorithms.moo.nsga2 import NSGA2
+from pymoo.algorithms.moo.nsga2 import NSGA2, RankAndCrowdingSurvival, binary_tournament
 from pymoo.core.termination import NoTermination
 from pymoo.core.population import Population
 from pymoo.core.mixed import (
@@ -35,8 +35,13 @@ from pymoo.core.mixed import (
     MixedVariableSampling,
 )
 from pymoo.operators.crossover.sbx import SBX
+from pymoo.algorithms.moo.nsga2 import NSGA2
 
 from poli.core.abstract_black_box import AbstractBlackBox
+from pymoo.operators.mutation.pm import PM
+from pymoo.operators.sampling.rnd import FloatRandomSampling
+from pymoo.operators.selection.tournament import TournamentSelection
+from pymoo.util.display.multi import MultiObjectiveOutput
 from poli_baselines.core.abstract_solver import AbstractSolver
 from poli_baselines.core.utils.pymoo.interface import DiscretePymooProblem
 from poli_baselines.core.utils.pymoo import (
@@ -46,7 +51,33 @@ from poli_baselines.core.utils.pymoo import (
     NoCrossover,
     DiscreteSequenceMating,
 )
-from poli_baselines.core.utils.mutations.random_mutations import add_random_mutations
+from poli_baselines.core.utils.mutations.random_mutations import (
+    add_random_mutations_to_reach_pop_size,
+)
+
+
+class DiscreteNSGA2(NSGA2):
+    def __init__(
+        self,
+        pop_size=100,
+        sampling=FloatRandomSampling(),
+        selection=TournamentSelection(func_comp=binary_tournament),
+        crossover=SBX(eta=15, prob=0.9),
+        mutation=PM(eta=20),
+        survival=RankAndCrowdingSurvival(),
+        output=MultiObjectiveOutput(),
+        **kwargs,
+    ):
+        super().__init__(
+            pop_size,
+            sampling,
+            selection,
+            crossover,
+            mutation,
+            survival,
+            output,
+            **kwargs,
+        )
 
 
 class DiscreteNSGAII(AbstractSolver):
@@ -172,16 +203,22 @@ class DiscreteNSGAII(AbstractSolver):
         if initialize_with_x0:
             # TODO: if x0 is smaller than population_size, we need to add random mutations to it.
             if self.x0.shape[0] < population_size:
-                x_for_init = add_random_mutations(
+                x0_for_init = add_random_mutations_to_reach_pop_size(
                     self.x0, self.black_box.info.alphabet, population_size
                 )
+                missing_evaluations = self.black_box(x0_for_init[x0.shape[0] :])
+                y0_for_init = np.vstack([self.y0, missing_evaluations])
             elif self.x0.shape[0] > population_size:
-                x_for_init = self.x0[:population_size]
-            else:
-                x_for_init = self.x0
+                best_performing_indices = np.argsort(self.y0.flatten())[::-1]
+                x0_for_init = self.x0[best_performing_indices[: self.pop_size]]
+                y0_for_init = y0[best_performing_indices[: self.pop_size]]
 
-            x0_as_mixed_variable = _from_array_to_dict(x_for_init)
-            sampling = Population.new("X", x0_as_mixed_variable)
+            else:
+                x0_for_init = self.x0
+                y0_for_init = self.y0
+
+            x0_as_mixed_variable = _from_array_to_dict(x0_for_init)
+            sampling = Population.new("X", x0_as_mixed_variable, "F", y0_for_init)
 
         self.algorithm = NSGA2(
             pop_size=population_size,

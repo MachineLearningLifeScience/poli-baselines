@@ -84,6 +84,7 @@ class DiscretePymooProblem(Problem):
         y0: np.ndarray,
         checkpoint_path: Path = None,
         initialize_with_x0: bool = True,
+        minimize: bool = False,
         **kwargs,
     ):
         """
@@ -105,7 +106,10 @@ class DiscretePymooProblem(Problem):
             Additional keyword arguments to be passed to the base class.
         """
         self.black_box = black_box
-        self.black_box_for_minimization = -black_box
+        if minimize:
+            self.black_box_for_minimization = black_box
+        else:
+            self.black_box_for_minimization = -black_box
         self.x0 = x0
         self.y0 = y0
 
@@ -130,7 +134,10 @@ class DiscretePymooProblem(Problem):
         else:
             if initialize_with_x0:
                 pop = Population.new("X", x0)
-                pop.set("F", -y0)
+                if minimize:
+                    pop.set("F", y0)
+                else:
+                    pop.set("F", -y0)
             else:
                 pop = None
 

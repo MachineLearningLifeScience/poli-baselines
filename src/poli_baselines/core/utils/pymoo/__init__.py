@@ -4,3 +4,5 @@ from .discrete_sequence_sampling import DiscreteSequenceSampling
 from .no_crossover import NoCrossover
 
 from .interface import _from_array_to_dict, _from_dict_to_array
+from .random_selection import RandomSelectionOfSameLength
+from .callbacks import SaveHistoryAndCallOtherCallbacks

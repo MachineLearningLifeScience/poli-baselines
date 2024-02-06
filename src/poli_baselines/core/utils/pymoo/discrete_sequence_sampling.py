@@ -41,7 +41,10 @@ class DiscreteSequenceSampling(Sampling):
     """
 
     def __init__(
-        self, x_0: np.ndarray, alphabet: List[str], num_mutations: int = 1
+        self,
+        x_0: np.ndarray,
+        alphabet: List[str],
+        num_mutations: int = 1,
     ) -> None:
         """
         Initialize the DiscreteSequenceSampling class.
