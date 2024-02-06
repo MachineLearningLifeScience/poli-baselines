@@ -64,7 +64,7 @@ print(solver.get_best_solution())  # Should be [["A", "L", "O", "H", "A"]]
 
 ## More examples
 
-The `examples` folder includes the optimization of more complex objective functions such as `foldx` stability (if you have `foldx` installed in your computer), and the use of advanced black box optimizers like (Line) Bayesian Optimization, or NSGA-2.
+The `examples` folder includes the optimization of more complex objective functions such as `foldx` stability (if you have `foldx` installed in your computer), and the use of advanced black box optimizers like (Line) Bayesian Optimization.
 
 ## Want to contribute?
 
