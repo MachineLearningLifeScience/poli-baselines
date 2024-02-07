@@ -22,6 +22,10 @@ def test_genetic_algorithm_improves_over_time():
     from poli.objective_repository import AlohaProblemFactory
     from poli_baselines.solvers import FixedLengthGeneticAlgorithm
 
+    from poli.core.util.seeding import seed_python_numpy_and_torch
+
+    seed_python_numpy_and_torch(13)
+
     f, x0, y0 = AlohaProblemFactory().create()
 
     solver = FixedLengthGeneticAlgorithm(black_box=f, x0=x0, y0=y0, population_size=10)
