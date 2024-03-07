@@ -41,11 +41,13 @@ python -c "import poli_baselines ; print('Everything went well!')"
 As mentioned above, this library interoperates well with the discrete objective functions defined in [`poli`](https://github.com/MachineLearningLifeScience/poli). One such objective function is the ALOHA problem, in which we search the space of 5-letter sequences of the word "ALOHA". The following is a simple example of how one could use the `RandomMutation` solver inside `poli-baselines` to solve this problem:
 
 ```python
-from poli import objective_factory
+from poli.objective_repository import AlohaProblemFactory
 from poli_baselines.solvers import RandomMutation
 
 # Creating an instance of the problem
-problem_info, f, x0, y0, run_info = objective_factory.create(name="aloha")
+problem = AlohaProblemFactory().create()
+f, x0 = problem.black_box, problem.x0
+y0 = f(x0)
 
 # Creating an instance of the solver
 solver = RandomMutation(
