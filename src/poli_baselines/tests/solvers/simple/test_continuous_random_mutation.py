@@ -5,11 +5,13 @@ def test_continuous_random_mutation_instantiates_and_runs_well():
     from poli_baselines.solvers import ContinuousRandomMutation
     from poli import objective_factory
 
-    _, f, x0, y0, _ = objective_factory.create(
+    problem = objective_factory.create(
         name="toy_continuous_problem",
         function_name="ackley_function_01",
         n_dimensions=10,
     )
+    f, x0 = problem.black_box, problem.x0
+    y0 = f(x0)
 
     solver = ContinuousRandomMutation(
         black_box=f,

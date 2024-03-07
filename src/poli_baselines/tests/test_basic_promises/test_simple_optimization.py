@@ -7,7 +7,7 @@ def test_optimizing_aloha():
     whether we can optimize the aloha problem.
     """
     from poli import objective_factory
-    from poli.core.registry import get_problems
+    from poli import get_problems
 
     import numpy as np
 
@@ -18,9 +18,9 @@ def test_optimizing_aloha():
     assert "aloha" in get_problems()
 
     # Creating an instance of the problem
-    problem_info, f, x0, y0, run_info = objective_factory.create(
-        name="aloha", caller_info=None, observer=None
-    )
+    problem = objective_factory.create(name="aloha")
+    f, x0 = problem.black_box, problem.x0
+    y0 = f(x0)
 
     # Creating an instance of the solver
     solver = RandomMutation(
@@ -34,3 +34,7 @@ def test_optimizing_aloha():
     # and printing a small summary at each step.
     solver.solve(max_iter=1000, break_at_performance=5.0)
     assert (solver.get_best_solution() == np.array([list("ALOHA")])).all()
+
+
+if __name__ == "__main__":
+    test_optimizing_aloha()
