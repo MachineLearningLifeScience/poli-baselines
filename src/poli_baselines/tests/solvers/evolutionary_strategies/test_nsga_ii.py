@@ -8,21 +8,18 @@ import numpy as np
 
 def test_running_nsga_ii():
     from poli_baselines.solvers import DiscreteNSGAII
-    from poli import objective_factory
+    from poli.objective_repository import AlohaBlackBox
     from poli.core.multi_objective_black_box import MultiObjectiveBlackBox
 
     population_size = 10
 
-    _, f_aloha, x0, y0, _ = objective_factory.create(
-        name="aloha",
-    )
+    f_aloha = AlohaBlackBox()
     alphabet = f_aloha.info.alphabet
 
     # Randomly choosing 10 5-letter arrays
     x0 = np.random.choice(alphabet, size=(population_size, 5))
 
     f = MultiObjectiveBlackBox(
-        info=f_aloha.info,
         objective_functions=[f_aloha, f_aloha],
     )
 
@@ -42,7 +39,7 @@ def test_running_nsga_ii():
 def test_nsga_ii_in_docs():
     import numpy as np
 
-    from poli.objective_repository import AlohaProblemFactory
+    from poli.objective_repository import AlohaBlackBox
     from poli.core.multi_objective_black_box import MultiObjectiveBlackBox
 
     from poli_baselines.solvers import DiscreteNSGAII
@@ -53,12 +50,10 @@ def test_nsga_ii_in_docs():
     num_mutations = 1
 
     # Creating the aloha problem
-    problem_factory = AlohaProblemFactory()
-    f_aloha, _, _ = problem_factory.create()
+    f_aloha = AlohaBlackBox()
 
     # Putting two copies together to make a multi-objective black box
     f = MultiObjectiveBlackBox(
-        info=f_aloha.info,
         objective_functions=[f_aloha, f_aloha],
     )
 
@@ -95,13 +90,15 @@ def test_nsga_ii_on_foldx():
     )
 
     problem_factory = FoldXStabilityAndSASAProblemFactory()
-    f, x0, y0 = problem_factory.create(
+    problem = problem_factory.create(
         wildtype_pdb_path=wildtype_pdb_paths,
         batch_size=3,
         seed=0,
         parallelize=True,
         num_workers=3,
     )
+    f, x0 = problem.black_box, problem.x0
+    y0 = f(x0)
 
     solver = DiscreteNSGAII(
         black_box=f,

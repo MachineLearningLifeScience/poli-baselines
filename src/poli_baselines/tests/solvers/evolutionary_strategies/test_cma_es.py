@@ -5,13 +5,12 @@ import numpy as np
 
 def test_running_cma_es():
     from poli_baselines.solvers import CMA_ES
-    from poli import objective_factory
+    from poli.objective_repository import ToyContinuousBlackBox
 
     n_dimensions = 3
     population_size = 10
 
-    _, f, _, _, _ = objective_factory.create(
-        name="toy_continuous_problem",
+    f = ToyContinuousBlackBox(
         function_name="ackley_function_01",
         n_dimensions=n_dimensions,
     )
@@ -35,14 +34,12 @@ def test_running_cma_es():
 
 def test_running_cma_es_docs():
     from poli_baselines.solvers import CMA_ES
-    from poli.objective_repository import ToyContinuousProblemFactory
+    from poli.objective_repository import ToyContinuousBlackBox
 
     n_dimensions = 3
     population_size = 10
 
-    problem_factory = ToyContinuousProblemFactory()
-
-    f, _, _ = problem_factory.create(
+    f = ToyContinuousBlackBox(
         function_name="ackley_function_01",
         n_dimensions=n_dimensions,
     )

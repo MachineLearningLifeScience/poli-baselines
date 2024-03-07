@@ -5,9 +5,11 @@ def test_random_mutation_instantiates_and_runs_well():
     from poli_baselines.solvers import RandomMutation
     from poli import objective_factory
 
-    _, f, x0, y0, _ = objective_factory.create(
+    problem = objective_factory.create(
         name="aloha",
     )
+    f, x0 = problem.black_box, problem.x0
+    y0 = f(x0)
 
     solver = RandomMutation(
         black_box=f,
@@ -26,7 +28,9 @@ def test_random_mutation_in_docs():
 
     problem_factory = AlohaProblemFactory()
 
-    f, x0, y0 = problem_factory.create()
+    problem = problem_factory.create()
+    f, x0 = problem.black_box, problem.x0
+    y0 = f(x0)
 
     solver = RandomMutation(
         black_box=f,

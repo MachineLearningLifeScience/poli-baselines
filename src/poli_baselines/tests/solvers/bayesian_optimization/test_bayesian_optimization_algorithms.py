@@ -25,16 +25,13 @@ from poli_baselines.solvers.bayesian_optimization.base_bayesian_optimization imp
     ],
 )
 class TestBayesianOptimization:
-    arr = ToyContinuousProblemFactory().create(
+    problem = ToyContinuousProblemFactory().create(
         function_name="ackley_function_01", n_dimensions=10
-    )
-    model = SingleTaskGP(
-        train_X=torch.from_numpy(arr[1]),
-        train_Y=torch.from_numpy(arr[2]),
     )
 
     def test_instancing(self, solver, solver_kwargs):
-        f, x0, y0 = self.arr
+        f, x0 = self.problem.black_box, self.problem.x0
+        y0 = f(x0)
         solver(
             black_box=f,
             x0=x0,
@@ -43,7 +40,8 @@ class TestBayesianOptimization:
         )
 
     def test_solving_while_mocking_training(self, solver, solver_kwargs):
-        f, x0, y0 = self.arr
+        f, x0 = self.problem.black_box, self.problem.x0
+        y0 = f(x0)
         solver: BaseBayesianOptimization = solver(
             black_box=f,
             x0=x0,
@@ -51,7 +49,11 @@ class TestBayesianOptimization:
             **solver_kwargs,
         )
 
-        with patch.object(solver, "_fit_model", return_value=self.model) as mock_method:
+        model = SingleTaskGP(
+            train_X=torch.from_numpy(x0),
+            train_Y=torch.from_numpy(y0),
+        )
+        with patch.object(solver, "_fit_model", return_value=model) as mock_method:
             solver.solve(
                 max_iter=2,
             )
@@ -62,15 +64,11 @@ class TestBayesianOptimization:
 def test_documentation_of_bo():
     import numpy as np
 
-    from poli import objective_factory
+    from poli.objective_repository import ToyContinuousBlackBox
 
     from poli_baselines.solvers import VanillaBayesianOptimization
 
-    problem_info, f_ackley, _, _, _ = objective_factory.create(
-        name="toy_continuous_problem",
-        function_name="ackley_function_01",
-        n_dimensions=2,
-    )
+    f_ackley = ToyContinuousBlackBox(function_name="ackley_function_01", n_dimensions=2)
 
     x0 = np.random.randn(2).reshape(1, -1).clip(-2.0, 2.0)
     y0 = f_ackley(x0)

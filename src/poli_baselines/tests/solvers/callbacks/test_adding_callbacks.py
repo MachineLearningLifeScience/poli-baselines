@@ -11,11 +11,14 @@ from poli.objective_repository.toy_continuous_problem.register import (
 
 
 class TestAddingCallbacks:
-    arr = ToyContinuousProblemFactory().create(
+    problem = ToyContinuousProblemFactory().create(
         function_name="ackley_function_01", n_dimensions=10
     )
+    f, x0 = problem.black_box, problem.x0
+    y0 = f(x0)
+
     solver = ContinuousRandomMutation(
-        black_box=arr[0],
+        black_box=f,
         x0=np.random.randn(10).reshape(1, -1),
         y0=np.random.randn(1).reshape(1, -1),
     )
