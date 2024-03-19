@@ -208,11 +208,16 @@ class AbstractSolver:
 
         return pareto_front
 
-    def get_history_as_arrays(self) -> Tuple[np.ndarray, np.ndarray]:
+    def get_history_as_arrays(
+        self, penalize_nans_with: float = None
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Returns the history of the solver as a tuple (x, y).
         """
         x = np.concatenate(self.history["x"], axis=0)
         y = np.concatenate(self.history["y"], axis=0)
+
+        if penalize_nans_with is not None:
+            y[np.isnan(y)] = penalize_nans_with
 
         return x, y

@@ -231,7 +231,7 @@ class BaseBayesianOptimization(AbstractSolver):
         acq_func : AcquisitionFunction
             The instantiated acquisition function.
         """
-        _, y = self.get_history_as_arrays()
+        _, y = self.get_history_as_arrays(penalize_nans_with=self.penalize_nans_with)
         if self.acq_function == ExpectedImprovement:
             acq_func = self.acq_function(model, best_f=y.max())
         else:
