@@ -1,4 +1,4 @@
-"""This module tests the BAXUS solver."""
+"""This module tests the TURBO solver."""
 
 import warnings
 import numpy as np
@@ -13,12 +13,12 @@ def test_turbo_runs():
     problem = objective_factory.create(
         name="toy_continuous_problem",
         function_name="ackley_function_01",
-        n_dimensions=10,
+        n_dimensions=10
     )
     black_box, x0 = problem.black_box, problem.x0
     y0 = black_box(x0)
 
-    x0 = np.random.uniform(-1, 1, size=10).reshape(1, 10)
+    x0 = np.random.uniform(0, 1, size=20).reshape(2, 10)
     y0 = black_box(x0)
 
     solver = TurboWrapper(black_box, x0, y0)
