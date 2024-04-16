@@ -41,9 +41,13 @@ class TurboWrapper(AbstractSolver):
         dim = self.X_turbo.shape[1]
         train_Y = (self.Y_turbo - self.Y_turbo.mean()) / self.Y_turbo.std()
         likelihood = GaussianLikelihood(noise_constraint=Interval(1e-8, 1e-3))
-        covar_module = ScaleKernel(  # Use the same lengthscale prior as in the TuRBO paper
-            MaternKernel(
-                nu=2.5, ard_num_dims=dim, lengthscale_constraint=Interval(0.005, 4.0)
+        covar_module = (
+            ScaleKernel(  # Use the same lengthscale prior as in the TuRBO paper
+                MaternKernel(
+                    nu=2.5,
+                    ard_num_dims=dim,
+                    lengthscale_constraint=Interval(0.005, 4.0),
+                )
             )
         )
         model = SingleTaskGP(
