@@ -1,12 +1,8 @@
-from typing import Iterable, Callable, Tuple
-
+# Code taken from https://botorch.org/tutorials/turbo_1
 import numpy as np
 from poli.core.abstract_black_box import AbstractBlackBox
 
 from poli_baselines.core.abstract_solver import AbstractSolver
-from poli_baselines.solvers.bayesian_optimization.turbo.poli_function_wrapper import PoliFunctionWrapper
-from poli_baselines.solvers.bayesian_optimization.turbo.turbo import TurboM
-import os
 import math
 from dataclasses import dataclass
 
@@ -16,16 +12,12 @@ from botorch.fit import fit_gpytorch_mll
 from botorch.generation import MaxPosteriorSampling
 from botorch.models import SingleTaskGP
 from botorch.optim import optimize_acqf
-from botorch.test_functions import Ackley
-from botorch.utils.transforms import unnormalize
 from torch.quasirandom import SobolEngine
 
-import gpytorch
 from gpytorch.constraints import Interval
 from gpytorch.kernels import MaternKernel, ScaleKernel
 from gpytorch.likelihoods import GaussianLikelihood
 from gpytorch.mlls import ExactMarginalLogLikelihood
-from gpytorch.priors import HorseshoePrior
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
