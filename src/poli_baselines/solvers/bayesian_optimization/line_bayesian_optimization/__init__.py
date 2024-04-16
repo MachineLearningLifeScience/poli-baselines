@@ -1,1 +1,1 @@
-#from .line_bayesian_optimization import LineBO
+from .line_bayesian_optimization import LineBO
