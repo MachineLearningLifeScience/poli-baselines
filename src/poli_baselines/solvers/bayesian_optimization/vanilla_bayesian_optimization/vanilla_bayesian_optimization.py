@@ -4,13 +4,23 @@ This module provides the VanillaBayesianOptimization class, which performs Bayes
 
 from typing import Type, Tuple
 
+import torch
 import numpy as np
 
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from botorch.generation.gen import gen_candidates_torch
+
 from botorch.models import SingleTaskGP
-from botorch.acquisition import ExpectedImprovement, AcquisitionFunction
+from botorch.acquisition import (
+    ExpectedImprovement,
+    AcquisitionFunction,
+    LogExpectedImprovement,
+)
+from botorch.fit import fit_gpytorch_model
 
 from gpytorch.means import Mean
 from gpytorch.kernels import Kernel
+from gpytorch.mlls import ExactMarginalLogLikelihood
 
 from poli.core.abstract_black_box import AbstractBlackBox
 from poli_baselines.solvers.bayesian_optimization.base_bayesian_optimization.base_bayesian_optimization import (
@@ -74,7 +84,7 @@ class VanillaBayesianOptimization(BaseBayesianOptimization):
         y0: np.ndarray,
         mean: Mean = None,
         kernel: Kernel = None,
-        acq_function: Type[AcquisitionFunction] = ExpectedImprovement,
+        acq_function: Type[AcquisitionFunction] = LogExpectedImprovement,
         bounds: Tuple[float, float] = (-2.0, 2.0),
         penalize_nans_with: float = -10.0,
     ):
@@ -107,6 +117,33 @@ class VanillaBayesianOptimization(BaseBayesianOptimization):
         self.bounds = bounds
         self.penalize_nans_with = penalize_nans_with
 
+    def _fit_model(
+        self, model: SingleTaskGP, x: np.ndarray, y: np.ndarray
+    ) -> Tuple[SingleTaskGP, MinMaxScaler, StandardScaler]:
+        scaler_x = None
+        # scaler_x = MinMaxScaler()
+        # x = scaler_x.fit_transform(x)
+        x = torch.from_numpy(x).to(torch.float32)
+
+        scaler_y = None
+        # scaler_y = StandardScaler()
+        # y = scaler_y.fit_transform(y)
+        y = torch.from_numpy(y).to(torch.float32)
+
+        model_instance = model(
+            x,
+            y,
+            mean_module=self.mean,
+            covar_module=self.kernel,
+        )
+        mll = ExactMarginalLogLikelihood(model_instance.likelihood, model_instance)
+        fit_gpytorch_model(mll)
+        model_instance.eval()
+
+        self.gp_model_of_objective = model_instance
+
+        return model_instance, scaler_x, scaler_y
+
     def next_candidate(self) -> np.ndarray:
         """Runs one loop of Bayesian Optimization using
         a SingleTaskGP.
@@ -128,12 +165,13 @@ class VanillaBayesianOptimization(BaseBayesianOptimization):
         y[np.isnan(y)] = self.penalize_nans_with
 
         # Fit a GP
-        model = self._fit_model(SingleTaskGP, x, y)
+        model, x_scaler, _ = self._fit_model(SingleTaskGP, x, y)
 
         # Instantiate the acquisition function
         acq_function = self._instantiate_acquisition_function(model)
 
         # Optimize the acquisition function
         candidate = self._optimize_acquisition_function(acq_function)
+        # candidate = x_scaler.inverse_transform(candidate)
 
         return candidate
