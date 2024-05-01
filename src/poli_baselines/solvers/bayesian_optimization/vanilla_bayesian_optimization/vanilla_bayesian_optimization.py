@@ -119,15 +119,8 @@ class VanillaBayesianOptimization(BaseBayesianOptimization):
 
     def _fit_model(
         self, model: SingleTaskGP, x: np.ndarray, y: np.ndarray
-    ) -> Tuple[SingleTaskGP, MinMaxScaler, StandardScaler]:
-        scaler_x = None
-        # scaler_x = MinMaxScaler()
-        # x = scaler_x.fit_transform(x)
+    ) -> SingleTaskGP:
         x = torch.from_numpy(x).to(torch.float32)
-
-        scaler_y = None
-        # scaler_y = StandardScaler()
-        # y = scaler_y.fit_transform(y)
         y = torch.from_numpy(y).to(torch.float32)
 
         model_instance = model(
@@ -142,7 +135,7 @@ class VanillaBayesianOptimization(BaseBayesianOptimization):
 
         self.gp_model_of_objective = model_instance
 
-        return model_instance, scaler_x, scaler_y
+        return model_instance
 
     def next_candidate(self) -> np.ndarray:
         """Runs one loop of Bayesian Optimization using
@@ -165,7 +158,7 @@ class VanillaBayesianOptimization(BaseBayesianOptimization):
         y[np.isnan(y)] = self.penalize_nans_with
 
         # Fit a GP
-        model, x_scaler, _ = self._fit_model(SingleTaskGP, x, y)
+        model = self._fit_model(SingleTaskGP, x, y)
 
         # Instantiate the acquisition function
         acq_function = self._instantiate_acquisition_function(model)

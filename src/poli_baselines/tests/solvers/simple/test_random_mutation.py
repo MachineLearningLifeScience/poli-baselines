@@ -2,7 +2,7 @@
 
 
 def test_random_mutation_instantiates_and_runs_well():
-    from poli_baselines.solvers import RandomMutation
+    from poli_baselines.solvers.simple.random_mutation import RandomMutation
     from poli import objective_factory
 
     problem = objective_factory.create(
@@ -24,7 +24,7 @@ def test_random_mutation_in_docs():
     import numpy as np
 
     from poli.objective_repository import AlohaProblemFactory
-    from poli_baselines.solvers import RandomMutation
+    from poli_baselines.solvers.simple.random_mutation import RandomMutation
 
     problem_factory = AlohaProblemFactory()
 

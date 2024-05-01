@@ -20,10 +20,13 @@ class AbstractSolver:
         self.x0 = x0
         self.y0 = y0
 
-        self.history = {
-            "x": [x0_i.reshape(1, -1) for x0_i in x0],
-            "y": [y0_i.reshape(1, -1) for y0_i in y0],
-        }
+        if x0 is not None and y0 is not None:
+            self.history = {
+                "x": [x0_i.reshape(1, -1) for x0_i in x0],
+                "y": [y0_i.reshape(1, -1) for y0_i in y0],
+            }
+        else:
+            self.history = {"x": [], "y": []}
 
         self.iteration = 0
 
