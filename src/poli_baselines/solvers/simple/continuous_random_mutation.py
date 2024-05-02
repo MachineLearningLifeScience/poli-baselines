@@ -5,10 +5,10 @@ from typing import Tuple
 import numpy as np
 
 from poli.core.abstract_black_box import AbstractBlackBox
-from poli_baselines.core.abstract_solver import AbstractSolver
+from poli_baselines.core.step_by_step_solver import StepByStepSolver
 
 
-class ContinuousRandomMutation(AbstractSolver):
+class ContinuousRandomMutation(StepByStepSolver):
     def __init__(
         self,
         black_box: AbstractBlackBox,

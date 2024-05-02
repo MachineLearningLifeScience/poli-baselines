@@ -33,10 +33,10 @@ from poli_baselines.core.utils.pymoo import (
 )
 from poli_baselines.core.utils.mutations import add_random_mutations_to_reach_pop_size
 
-from poli_baselines.core.abstract_solver import AbstractSolver
+from poli_baselines.core.step_by_step_solver import StepByStepSolver
 
 
-class FixedLengthGeneticAlgorithm(AbstractSolver):
+class FixedLengthGeneticAlgorithm(StepByStepSolver):
     def __init__(
         self,
         black_box: AbstractBlackBox,

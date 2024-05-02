@@ -14,11 +14,11 @@ import random
 
 import numpy as np
 
-from poli_baselines.core.abstract_solver import AbstractSolver
+from poli_baselines.core.step_by_step_solver import StepByStepSolver
 from poli.core.abstract_black_box import AbstractBlackBox
 
 
-class RandomMutation(AbstractSolver):
+class RandomMutation(StepByStepSolver):
     def __init__(
         self,
         black_box: AbstractBlackBox,
