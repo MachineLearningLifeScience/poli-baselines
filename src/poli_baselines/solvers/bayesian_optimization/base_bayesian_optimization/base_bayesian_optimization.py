@@ -25,7 +25,7 @@ from gpytorch.kernels import Kernel
 from gpytorch.mlls import ExactMarginalLogLikelihood
 
 from poli.core.abstract_black_box import AbstractBlackBox
-from poli_baselines.core.abstract_solver import AbstractSolver
+from poli_baselines.core.step_by_step_solver import StepByStepSolver
 from poli_baselines.core.utils.visualization.bayesian_optimization import (
     plot_prediction_in_2d,
     plot_acquisition_in_2d,
@@ -36,7 +36,7 @@ from .bayesian_optimization_commons import (
 )
 
 
-class BaseBayesianOptimization(AbstractSolver):
+class BaseBayesianOptimization(StepByStepSolver):
     """
     Base class for Bayesian Optimization solvers.
 

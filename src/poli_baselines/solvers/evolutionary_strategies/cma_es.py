@@ -23,10 +23,10 @@ from poli.core.abstract_black_box import AbstractBlackBox
 
 import cma
 
-from poli_baselines.core.abstract_solver import AbstractSolver
+from poli_baselines.core.step_by_step_solver import StepByStepSolver
 
 
-class CMA_ES(AbstractSolver):
+class CMA_ES(StepByStepSolver):
     """
     Covariance Matrix Adaptation Evolution Strategy (CMA-ES) solver.
 

@@ -2,7 +2,7 @@
 import numpy as np
 from poli.core.abstract_black_box import AbstractBlackBox
 
-from poli_baselines.core.abstract_solver import AbstractSolver
+from poli_baselines.core.step_by_step_solver import StepByStepSolver
 import math
 from dataclasses import dataclass
 
@@ -28,7 +28,7 @@ NUM_RESTARTS = 10
 RAW_SAMPLES = 512
 
 
-class TurboWrapper(AbstractSolver):
+class TurboWrapper(StepByStepSolver):
     def __init__(self, black_box: AbstractBlackBox, x0: np.ndarray, y0: np.ndarray):
         super().__init__(black_box, x0, y0)
         self.X_turbo = torch.tensor(x0)

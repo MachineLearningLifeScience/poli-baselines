@@ -42,7 +42,7 @@ from pymoo.operators.mutation.pm import PM
 from pymoo.operators.sampling.rnd import FloatRandomSampling
 from pymoo.operators.selection.tournament import TournamentSelection
 from pymoo.util.display.multi import MultiObjectiveOutput
-from poli_baselines.core.abstract_solver import AbstractSolver
+from poli_baselines.core.step_by_step_solver import StepByStepSolver
 from poli_baselines.core.utils.pymoo.interface import DiscretePymooProblem
 from poli_baselines.core.utils.pymoo import (
     DiscreteSequenceMutation,
@@ -80,7 +80,7 @@ class DiscreteNSGA2(NSGA2):
         )
 
 
-class DiscreteNSGAII(AbstractSolver):
+class DiscreteNSGAII(StepByStepSolver):
     """Discrete NSGA-II solver for multi-objective optimization problems.
 
     NSGA-II is a multi-objective genetic algorithm that uses a non-dominated
