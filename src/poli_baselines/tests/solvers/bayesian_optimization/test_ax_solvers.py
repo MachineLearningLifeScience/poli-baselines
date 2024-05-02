@@ -5,11 +5,15 @@ This test suite runs only on poli__ax in CI.
 
 import pytest
 
-pytestmark = pytest.mark.ax_solvers
-
 from poli.objective_repository import ToyContinuousProblemFactory
 
 from poli_baselines.core.abstract_solver import AbstractSolver
+
+try:
+    import ax  # type: ignore[import]
+except ImportError:
+    pytest.skip("Ax is not installed.", allow_module_level=True)
+
 from poli_baselines.solvers.bayesian_optimization.saasbo import SAASBO
 from poli_baselines.solvers.bayesian_optimization.alebo import ALEBO
 from poli_baselines.solvers.bayesian_optimization.vanilla_bo_hvarfner import (
