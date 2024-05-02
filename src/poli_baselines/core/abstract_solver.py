@@ -34,7 +34,8 @@ class AbstractSolver:
             The maximum number of iterations to run. By default, 100.
         n_initial_points: int, optional
             The number of initial points to evaluate before starting
-            the optimization. By default, 0.
+            the optimization. By default, 0 (since initialization
+            is usually handled by passing x0 and y0 to the solver)
         seed: int, optional
             The seed to use for the random number generator. By default,
             None, which means that no seed is set.

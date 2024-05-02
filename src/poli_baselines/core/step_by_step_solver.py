@@ -6,6 +6,7 @@ import json
 import numpy as np
 
 from poli.core.abstract_black_box import AbstractBlackBox
+from poli.core.util.seeding import seed_python_numpy_and_torch
 
 from poli_baselines.core.abstract_solver import AbstractSolver
 from poli_baselines.core.utils.saving.json_encoders import NumpyToListEncoder
@@ -86,6 +87,13 @@ class StepByStepSolver(AbstractSolver):
         ----------
         max_iter: int, optional
             The maximum number of iterations to run. By default, 100.
+        n_initial_points: int, optional
+            The number of initial points to evaluate before starting
+            the optimization. By default, 0 (since initialization
+            is usually handled by passing x0 and y0 to the solver).
+        seed: int, optional
+            The seed to use for the random number generator. By default,
+            None, which means that no seed is set.
         break_at_performance: float, optional
             If given, the algorithm will stop when the best performance
             is greater than or equal to this value. By default, we don't
@@ -113,6 +121,9 @@ class StepByStepSolver(AbstractSolver):
         """
         # TODO: should we add a progress bar?
         # TODO: should we add a try-except block?
+        if seed is not None:
+            seed_python_numpy_and_torch(seed)
+
         for i in range(max_iter):
             # Call the pre-step callbacks
             if pre_step_callbacks is not None:
