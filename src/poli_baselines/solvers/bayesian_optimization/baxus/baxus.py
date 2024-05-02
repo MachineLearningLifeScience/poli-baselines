@@ -1,15 +1,17 @@
-from typing import List, Tuple
+from __future__ import annotations
+
+from typing import List
 import numpy as np
 
-from poli.core.abstract_black_box import AbstractBlackBox  # type: ignore[import]
+from poli.core.abstract_black_box import AbstractBlackBox
 
-# from poli_baselines.core.abstract_solver import AbstractSolver  # type: ignore[import]
+from poli_baselines.core.abstract_solver import AbstractSolver
 
-from baxus.benchmarks.benchmark_function import Benchmark  # type: ignore[import]
-from baxus.baxus import BAxUS as OriginalBAxUS  # type: ignore[import]
+from baxus.benchmarks.benchmark_function import Benchmark
+from baxus.baxus import BAxUS as OriginalBAxUS
 
 
-class BAxUS_:
+class BAxUS(AbstractSolver):
     def __init__(
         self,
         black_box: AbstractBlackBox,
@@ -55,14 +57,14 @@ class BAxUS_:
 
 
 if __name__ == "__main__":
-    from poli_baselines.core.utils.isolation.registry import register_solver  # type: ignore[import]
+    from poli_baselines.core.utils.isolation.registry import register_solver
 
     register_solver(
-        solver_class=BAxUS_,
+        solver_class=BAxUS,
         conda_environment_name="baxus_",
     )
 
-    # from poli.objective_repository import ToyContinuousBlackBox  # type: ignore[import]
+    # from poli.objective_repository import ToyContinuousBlackBox
 
     # black_box = ToyContinuousBlackBox(
     #     function_name="branin_2d",
