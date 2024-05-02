@@ -9,16 +9,6 @@
 
 If the dependencies get too specific, we provide replicable conda environments for each solver.
 
-## Solvers available
-
-| Name | Status | Reference |
-|----------|----------|----------|
-| **Random Mutations**   |  [![Test (conda, python 3.9)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml)  | N/A   |
-| **Random hill-climbing**   |  [![Test (conda, python 3.9)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml)  | N/A   |
-| **CMA-ES**   |  [![Test (conda, python 3.9)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml)  | [pycma](https://github.com/CMA-ES/pycma)   |
-| **(Fixed-length) Genetic Algorithm**   |  [![Test (conda, python 3.9)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml)  | [pymoo's implementation](https://pymoo.org/algorithms/soo/ga.html)  |
-| **BAxUS** |  [![BAxUS (py3.10 in conda)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-baxus.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-baxus.yml)  | [Papenmeier et al. 2023](https://arxiv.org/abs/2304.11468) |
-
 ## Installation
 
 Create a fresh conda environment by running
@@ -47,6 +37,19 @@ After this, you could test you installation by running (inside your `poli-baseli
 ```bash
 python -c "import poli_baselines ; print('Everything went well!')"
 ```
+
+## Solvers available
+
+| Name | Status | Reference |
+|----------|----------|----------|
+| **Random Mutations**   |  [![Test (conda, python 3.9)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml)  | N/A   |
+| **Random hill-climbing**   |  [![Test (conda, python 3.9)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml)  | N/A   |
+| **CMA-ES**   |  [![Test (conda, python 3.9)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml)  | [pycma](https://github.com/CMA-ES/pycma)   |
+| **(Fixed-length) Genetic Algorithm**   |  [![Test (conda, python 3.9)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml)  | [pymoo's implementation](https://pymoo.org/algorithms/soo/ga.html)  |
+| **Hvarfner's Vanilla BO** |  [![Ax (py3.10 in conda)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-ax.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-ax.yml)  | [Hvarfner et al. 2024](https://arxiv.org/abs/2402.02229) |
+| **BAxUS** |  [![BAxUS (py3.10 in conda)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-baxus.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-baxus.yml)  | [Papenmeier et al. 2023](https://arxiv.org/abs/2304.11468) |
+| **SAASBO** |  [![Ax (py3.10 in conda)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-ax.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-ax.yml)  | [Eriksson and Jankowiak 2021](https://arxiv.org/abs/2103.00349) |
+| **ALEBO** |  [![Ax (py3.10 in conda)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-ax.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-ax.yml)  | [Lentham et al. 2020](https://proceedings.neurips.cc/paper/2020/file/10fb6cfa4c990d2bad5ddef4f70e8ba2-Paper.pdf) |
 
 ## Your first optimization using `poli-baselines`
 
