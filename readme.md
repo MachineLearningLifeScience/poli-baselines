@@ -3,9 +3,19 @@
 [![Test (conda, python 3.9)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml)
 
 > [!WARNING]  
-> This package is a work in progress. Some solvers have not been properly tested. For an authoritative list of the stable solvers, check [our documentation](https://machinelearninglifescience.github.io/poli-docs/#black-box-optimization-algorithms).
+> This package is a work in progress. Some solvers have not been properly tested. For an authoritative list of the stable solvers, check below or [our documentation](https://machinelearninglifescience.github.io/poli-docs/#black-box-optimization-algorithms).
 
 `poli-baselines` is a collection of **black box optimization algorithms**, aimed mostly at optimizing discrete sequences. These optimization algorithms are meant to optimize objective functions defined using [`poli`](https://github.com/MachineLearningLifeScience/poli), a tool for instantiating complex, difficult-to-query functions.
+
+## Solvers available
+
+| Name | Status | Reference |
+|----------|----------|----------|
+| **Random Mutations**   |  [![Test (conda, python 3.9)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml)  | N/A   |
+| **Random hill-climbing**   |  [![Test (conda, python 3.9)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml)  | N/A   |
+| **CMA-ES**   |  [![Test (conda, python 3.9)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml)  | TODO   |
+| **(Fixed-length) Genetic Algorithm**   |  [![Test (conda, python 3.9)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml)  | TODO   |
+| **BAxUS** |  [![BAxUS (py3.10 in conda)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-baxus.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-baxus.yml)  | TODO   |
 
 ## Installation
 

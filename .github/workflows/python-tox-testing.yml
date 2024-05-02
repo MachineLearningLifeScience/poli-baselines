@@ -1,4 +1,4 @@
-name: Test (conda, python 3.9)
+name: Base (python 3.9 in conda)
 
 on: [push]
 
