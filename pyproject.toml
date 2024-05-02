@@ -41,5 +41,5 @@ Homepage = "https://github.com/MachineLearningLifeScience/poli-baselines"
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "baxus: marks test that can be run in the BAxUS environment",
-    "ax: marks test that can be run in the Ax environment",
+    "ax_solvers: marks test that can be run in the Ax environment",
 ]

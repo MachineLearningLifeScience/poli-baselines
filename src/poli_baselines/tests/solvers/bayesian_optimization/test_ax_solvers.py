@@ -5,9 +5,9 @@ This test suite runs only on poli__ax in CI.
 
 import pytest
 
-pytestmark = pytest.mark.ax
+pytestmark = pytest.mark.ax_solvers
 
-from poli.repository import ToyContinuousProblemFactory
+from poli.objective_repository import ToyContinuousProblemFactory
 
 from poli_baselines.core.abstract_solver import AbstractSolver
 from poli_baselines.solvers.bayesian_optimization.saasbo import SAASBO
