@@ -1,4 +1,4 @@
-name: BAxUS (py3.10 in conda)
+name: Ax (py3.10 in conda)
 
 on: [push]
 
@@ -23,4 +23,4 @@ jobs:
         python -m pip install tox
     - name: Test Ax-related solvers with tox
       run: |
-        tox -e poli-baxus-base-py39
+        tox -e poli-ax-base-py39
