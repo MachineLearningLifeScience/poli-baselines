@@ -10,7 +10,16 @@ from poli.objective_repository.toy_continuous_problem.register import (
     ToyContinuousProblemFactory,
 )
 
-from poli_baselines.solvers import LineBO, SAASBO, VanillaBayesianOptimization
+from poli_baselines.solvers.bayesian_optimization.vanilla_bayesian_optimization import (
+    VanillaBayesianOptimization,
+)
+from poli_baselines.solvers.bayesian_optimization.line_bayesian_optimization import (
+    LineBO,
+)
+from poli_baselines.solvers.bayesian_optimization.saas_bayesian_optimization import (
+    SAASBO,
+)
+
 from poli_baselines.solvers.bayesian_optimization.base_bayesian_optimization import (
     BaseBayesianOptimization,
 )
@@ -66,7 +75,9 @@ def test_documentation_of_bo():
 
     from poli.objective_repository import ToyContinuousBlackBox
 
-    from poli_baselines.solvers import VanillaBayesianOptimization
+    from poli_baselines.solvers.bayesian_optimization.vanilla_bayesian_optimization import (
+        VanillaBayesianOptimization,
+    )
 
     f_ackley = ToyContinuousBlackBox(function_name="ackley_function_01", n_dimensions=2)
 
@@ -84,4 +95,6 @@ def test_documentation_of_bo():
 
 
 if __name__ == "__main__":
-    test_documentation_of_bo()
+    TestBayesianOptimization().test_solving_while_mocking_training(
+        VanillaBayesianOptimization, {}
+    )

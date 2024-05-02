@@ -12,7 +12,11 @@ from botorch.fit import (
     fit_gpytorch_mll_scipy,
     fit_gpytorch_model,
 )
-from botorch.acquisition import ExpectedImprovement, AcquisitionFunction
+from botorch.acquisition import (
+    ExpectedImprovement,
+    AcquisitionFunction,
+    LogExpectedImprovement,
+)
 from botorch.optim import optimize_acqf
 from botorch.generation.gen import gen_candidates_torch
 
@@ -100,7 +104,7 @@ class BaseBayesianOptimization(AbstractSolver):
         y0: np.ndarray,
         mean: Mean = None,
         kernel: Kernel = None,
-        acq_function: Type[AcquisitionFunction] = ExpectedImprovement,
+        acq_function: Type[AcquisitionFunction] = LogExpectedImprovement,
         bounds: Tuple[float, float] = (-2.0, 2.0),
         penalize_nans_with: float = -10.0,
     ):
@@ -232,7 +236,10 @@ class BaseBayesianOptimization(AbstractSolver):
             The instantiated acquisition function.
         """
         _, y = self.get_history_as_arrays(penalize_nans_with=self.penalize_nans_with)
-        if self.acq_function == ExpectedImprovement:
+        if (
+            self.acq_function == LogExpectedImprovement
+            or self.acq_function == ExpectedImprovement
+        ):
             acq_func = self.acq_function(model, best_f=y.max())
         else:
             raise NotImplementedError
