@@ -2,6 +2,7 @@
 
 import pytest
 
+# These tests only run in the poli__baxus environment.
 pytestmark = pytest.mark.baxus
 
 import warnings
@@ -14,8 +15,6 @@ warnings.filterwarnings("ignore")
 def test_baxus_instantiates():
     """Tests that BAXUS instantiates."""
     from poli import objective_factory
-
-    pytest.importorskip("baxus")
     from poli_baselines.solvers.bayesian_optimization.baxus import BAxUS
 
     problem = objective_factory.create(
@@ -33,7 +32,6 @@ def test_baxus_instantiates():
 
 def test_baxus_runs():
     from poli import objective_factory
-
     from poli_baselines.solvers.bayesian_optimization.baxus import BAxUS
 
     problem = objective_factory.create(
