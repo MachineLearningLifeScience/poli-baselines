@@ -24,3 +24,10 @@ examples/ignore*
 # BAxUS related stuff
 conf_dict.json
 projectors.txt.xz
+length_history.txt.xz
+final_target_dim.txt.xz
+lengthscales.txt.xz
+split_points.txt.xz
+splitting_dims.txt.xz
+tr_centers.txt.xz
+model_history.zip

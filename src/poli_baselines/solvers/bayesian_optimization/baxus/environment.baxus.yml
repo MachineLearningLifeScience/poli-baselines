@@ -3,8 +3,9 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.8
+  - python=3.10
   - pip
   - pip:
     - numpy
     - baxus
+    - "git+https://github.com/MachineLearningLifeScience/poli.git@dev"
