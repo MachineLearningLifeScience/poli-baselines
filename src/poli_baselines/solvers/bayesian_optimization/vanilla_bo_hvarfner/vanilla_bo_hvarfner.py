@@ -11,7 +11,7 @@ from ax.models.torch.botorch_modular.surrogate import Surrogate  # type: ignore[
 
 from poli.core.abstract_black_box import AbstractBlackBox  # type: ignore[import]
 
-from hdbo_benchmark.utils.ax.ax_solver import AxSolver
+from poli_baselines.core.utils.ax.ax_solver import AxSolver
 
 
 class VanillaBOHvarfner(AxSolver):

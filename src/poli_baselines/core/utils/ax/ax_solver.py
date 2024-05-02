@@ -36,8 +36,17 @@ class AxSolver(AbstractSolver):
             assert isinstance(black_box, ToyContinuousBlackBox)
             bounds_ = [black_box.function.limits] * x0.shape[1]
         else:
-            assert len(bounds) == 2
-            bounds_ = [bounds] * x0.shape[1]
+            # If bounds is (lb, up), then we build the bounds
+            # for the user
+            if len(bounds) == 2:
+                assert isinstance(bounds[0], (int, float))
+                assert isinstance(bounds[1], (int, float))
+                bounds_ = [bounds] * x0.shape[1]
+            else:
+                bounds_ = bounds
+
+            assert len(bounds) == x0.shape[1]
+            assert all(len(bound) == 2 for bound in bounds)
 
         ax_client = AxClient(generation_strategy=generation_strategy)
         exp_id = f"{uuid.uuid4()}"[:8]

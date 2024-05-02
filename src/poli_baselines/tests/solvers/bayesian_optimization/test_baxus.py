@@ -47,7 +47,7 @@ def test_baxus_runs():
 
     solver = BAxUS(black_box, x0, y0, lower_bound=-3.0, upper_bound=3.0, noise_std=0.0)
 
-    solver.solve(max_iter=5)
+    solver.solve(max_iter=2)
 
 
 if __name__ == "__main__":

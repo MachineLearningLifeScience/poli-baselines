@@ -14,7 +14,7 @@ from poli.objective_repository import ToyContinuousBlackBox  # type: ignore[impo
 from ax.modelbridge.generation_strategy import GenerationStep, GenerationStrategy  # type: ignore[import]
 from ax.modelbridge.registry import Models  # type: ignore[import]
 
-from hdbo_benchmark.utils.ax.ax_solver import AxSolver
+from poli_baselines.core.utils.ax.ax_solver import AxSolver
 
 
 class SAASBO(AxSolver):

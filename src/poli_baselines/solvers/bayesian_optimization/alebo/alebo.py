@@ -30,6 +30,13 @@ class ALEBO(AxSolver):
             assert isinstance(black_box, ToyContinuousBlackBox)
             bounds = [black_box.function.limits] * x0.shape[1]
         else:
+            # If bounds is (lb, up), then we build the bounds
+            # for the user
+            if len(bounds) == 2:
+                assert isinstance(bounds[0], (int, float))
+                assert isinstance(bounds[1], (int, float))
+                bounds = [bounds] * x0.shape[1]
+
             assert len(bounds) == x0.shape[1]
             assert all(len(bound) == 2 for bound in bounds)
 
