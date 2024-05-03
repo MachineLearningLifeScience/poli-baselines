@@ -1,0 +1,14 @@
+name: poli__ax
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+    - scikit-learn
+    - botorch
+    - ax-platform
+    - numpy
+    - "git+https://github.com/MachineLearningLifeScience/poli.git@dev"
+    - "git+https://github.com/MachineLearningLifeScience/poli-baselines@main"

@@ -1,4 +1,4 @@
-name: Base (python 3.9 in conda)
+name: Prob. Rep. (py3.10 in conda)
 
 on: [push]
 
@@ -21,9 +21,6 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install tox
-    - name: Test linting with tox
+    - name: Test PR with tox
       run: |
-        tox -e lint
-    - name: Test poli-baselines-base with tox
-      run: |
-        tox -e poli-baselines-base-py39
+        tox -e poli-pr-base-py39

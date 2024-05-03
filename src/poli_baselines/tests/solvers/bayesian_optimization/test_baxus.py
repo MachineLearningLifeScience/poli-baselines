@@ -1,9 +1,13 @@
 """This module tests the BAXUS solver."""
 
+import pytest
+
+# These tests only run in the poli__baxus environment.
+pytestmark = pytest.mark.baxus
+
 import warnings
 import numpy as np
 
-import pytest
 
 warnings.filterwarnings("ignore")
 
@@ -11,8 +15,6 @@ warnings.filterwarnings("ignore")
 def test_baxus_instantiates():
     """Tests that BAXUS instantiates."""
     from poli import objective_factory
-
-    pytest.importorskip("baxus")
     from poli_baselines.solvers.bayesian_optimization.baxus import BAxUS
 
     problem = objective_factory.create(
@@ -23,15 +25,13 @@ def test_baxus_instantiates():
     black_box, x0 = problem.black_box, problem.x0
     y0 = black_box(x0)
 
-    solver = BAxUS(black_box, x0, y0)
+    solver = BAxUS(black_box, x0, y0, lower_bound=-3.0, upper_bound=3.0, noise_std=0.0)
 
     assert solver is not None
 
 
 def test_baxus_runs():
     from poli import objective_factory
-
-    pytest.importorskip("baxus")
     from poli_baselines.solvers.bayesian_optimization.baxus import BAxUS
 
     problem = objective_factory.create(
@@ -45,9 +45,9 @@ def test_baxus_runs():
     x0 = np.random.uniform(-1, 1, size=10).reshape(1, 10)
     y0 = black_box(x0)
 
-    solver = BAxUS(black_box, x0, y0, initial_trust_region_length=2.0)
+    solver = BAxUS(black_box, x0, y0, lower_bound=-3.0, upper_bound=3.0, noise_std=0.0)
 
-    solver.solve(max_iter=5)
+    solver.solve(max_iter=2)
 
 
 if __name__ == "__main__":

@@ -22,10 +22,10 @@ from botorch.generation.gen import gen_candidates_torch
 from gpytorch.mlls import ExactMarginalLogLikelihood
 
 from poli.core.abstract_black_box import AbstractBlackBox
-from poli_baselines.core.abstract_solver import AbstractSolver
+from poli_baselines.core.step_by_step_solver import StepByStepSolver
 
 
-class LatentSpaceBayesianOptimization(AbstractSolver):
+class LatentSpaceBayesianOptimization(StepByStepSolver):
     def __init__(
         self,
         black_box: AbstractBlackBox,
