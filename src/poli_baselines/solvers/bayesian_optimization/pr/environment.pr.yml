@@ -1,4 +1,4 @@
-name: hdbo__pr
+name: poli__pr
 channels:
   - defaults
 dependencies:
@@ -19,6 +19,3 @@ dependencies:
     - "git+https://github.com/miguelgondu/bo_pr.git@main"
     - "git+https://github.com/MachineLearningLifeScience/poli.git@dev"
     - "git+https://github.com/MachineLearningLifeScience/poli-baselines.git@main"
-    - wandb
-    - seaborn
-    - CairoSVG
