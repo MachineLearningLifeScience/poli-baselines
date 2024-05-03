@@ -1,4 +1,4 @@
-name: bounce
+name: poli__bounce
 channels:
   - defaults
 dependencies:
@@ -16,9 +16,6 @@ dependencies:
     - black>=22.12.0,<22.13.0
     - memray>=1.6.0,<1.7.0
     - pytest>=7.3.1,<7.4.0
-    - wandb
-    - seaborn
-    - CairoSVG
     - "git+https://github.com/MachineLearningLifeScience/poli.git@dev"
     - "git+https://github.com/MachineLearningLifeScience/poli-baselines@main"
     - "git+https://github.com/miguelgondu/bounce.git@main"

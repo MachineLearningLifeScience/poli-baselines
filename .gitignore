@@ -31,3 +31,6 @@ split_points.txt.xz
 splitting_dims.txt.xz
 tr_centers.txt.xz
 model_history.zip
+
+# bounce results
+bounce_results/
