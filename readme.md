@@ -40,6 +40,12 @@ python -c "import poli_baselines ; print('Everything went well!')"
 
 ## Solvers available
 
+Some solvers run on specific conda environments. We provide
+the `environment.yml` files for each, so you can replicate
+the environment in your computer.
+
+These can be found [in the folder of each solver](src/poli_baselines/solvers).
+
 | Name | Status | Reference |
 |----------|----------|----------|
 | **Random Mutations**   |  [![Test (conda, python 3.9)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing.yml)  | N/A   |
