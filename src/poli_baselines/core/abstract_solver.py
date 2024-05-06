@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Union
 
 import numpy as np
@@ -9,8 +10,8 @@ class AbstractSolver:
     def __init__(
         self,
         black_box: AbstractBlackBox,
-        x0: Union[np.ndarray, None] = None,
-        y0: Union[np.ndarray, None] = None,
+        x0: np.ndarray | None = None,
+        y0: np.ndarray | None = None,
     ):
         self.black_box = black_box
         self.x0 = x0
@@ -20,7 +21,7 @@ class AbstractSolver:
         self,
         max_iter: int = 100,
         n_initial_points: int = 0,
-        seed: int = None,
+        seed: int | None = None,
     ) -> None:
         """
         Optimizes the problem for a given number of iterations.
