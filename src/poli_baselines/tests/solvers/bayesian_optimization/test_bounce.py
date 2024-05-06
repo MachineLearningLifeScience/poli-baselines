@@ -47,18 +47,13 @@ def test_bounce_runs():
     problem = objective_factory.create(
         name="rdkit_qed", string_representation="SELFIES"
     )
-    black_box, x0 = problem.black_box, problem.x0
-    y0 = black_box(x0)
-
-    x0_ = np.array([["[nop]"] * sequence_length])
-    x0_[0, : x0.shape[1]] = x0
+    black_box = problem.black_box
 
     solver = BounceSolver(
         black_box=black_box,
-        x0=x0_,
-        y0=y0,
         alphabet=alphabet,
         sequence_length=sequence_length,
+        n_initial_points=10,
     )
 
     assert solver is not None
