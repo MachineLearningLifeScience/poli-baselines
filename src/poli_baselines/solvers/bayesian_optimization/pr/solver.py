@@ -11,6 +11,7 @@ import numpy as np
 
 
 from poli.core.abstract_black_box import AbstractBlackBox
+from poli.core.multi_objective_black_box import MultiObjectiveBlackBox
 
 from poli_baselines.core.abstract_solver import AbstractSolver
 from poli_baselines.core.utils.bo_pr.run_one_replication import (
@@ -141,6 +142,7 @@ class ProbabilisticReparametrizationSolver(AbstractSolver):
             mc_samples=self.mc_samples,
             n_initial_points=self.n_initial_points,
             problem_kwargs={
+                "black_box": self.black_box,
                 "sequence_length": self.sequence_length,
                 "alphabet": self.alphabet,
                 "negate": False,
