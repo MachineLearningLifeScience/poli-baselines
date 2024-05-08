@@ -37,7 +37,6 @@ from discrete_mixed_bo.experiment_utils import (
     generate_initial_data,
     get_acqf,
     get_exact_rounding_func,
-    get_problem,
     initialize_model,
 )
 from discrete_mixed_bo.input import OneHotToNumeric
@@ -48,7 +47,7 @@ from discrete_mixed_bo.probabilistic_reparameterization import (
 )
 from discrete_mixed_bo.trust_region import TurboState, update_state
 
-from .poli_objective_in_pr import PoliObjective
+from .get_problem import get_problem
 
 supported_labels = [
     "sobol",
@@ -82,16 +81,16 @@ supported_labels = [
 
 """
 We modify this implementation slightly
-by introducing poli black boxes instead of
-function names.
+by restricting get problems to our poli-defined
+ones in .get_problem 
 """
 
 
-def run_one_replication_on_poli_black_box(
+def run_one_replication(
     seed: int,
     label: str,
     iterations: int,
-    black_box: AbstractBlackBox,
+    function_name: str,
     batch_size: int,
     mc_samples: int,
     n_initial_points: Optional[int] = None,
@@ -140,7 +139,7 @@ def run_one_replication_on_poli_black_box(
     optimization_kwargs = optimization_kwargs or {}
     # TODO: use model list when there are constraints
     # or multiple objectives
-    base_function = PoliObjective(black_box, **problem_kwargs)
+    base_function = get_problem(name=function_name, **problem_kwargs)
     base_function.to(**tkwargs)
     binary_dims = base_function.integer_indices
     binary_mask = base_function.integer_bounds[1] - base_function.integer_bounds[0] == 1

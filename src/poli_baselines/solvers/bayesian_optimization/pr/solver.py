@@ -14,7 +14,7 @@ from poli.core.abstract_black_box import AbstractBlackBox
 
 from poli_baselines.core.abstract_solver import AbstractSolver
 from poli_baselines.core.utils.bo_pr.run_one_replication import (
-    run_one_replication_on_poli_black_box,
+    run_one_replication,
 )
 
 
@@ -127,11 +127,16 @@ class ProbabilisticReparametrizationSolver(AbstractSolver):
         else:
             Y_init = torch.from_numpy(self.y0)
 
-        run_one_replication_on_poli_black_box(
+        if isinstance(self.black_box, MultiObjectiveBlackBox):
+            function_name = "poli_moo"
+        else:
+            function_name = "poli"
+
+        run_one_replication(
             seed=self.seed,
             label=self.label,
             iterations=max_iter,
-            black_box=self.black_box,
+            function_name=function_name,
             batch_size=self.batch_size,
             mc_samples=self.mc_samples,
             n_initial_points=self.n_initial_points,
