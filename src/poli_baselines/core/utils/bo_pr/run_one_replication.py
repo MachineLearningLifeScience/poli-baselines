@@ -48,7 +48,7 @@ from discrete_mixed_bo.probabilistic_reparameterization import (
 )
 from discrete_mixed_bo.trust_region import TurboState, update_state
 
-from .bridge import PoliObjective
+from .poli_objective_in_pr import PoliObjective
 
 supported_labels = [
     "sobol",
