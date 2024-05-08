@@ -125,10 +125,12 @@ class ProbabilisticReparametrizationSolver(AbstractSolver):
 
         if self.y0 is None:
             Y_init = None
+            is_moo = None
         else:
             Y_init = torch.from_numpy(self.y0)
+            is_moo = Y_init.shape[1] > 1
 
-        if isinstance(self.black_box, MultiObjectiveBlackBox):
+        if is_moo or isinstance(self.black_box, MultiObjectiveBlackBox):
             function_name = "poli_moo"
         else:
             function_name = "poli"
