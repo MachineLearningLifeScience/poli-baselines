@@ -9,11 +9,13 @@ from typing import Literal
 import torch
 import numpy as np
 
-from discrete_mixed_bo.run_one_replication import run_one_replication
 
 from poli.core.abstract_black_box import AbstractBlackBox
 
 from poli_baselines.core.abstract_solver import AbstractSolver
+from poli_baselines.core.utils.bo_pr.run_one_replication import (
+    run_one_replication_on_poli_black_box,
+)
 
 
 class ProbabilisticReparametrizationSolver(AbstractSolver):
@@ -29,7 +31,7 @@ class ProbabilisticReparametrizationSolver(AbstractSolver):
         black_box: AbstractBlackBox,
         x0: np.ndarray,
         y0: np.ndarray,
-        seed: int = None,
+        seed: int | None = None,
         batch_size: int = 1,
         mc_samples: int = 256,
         n_initial_points: int | None = None,
@@ -125,16 +127,15 @@ class ProbabilisticReparametrizationSolver(AbstractSolver):
         else:
             Y_init = torch.from_numpy(self.y0)
 
-        run_one_replication(
+        run_one_replication_on_poli_black_box(
             seed=self.seed,
             label=self.label,
             iterations=max_iter,
-            function_name="poli",
+            black_box=self.black_box,
             batch_size=self.batch_size,
             mc_samples=self.mc_samples,
             n_initial_points=self.n_initial_points,
             problem_kwargs={
-                "black_box": self.black_box,
                 "sequence_length": self.sequence_length,
                 "alphabet": self.alphabet,
                 "negate": False,

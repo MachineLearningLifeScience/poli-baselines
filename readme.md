@@ -59,6 +59,8 @@ These can be found [in the folder of each solver](src/poli_baselines/solvers).
 | **SAASBO** |  [![Ax (py3.10 in conda)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-ax.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-ax.yml)  | [Eriksson and Jankowiak 2021](https://arxiv.org/abs/2103.00349) |
 | **ALEBO** |  [![Ax (py3.10 in conda)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-ax.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-ax.yml)  | [Lentham et al. 2020](https://proceedings.neurips.cc/paper/2020/file/10fb6cfa4c990d2bad5ddef4f70e8ba2-Paper.pdf) |
 
+In the case of Probabilistic Reparametrization, we rely on a slightly modified version of the `run_one_replication.py` script from [the original repository](https://github.com/facebookresearch/bo_pr).
+
 ## Your first optimization using `poli-baselines`
 
 As mentioned above, this library interoperates well with the discrete objective functions defined in [`poli`](https://github.com/MachineLearningLifeScience/poli). One such objective function is the ALOHA problem, in which we search the space of 5-letter sequences of the word "ALOHA". The following is a simple example of how one could use the `RandomMutation` solver inside `poli-baselines` to solve this problem:

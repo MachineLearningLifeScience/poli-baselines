@@ -5,17 +5,18 @@ dependencies:
   - python=3.10
   - pip
   - pip:
-    - torch
-    - gpytorch==1.11
-    - botorch==0.7.0
-    - scipy
-    - jupyter
-    - matplotlib
-    - nevergrad
-    - scikit-learn
-    - statsmodels
-    - xgboost
-    - black
-    - "git+https://github.com/miguelgondu/bo_pr.git@main"
-    - "git+https://github.com/MachineLearningLifeScience/poli.git@dev"
-    - "git+https://github.com/MachineLearningLifeScience/poli-baselines.git@main"
+      - torch
+      - gpytorch==1.11
+      - botorch==0.7.0
+      - scipy
+      - jupyter
+      - matplotlib
+      - nevergrad
+      - scikit-learn
+      - statsmodels
+      - xgboost
+      - black
+      - "git+https://github.com/miguelgondu/bo_pr.git@main"
+      - "git+https://github.com/MachineLearningLifeScience/poli.git@dev"
+      - "git+https://github.com/MachineLearningLifeScience/poli-baselines.git@main"
+
