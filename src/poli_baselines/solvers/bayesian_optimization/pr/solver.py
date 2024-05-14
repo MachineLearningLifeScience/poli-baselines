@@ -39,6 +39,7 @@ class ProbabilisticReparametrizationSolver(AbstractSolver):
         alphabet: list[str] | None = None,
         noise_std: float | None = None,
         use_fixed_noise: bool = False,
+        tokenizer: object = None,
         label: Literal[
             "sobol",
             "cont_optim__round_after__ei",
@@ -88,6 +89,7 @@ class ProbabilisticReparametrizationSolver(AbstractSolver):
         self.alphabet = alphabet_
         self.alphabet_s_to_i = {s: i for i, s in enumerate(self.alphabet)}
         self.alphabet_i_to_s = {i: s for i, s in enumerate(self.alphabet)}
+        self.tokenizer = tokenizer
 
         if isinstance(x0, np.ndarray):
             # Checking that it's of the form [_, L], where
@@ -114,11 +116,14 @@ class ProbabilisticReparametrizationSolver(AbstractSolver):
     ):
         if self.x0 is not None:
             # We need to transform it to a tensor of integers.
-            X_init_ = [[self.alphabet_s_to_i[s] for s in x_i] for x_i in self.x0]
+            if self.tokenizer is not None: # tokenize if one provided
+                X_init_ = [[self.alphabet_s_to_i[s] for s in [s for s in self.tokenizer("".join(x_i)) if s]] for x_i in self.x0]
+            else:
+                X_init_ = [[self.alphabet_s_to_i[s] for s in x_i] for x_i in self.x0]
             X_init = torch.Tensor(X_init_).long()
-            X_init = torch.nn.functional.one_hot(X_init, len(self.alphabet)).flatten(
-                start_dim=1
-            )
+            # X_init = torch.nn.functional.one_hot(X_init, len(self.alphabet)).flatten(
+            #     start_dim=1
+            # )
         else:
             X_init = None
 
