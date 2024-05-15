@@ -168,6 +168,7 @@ class ProbabilisticReparametrizationSolver(AbstractSolver):
                 "negate": False,
                 "noise_std": self.noise_std,
                 "y0": self.y0,
+                "x0": self.x0,
             },
             model_kwargs={
                 "use_fixed_noise": self.use_fixed_noise,

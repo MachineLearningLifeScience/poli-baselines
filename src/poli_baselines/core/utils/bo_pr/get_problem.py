@@ -40,6 +40,7 @@ def get_problem(name: str, **kwargs) -> DiscreteTestProblem:
             ),  # NOTE from infer_reference_point: this assumes maximization of all objectives.
             integer_indices=list(range(s_len)),
             integer_bounds=integer_bounds,
+            x0=kwargs.get("x0", None),
         )
         return problem
 
