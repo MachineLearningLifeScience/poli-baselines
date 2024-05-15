@@ -60,6 +60,57 @@ class PoliObjective(DiscreteTestProblem):
         return torch.from_numpy(self.black_box(np.array(x_str)))
 
 
+class PoliDiscreteObjective(DiscreteTestProblem):
+    """
+    A bridge between poli black boxes and PR. Strictly discrete single objective - no one-hot.
+    """
+    _discrete_values: dict
+    _bounds: list
+
+
+    def __init__(
+        self,
+        black_box: AbstractBlackBox,
+        sequence_length: int,
+        alphabet: list[str] | None = None,
+        noise_std: float | None = None,
+        negate: bool = False,
+        integer_indices=None,
+    ) -> None:
+        self.dim = sequence_length
+        self.black_box = black_box
+        alphabet = alphabet or self.black_box.info.alphabet
+        if alphabet is None:
+            raise ValueError("Alphabet must be provided.")
+        if integer_indices is None:
+            integer_indices = [i for i in range(sequence_length)]
+
+        self._bounds = [(0, len(alphabet) - 1) for _ in range(sequence_length)]
+        self.alphabet_s_to_i = {s: i for i, s in enumerate(alphabet)}
+        self.alphabet_i_to_s = {i: s for i, s in enumerate(alphabet)}
+        super().__init__(noise_std, negate, categorical_indices=list(range(sequence_length)))
+        self._setup(integer_indices=integer_indices)
+        self.discrete_values = BufferDict()
+        self._discrete_values = {
+            f"pos_{i}": list(self.alphabet_s_to_i.values())
+            for i in range(sequence_length)
+        }
+        for v in self._discrete_values.values():
+            self._bounds.append((0, len(alphabet)))
+
+    def evaluate_true(self, X: torch.Tensor):
+        # Evaluate true seems to be expecting
+        # a tensor of integers.
+        if X.ndim == 1:
+            X = X.unsqueeze(0)
+
+        # 1. transform to a list of strings
+        x_str = [[self.alphabet_i_to_s[i] for i in x_i] for x_i in X.numpy(force=True)]
+
+        # 2. evaluate the black box
+        return torch.from_numpy(self.black_box(np.array(x_str)))
+
+
 class PoliMultiObjective(DiscreteTestProblem, MultiObjectiveTestProblem):
     """
     A bridge between poli black boxes and PR.
@@ -105,10 +156,6 @@ class PoliMultiObjective(DiscreteTestProblem, MultiObjectiveTestProblem):
             f"pos_{i}": list(self.alphabet_s_to_i.values())
             for i in range(sequence_length)
         }
-        # for k, v in self._discrete_values.items():
-        #     self.discrete_values[k] = torch.tensor(v, dtype=torch.float)
-        #     self.discrete_values[k] /= self.discrete_values[k].max()
-        # super().__init__(noise_std, negate, categorical_indices=list(range(self.dim)))
         for v in self._discrete_values.values():
             self._bounds.append((0, len(alphabet)))
 
