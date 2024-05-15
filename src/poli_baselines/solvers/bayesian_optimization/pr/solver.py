@@ -91,7 +91,9 @@ class ProbabilisticReparametrizationSolver(AbstractSolver):
         self.add_padding_element = any(["" in x for x in x0])
         self.alphabet = alphabet_
         if self.add_padding_element:
-            logging.warn("PADDING ADDED! Element found in x0 and added to alphabet\n THIS MAY BE UNDESIRED BEHAVIOR")
+            logging.warn(
+                "PADDING ADDED! Element found in x0 and added to alphabet\n THIS MAY BE UNDESIRED BEHAVIOR"
+            )
             self.alphabet = [""] + alphabet
         self.alphabet_s_to_i = {s: i for i, s in enumerate(self.alphabet)}
         self.alphabet_i_to_s = {i: s for i, s in enumerate(self.alphabet)}
@@ -122,8 +124,14 @@ class ProbabilisticReparametrizationSolver(AbstractSolver):
     ):
         if self.x0 is not None:
             # We need to transform it to a tensor of integers.
-            if self.tokenizer is not None: # tokenize if one provided
-                X_init_ = [[self.alphabet_s_to_i[s] for s in [s for s in self.tokenizer("".join(x_i)) if s]] for x_i in self.x0]
+            if self.tokenizer is not None:  # tokenize if one provided
+                X_init_ = [
+                    [
+                        self.alphabet_s_to_i[s]
+                        for s in [s for s in self.tokenizer("".join(x_i)) if s]
+                    ]
+                    for x_i in self.x0
+                ]
             else:
                 X_init_ = [[self.alphabet_s_to_i[s] for s in x_i] for x_i in self.x0]
             X_init = torch.Tensor(X_init_).long()

@@ -64,9 +64,9 @@ class PoliDiscreteObjective(DiscreteTestProblem):
     """
     A bridge between poli black boxes and PR. Strictly discrete single objective - no one-hot.
     """
+
     _discrete_values: dict
     _bounds: list
-
 
     def __init__(
         self,
@@ -88,7 +88,9 @@ class PoliDiscreteObjective(DiscreteTestProblem):
         self._bounds = [(0, len(alphabet) - 1) for _ in range(sequence_length)]
         self.alphabet_s_to_i = {s: i for i, s in enumerate(alphabet)}
         self.alphabet_i_to_s = {i: s for i, s in enumerate(alphabet)}
-        super().__init__(noise_std, negate, categorical_indices=list(range(sequence_length)))
+        super().__init__(
+            noise_std, negate, categorical_indices=list(range(sequence_length))
+        )
         self._setup(integer_indices=integer_indices)
         self.discrete_values = BufferDict()
         self._discrete_values = {

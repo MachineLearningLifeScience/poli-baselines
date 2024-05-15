@@ -4,7 +4,11 @@ from botorch.utils.multi_objective import infer_reference_point
 
 from discrete_mixed_bo.problems.base import DiscreteTestProblem
 
-from .poli_objective_in_pr import PoliObjective, PoliMultiObjective, PoliDiscreteObjective
+from .poli_objective_in_pr import (
+    PoliObjective,
+    PoliMultiObjective,
+    PoliDiscreteObjective,
+)
 
 
 def get_problem(name: str, **kwargs) -> DiscreteTestProblem:
