@@ -29,7 +29,7 @@ def get_problem(name: str, **kwargs) -> DiscreteTestProblem:
             sequence_length=kwargs.get("sequence_length", None),
             negate=kwargs.get("negate", False),
             ref_point=infer_reference_point(
-                kwargs.get("y0", None)
+                torch.from_numpy(kwargs.get("y0", None))
             ),  # NOTE from infer_reference_point: this assumes maximization of all objectives.
             integer_indices=list(range(s_len)),
             integer_bounds=integer_bounds,
