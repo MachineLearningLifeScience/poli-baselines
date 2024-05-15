@@ -4,13 +4,16 @@ from botorch.utils.multi_objective import infer_reference_point
 
 from discrete_mixed_bo.problems.base import DiscreteTestProblem
 
-from .poli_objective_in_pr import PoliObjective, PoliMultiObjective
+from .poli_objective_in_pr import PoliObjective, PoliMultiObjective, PoliDiscreteObjective
 
 
 def get_problem(name: str, **kwargs) -> DiscreteTestProblem:
     r"""Initialize the test function."""
     if name == "poli":
-        return PoliObjective(
+        # test dimensionality if solvable:
+        dim = len(kwargs.get("alphabet", None)) * kwargs.get("sequence_length", None)
+        # objective = PoliObjective if dim < 1000 else PoliDiscreteObjective
+        return PoliDiscreteObjective(
             black_box=kwargs["black_box"],
             alphabet=kwargs.get("alphabet", None),
             sequence_length=kwargs.get("sequence_length", None),
