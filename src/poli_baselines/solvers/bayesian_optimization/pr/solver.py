@@ -3,6 +3,7 @@ This solver is meant to be run inside the hdbo__pr env.
 """
 
 from __future__ import annotations
+import logging
 
 from typing import Literal
 
@@ -87,7 +88,11 @@ class ProbabilisticReparametrizationSolver(AbstractSolver):
             raise ValueError(
                 f"For this specific black box ({self.black_box.info.name}), an alphabet must be provided."
             )
+        self.add_padding_element = any(["" in x for x in x0])
         self.alphabet = alphabet_
+        if self.add_padding_element:
+            logging.warn("PADDING ADDED! Element found in x0 and added to alphabet\n THIS MAY BE UNDESIRED BEHAVIOR")
+            self.alphabet = [""] + alphabet
         self.alphabet_s_to_i = {s: i for i, s in enumerate(self.alphabet)}
         self.alphabet_i_to_s = {i: s for i, s in enumerate(self.alphabet)}
         self.tokenizer = tokenizer
