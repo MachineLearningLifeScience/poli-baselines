@@ -47,7 +47,7 @@ from discrete_mixed_bo.probabilistic_reparameterization import (
 )
 from discrete_mixed_bo.trust_region import TurboState, update_state
 
-from .get_problem import get_problem
+from poli_baselines.core.utils.bo_pr.get_problem import get_problem
 
 supported_labels = [
     "sobol",
