@@ -126,6 +126,7 @@ class PoliMultiObjective(DiscreteTestProblem, MultiObjectiveTestProblem):
     def __init__(
         self,
         black_box: AbstractBlackBox,
+        x0: np.ndarray,
         sequence_length: int,
         alphabet: List[str] = None,
         noise_std: float = None,
@@ -133,8 +134,13 @@ class PoliMultiObjective(DiscreteTestProblem, MultiObjectiveTestProblem):
         integer_indices=None,
         integer_bounds=None,
         ref_point: List[float] = None,
+        preserve_len: bool = True,
     ) -> None:
         self._bounds = [(0, len(alphabet) - 1) for _ in range(sequence_length)]
+        if "" == alphabet[0]:
+            self._bounds = [
+                (1, len(alphabet) - 1) for _ in range(sequence_length)
+            ]  # eliminate pad symbol from sampling
         self.dim = sequence_length
         self.black_box = black_box
         alphabet = alphabet or self.black_box.info.alphabet
@@ -142,6 +148,9 @@ class PoliMultiObjective(DiscreteTestProblem, MultiObjectiveTestProblem):
             ref_point  #  NOTE: this assumes maximization of all objectives.
         )
         self.num_objectives = ref_point.shape[-1]
+        self.sequence_length = sequence_length
+        self.Ls = [len(x[x != ""]) for x in x0]
+        self.preserve_len = preserve_len
         if alphabet is None:
             raise ValueError("Alphabet must be provided.")
 
@@ -161,6 +170,21 @@ class PoliMultiObjective(DiscreteTestProblem, MultiObjectiveTestProblem):
         for v in self._discrete_values.values():
             self._bounds.append((0, len(alphabet)))
 
+    def _consistent_length(self, x: List[str]):
+        valid_x = []
+        for _x in x:
+            cand_len = len(_x[_x != ""])
+            if cand_len not in self.Ls:
+                closest_len = min(
+                    self.Ls, key=lambda x: abs(x - cand_len)
+                )  # clip to closest length
+                valid_x.append(
+                    list(_x[:closest_len]) + [""] * (self.sequence_length - closest_len)
+                )
+            else:
+                valid_x.append(_x)
+        return np.vstack(valid_x)
+
     def evaluate_true(self, X: torch.Tensor):
         # Evaluate true seems to be expecting
         # a tensor of integers.
@@ -171,6 +195,7 @@ class PoliMultiObjective(DiscreteTestProblem, MultiObjectiveTestProblem):
         x_str = [
             [self.alphabet_i_to_s[int(i)] for i in x_i] for x_i in X.numpy(force=True)
         ]
-
+        if self.preserve_len:
+            x_str = self._consistent_length(x_str)
         # 2. evaluate the black box
         return torch.from_numpy(self.black_box(np.array(x_str)))
