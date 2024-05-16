@@ -134,9 +134,16 @@ class ProbabilisticReparametrizationSolver(AbstractSolver):
                 ]
             else:
                 X_init_ = [[self.alphabet_s_to_i[s] for s in x_i] for x_i in self.x0]
-            if not all(len(x) == len(X_init_[0]) for x in X_init_): # unequal length due to pad skip
+            if not all(
+                len(x) == len(X_init_[0]) for x in X_init_
+            ):  # unequal length due to pad skip
                 max_len = max([len(x) for x in X_init_])
-                X_init_ = np.vstack([list(x) + [self.alphabet_s_to_i[""]]*int(max_len-len(x)) for x in X_init_])
+                X_init_ = np.vstack(
+                    [
+                        list(x) + [self.alphabet_s_to_i[""]] * int(max_len - len(x))
+                        for x in X_init_
+                    ]
+                )
             X_init = torch.Tensor(X_init_).long()
             # X_init = torch.nn.functional.one_hot(X_init, len(self.alphabet)).flatten(
             #     start_dim=1
