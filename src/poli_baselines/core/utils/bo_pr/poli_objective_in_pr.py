@@ -94,7 +94,7 @@ class PoliDiscreteObjective(DiscreteTestProblem):
         super().__init__(
             noise_std, negate, categorical_indices=list(range(sequence_length))
         )
-        self._setup(integer_indices=integer_indices)
+        self._setup(integer_indices=integer_indices, categorical_indices=categorical_indices)
         self.discrete_values = BufferDict()
         self._discrete_values = {
             f"pos_{i}": list(self.alphabet_s_to_i.values())
