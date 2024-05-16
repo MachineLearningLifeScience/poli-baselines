@@ -3,6 +3,7 @@ This solver is meant to be run inside the hdbo__pr env.
 """
 
 from __future__ import annotations
+import logging
 
 from typing import Literal
 
@@ -11,10 +12,11 @@ import numpy as np
 
 
 from poli.core.abstract_black_box import AbstractBlackBox
+from poli.core.multi_objective_black_box import MultiObjectiveBlackBox
 
 from poli_baselines.core.abstract_solver import AbstractSolver
 from poli_baselines.core.utils.bo_pr.run_one_replication import (
-    run_one_replication_on_poli_black_box,
+    run_one_replication,
 )
 
 
@@ -39,6 +41,7 @@ class ProbabilisticReparametrizationSolver(AbstractSolver):
         alphabet: list[str] | None = None,
         noise_std: float | None = None,
         use_fixed_noise: bool = False,
+        tokenizer: object = None,
         label: Literal[
             "sobol",
             "cont_optim__round_after__ei",
@@ -85,9 +88,16 @@ class ProbabilisticReparametrizationSolver(AbstractSolver):
             raise ValueError(
                 f"For this specific black box ({self.black_box.info.name}), an alphabet must be provided."
             )
+        self.add_padding_element = any(["" in x for x in x0])
         self.alphabet = alphabet_
+        if self.add_padding_element:
+            logging.warn(
+                "PADDING ADDED! Element found in x0 and added to alphabet\n THIS MAY BE UNDESIRED BEHAVIOR"
+            )
+            self.alphabet = [""] + alphabet
         self.alphabet_s_to_i = {s: i for i, s in enumerate(self.alphabet)}
         self.alphabet_i_to_s = {i: s for i, s in enumerate(self.alphabet)}
+        self.tokenizer = tokenizer
 
         if isinstance(x0, np.ndarray):
             # Checking that it's of the form [_, L], where
@@ -114,32 +124,62 @@ class ProbabilisticReparametrizationSolver(AbstractSolver):
     ):
         if self.x0 is not None:
             # We need to transform it to a tensor of integers.
-            X_init_ = [[self.alphabet_s_to_i[s] for s in x_i] for x_i in self.x0]
+            if self.tokenizer is not None:  # tokenize if one provided
+                X_init_ = [
+                    [
+                        self.alphabet_s_to_i[s]
+                        for s in [s for s in self.tokenizer("".join(x_i)) if s]
+                    ]
+                    for x_i in self.x0
+                ]
+            else:
+                X_init_ = [[self.alphabet_s_to_i[s] for s in x_i] for x_i in self.x0]
+            if not all(
+                len(x) == len(X_init_[0]) for x in X_init_
+            ):  # unequal length due to pad skip
+                max_len = max([len(x) for x in X_init_])
+                X_init_ = np.vstack(
+                    [
+                        list(x) + [self.alphabet_s_to_i[""]] * int(max_len - len(x))
+                        for x in X_init_
+                    ]
+                )
             X_init = torch.Tensor(X_init_).long()
-            X_init = torch.nn.functional.one_hot(X_init, len(self.alphabet)).flatten(
-                start_dim=1
-            )
+            # X_init = torch.nn.functional.one_hot(X_init, len(self.alphabet)).flatten(
+            #     start_dim=1
+            # )
         else:
             X_init = None
 
         if self.y0 is None:
             Y_init = None
+            is_moo = None
         else:
             Y_init = torch.from_numpy(self.y0)
+            is_moo = Y_init.shape[1] > 1
 
-        run_one_replication_on_poli_black_box(
+        if is_moo or isinstance(self.black_box, MultiObjectiveBlackBox):
+            function_name = "poli_moo"
+        else:
+            function_name = "poli"
+
+        run_one_replication(
             seed=self.seed,
             label=self.label,
             iterations=max_iter,
-            black_box=self.black_box,
+            function_name=function_name,
             batch_size=self.batch_size,
             mc_samples=self.mc_samples,
             n_initial_points=self.n_initial_points,
             problem_kwargs={
+                "black_box": self.black_box,
                 "sequence_length": self.sequence_length,
                 "alphabet": self.alphabet,
                 "negate": False,
                 "noise_std": self.noise_std,
+                "y0": self.y0,
+                "x0": self.x0,
+                "tokenizer": self.tokenizer,
             },
             model_kwargs={
                 "use_fixed_noise": self.use_fixed_noise,
