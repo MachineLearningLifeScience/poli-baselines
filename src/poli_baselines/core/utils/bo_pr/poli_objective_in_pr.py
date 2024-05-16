@@ -110,7 +110,7 @@ class PoliDiscreteObjective(DiscreteTestProblem):
             X = X.unsqueeze(0)
 
         # 1. transform to a list of strings
-        x_str = [[self.alphabet_i_to_s[i] for i in x_i] for x_i in X.numpy(force=True)]
+        x_str = [[self.alphabet_i_to_s[int(i)] for i in x_i] for x_i in X.numpy(force=True)]
 
         # 2. evaluate the black box
         return torch.from_numpy(self.black_box(np.array(x_str)))
