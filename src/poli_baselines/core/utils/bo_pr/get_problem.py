@@ -21,7 +21,10 @@ def get_problem(name: str, **kwargs) -> DiscreteTestProblem:
             black_box=kwargs["black_box"],
             alphabet=kwargs.get("alphabet", None),
             sequence_length=kwargs.get("sequence_length", None),
+            integer_indices=list(range(kwargs.get("sequence_length", None))),
             negate=kwargs.get("negate", False),
+            tokenizer=kwargs.get("tokenizer"),
+            # categorical_indices=list(range(kwargs.get("sequence_length", None))),
         )
     elif name == "poli_moo":
         alphabet = kwargs.get("alphabet", None)

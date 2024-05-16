@@ -9,7 +9,7 @@ running inside the poli__pr environment.
 """
 
 from __future__ import annotations
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 import torch
@@ -75,15 +75,18 @@ class PoliDiscreteObjective(DiscreteTestProblem):
         alphabet: list[str] | None = None,
         noise_std: float | None = None,
         negate: bool = False,
-        integer_indices=None,
+        integer_indices: Optional[List[int]] = None,
+        categorical_indices: Optional[List[int]] = None,
+        tokenizer: object = None,
     ) -> None:
         self.dim = sequence_length
         self.black_box = black_box
+        self.tokenizer = tokenizer
         alphabet = alphabet or self.black_box.info.alphabet
         if alphabet is None:
             raise ValueError("Alphabet must be provided.")
-        if integer_indices is None:
-            integer_indices = [i for i in range(sequence_length)]
+        # if integer_indices is None:
+        #     integer_indices = [i for i in range(sequence_length)]
 
         self._bounds = [(0, len(alphabet) - 1) for _ in range(sequence_length)]
         self.alphabet_s_to_i = {s: i for i, s in enumerate(alphabet)}
