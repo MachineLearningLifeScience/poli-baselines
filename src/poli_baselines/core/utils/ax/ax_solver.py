@@ -26,7 +26,7 @@ class AxSolver(AbstractSolver):
         x0: ndarray,
         y0: ndarray,
         generation_strategy: GenerationStrategy,
-        bounds: list[tuple[float, float]] | None = None,
+        bounds: list[tuple[float, float]] | tuple[float, float] | None = None,
         noise_std: float = 0.0,
     ):
         super().__init__(black_box, x0, y0)
@@ -46,7 +46,7 @@ class AxSolver(AbstractSolver):
                 bounds_ = bounds
 
             assert len(bounds) == x0.shape[1]
-            assert all(len(bound) == 2 for bound in bounds)
+            assert all(len(bound) == 2 for bound in bounds_)
 
         ax_client = AxClient(generation_strategy=generation_strategy)
         exp_id = f"{uuid.uuid4()}"[:8]
