@@ -10,7 +10,6 @@ from botorch.models import SingleTaskGP
 from botorch.fit import (
     fit_gpytorch_mll_torch,
     fit_gpytorch_mll_scipy,
-    fit_gpytorch_model,
 )
 from botorch.acquisition import (
     ExpectedImprovement,
@@ -171,7 +170,7 @@ class BaseBayesianOptimization(StepByStepSolver):
             covar_module=self.kernel,
         )
         mll = ExactMarginalLogLikelihood(model_instance.likelihood, model_instance)
-        fit_gpytorch_model(mll)
+        fit_gpytorch_mll_torch(mll)
         model_instance.eval()
 
         self.gp_model_of_objective = model_instance
