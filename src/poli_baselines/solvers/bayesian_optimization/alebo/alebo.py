@@ -29,22 +29,16 @@ class ALEBO(AxSolver):
         if bounds is None:
             assert isinstance(black_box, ToyContinuousBlackBox)
             bounds = [black_box.function.limits] * x0.shape[1]
-        else:
-            # If bounds is (lb, up), then we build the bounds
-            # for the user
-            if len(bounds) == 2:
-                assert isinstance(bounds[0], (int, float))
-                assert isinstance(bounds[1], (int, float))
-                bounds = [bounds] * x0.shape[1]
-
-            assert len(bounds) == x0.shape[1]
-            assert all(len(bound) == 2 for bound in bounds)
 
         from ax.modelbridge.strategies.alebo import ALEBOStrategy  # type: ignore
 
         # Initialization is already being handled by this constructor,
         # so we leave init_size=1 (ideally it would be 0, but it is not
         # allowed by Ax's ALEBOStrategy)
+        assert lower_dim is not None and lower_dim <= x0.shape[1], (
+            f"Lower dimension must be smaller than the input dimension. "
+            f"Got {lower_dim} and {x0.shape[1]}."
+        )
         alebo_strategy = ALEBOStrategy(D=x0.shape[1], d=lower_dim, init_size=1)
 
         super().__init__(

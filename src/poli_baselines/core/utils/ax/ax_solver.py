@@ -39,9 +39,16 @@ class AxSolver(AbstractSolver):
             # If bounds is (lb, up), then we build the bounds
             # for the user
             if len(bounds) == 2:
-                assert isinstance(bounds[0], (int, float))
-                assert isinstance(bounds[1], (int, float))
-                bounds_ = [bounds] * x0.shape[1]
+                if isinstance(bounds[0], (int, float)):
+                    assert isinstance(
+                        bounds[1], (int, float)
+                    ), f"Expected a float for the upper bound. Got bounds={bounds}"
+                    bounds_ = [bounds] * x0.shape[1]
+                else:
+                    assert isinstance(
+                        bounds[0], (tuple, list)
+                    ), f"Expected a tuple or list for bounds. Got bounds={bounds}"
+                    bounds_ = bounds
             else:
                 bounds_ = bounds
 
