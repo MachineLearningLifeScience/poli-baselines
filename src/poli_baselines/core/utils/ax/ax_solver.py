@@ -45,7 +45,7 @@ class AxSolver(AbstractSolver):
             else:
                 bounds_ = bounds
 
-            assert len(bounds) == x0.shape[1]
+            assert len(bounds_) == x0.shape[1]
             assert all(len(bound) == 2 for bound in bounds_)
 
         ax_client = AxClient(generation_strategy=generation_strategy)
