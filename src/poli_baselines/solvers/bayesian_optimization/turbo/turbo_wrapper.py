@@ -1,6 +1,7 @@
 # Code taken from https://botorch.org/tutorials/turbo_1
 import numpy as np
 from poli.core.abstract_black_box import AbstractBlackBox
+from typing import List
 
 from poli_baselines.core.abstract_solver import AbstractSolver
 import math
@@ -29,9 +30,31 @@ RAW_SAMPLES = 512
 
 
 class TurboWrapper(AbstractSolver):
-    def __init__(self, black_box: AbstractBlackBox, x0: np.ndarray, y0: np.ndarray):
+    def __init__(self, black_box: AbstractBlackBox, x0: np.ndarray, y0: np.ndarray, bounds: np.ndarray):
+        """
+
+        Parameters
+        ----------
+        black_box
+        x0
+        y0
+        bounds:
+            array of shape Dx2 where D is the dimensionality
+            The first row contains the lower bounds on x, the last row contains the upper bounds.
+        """
         super().__init__(black_box, x0, y0)
-        self.X_turbo = torch.tensor(x0)
+        assert(x0.shape[0] > 1)
+
+        assert(bounds.shape[1] == 2)
+        assert(bounds.shape[0] == x0.shape[1])
+        assert(np.all(bounds[:, 1] >= bounds[:, 0]))
+        bounds[:, 1] -= bounds[:, 0]
+        def make_transforms():
+            to_turbo = lambda X: (X - bounds[:, 0]) / bounds[:, 1]
+            from_turbo = lambda X: X * bounds[:, 1] + bounds[:, 0]
+            return to_turbo, from_turbo
+        self.to_turbo, self.from_turbo = make_transforms()
+        self.X_turbo = torch.tensor(self.to_turbo(x0))
         self.Y_turbo = torch.tensor(y0)
         self.batch_size = 1
         dim = x0.shape[1]
@@ -70,14 +93,14 @@ class TurboWrapper(AbstractSolver):
             raw_samples=RAW_SAMPLES,
             acqf="ts",
         )
-        return X_next
+        return self.from_turbo(X_next.numpy())
 
     def post_update(self, x: np.ndarray, y: np.ndarray) -> None:
         """
         This method is called after the history is updated.
         """
         Y_next = torch.tensor(y)
-        X_next = torch.tensor(x)
+        X_next = torch.tensor(self.to_turbo(x))
 
         # Update state
         self.state = update_state(state=self.state, Y_next=Y_next)
