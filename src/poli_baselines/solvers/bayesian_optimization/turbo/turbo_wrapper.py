@@ -35,7 +35,7 @@ class TurboWrapper(AbstractSolver):
         black_box: AbstractBlackBox,
         x0: np.ndarray,
         y0: np.ndarray,
-        bounds: np.ndarray,
+        bounds: np.ndarray | None = None,
     ):
         """
 
@@ -50,6 +50,9 @@ class TurboWrapper(AbstractSolver):
         """
         super().__init__(black_box, x0, y0)
         assert x0.shape[0] > 1
+
+        if bounds is None:
+            bounds = np.array([[x0.min() - 1.0, x0.max() + 1.0]] * x0.shape[1])
 
         assert bounds.shape[1] == 2
         assert bounds.shape[0] == x0.shape[1]
