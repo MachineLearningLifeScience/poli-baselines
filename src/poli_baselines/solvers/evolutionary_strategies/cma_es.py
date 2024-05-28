@@ -17,6 +17,7 @@ References
 
 """
 
+from __future__ import annotations
 from typing import Tuple
 import numpy as np
 from poli.core.abstract_black_box import AbstractBlackBox
@@ -71,6 +72,7 @@ class CMA_ES(StepByStepSolver):
         initial_mean: np.ndarray,
         initial_sigma: float = 1.0,
         population_size: int = 10,
+        bounds: tuple[float, float] | None = None,
     ):
         """
         Initialize the CMA-ES solver.
@@ -93,13 +95,14 @@ class CMA_ES(StepByStepSolver):
         self.initial_sigma = initial_sigma
         self.population_size = population_size
 
-        self._internal_cma = cma.CMAEvolutionStrategy(
-            initial_mean,
-            initial_sigma,
-            {
-                "popsize": population_size,
-            },
-        )
+        opts = {
+            "popsize": population_size,
+        }
+
+        if bounds is not None:
+            opts["bounds"] = bounds
+
+        self._internal_cma = cma.CMAEvolutionStrategy(initial_mean, initial_sigma, opts)
 
         # Include the x0 and y0
         _ = self._internal_cma.ask()
