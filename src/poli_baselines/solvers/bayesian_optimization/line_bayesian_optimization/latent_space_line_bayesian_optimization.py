@@ -20,11 +20,11 @@ from botorch.acquisition import ExpectedImprovement, AcquisitionFunction
 from gpytorch.mlls import ExactMarginalLogLikelihood
 
 from poli.core.abstract_black_box import AbstractBlackBox
-from poli_baselines.core.abstract_solver import AbstractSolver
+from poli_baselines.core.step_by_step_solver import StepByStepSolver
 
 
 # TODO: this solver should inherit from BaseBayesianOptimization instead.
-class LatentSpaceLineBO(AbstractSolver):
+class LatentSpaceLineBO(StepByStepSolver):
     """
     Bayesian optimization solver that operates in the latent space using line
     Bayesian Optimization [1].

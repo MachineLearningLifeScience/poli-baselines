@@ -25,7 +25,11 @@ import torch
 
 
 from botorch.models import SingleTaskGP
-from botorch.acquisition import ExpectedImprovement, AcquisitionFunction
+from botorch.acquisition import (
+    ExpectedImprovement,
+    AcquisitionFunction,
+    LogExpectedImprovement,
+)
 
 from poli.core.abstract_black_box import AbstractBlackBox
 from poli_baselines.solvers.bayesian_optimization.base_bayesian_optimization.base_bayesian_optimization import (
@@ -105,7 +109,7 @@ class LineBO(BaseBayesianOptimization):
         y0: np.ndarray,
         mean: Mean = None,
         kernel: Kernel = None,
-        acq_function: type[AcquisitionFunction] = ExpectedImprovement,
+        acq_function: type[AcquisitionFunction] = LogExpectedImprovement,
         bounds: Tuple[float, float] = (-2.0, 2.0),
         penalize_nans_with: float = -10,
         type_of_line: Literal["random", "coordinate"] = "random",

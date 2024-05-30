@@ -10,9 +10,12 @@ from botorch.models import SingleTaskGP
 from botorch.fit import (
     fit_gpytorch_mll_torch,
     fit_gpytorch_mll_scipy,
-    fit_gpytorch_model,
 )
-from botorch.acquisition import ExpectedImprovement, AcquisitionFunction
+from botorch.acquisition import (
+    ExpectedImprovement,
+    AcquisitionFunction,
+    LogExpectedImprovement,
+)
 from botorch.optim import optimize_acqf
 from botorch.generation.gen import gen_candidates_torch
 
@@ -21,7 +24,7 @@ from gpytorch.kernels import Kernel
 from gpytorch.mlls import ExactMarginalLogLikelihood
 
 from poli.core.abstract_black_box import AbstractBlackBox
-from poli_baselines.core.abstract_solver import AbstractSolver
+from poli_baselines.core.step_by_step_solver import StepByStepSolver
 from poli_baselines.core.utils.visualization.bayesian_optimization import (
     plot_prediction_in_2d,
     plot_acquisition_in_2d,
@@ -32,7 +35,7 @@ from .bayesian_optimization_commons import (
 )
 
 
-class BaseBayesianOptimization(AbstractSolver):
+class BaseBayesianOptimization(StepByStepSolver):
     """
     Base class for Bayesian Optimization solvers.
 
@@ -100,7 +103,7 @@ class BaseBayesianOptimization(AbstractSolver):
         y0: np.ndarray,
         mean: Mean = None,
         kernel: Kernel = None,
-        acq_function: Type[AcquisitionFunction] = ExpectedImprovement,
+        acq_function: Type[AcquisitionFunction] = LogExpectedImprovement,
         bounds: Tuple[float, float] = (-2.0, 2.0),
         penalize_nans_with: float = -10.0,
     ):
@@ -167,7 +170,7 @@ class BaseBayesianOptimization(AbstractSolver):
             covar_module=self.kernel,
         )
         mll = ExactMarginalLogLikelihood(model_instance.likelihood, model_instance)
-        fit_gpytorch_model(mll)
+        fit_gpytorch_mll_torch(mll)
         model_instance.eval()
 
         self.gp_model_of_objective = model_instance
@@ -232,7 +235,10 @@ class BaseBayesianOptimization(AbstractSolver):
             The instantiated acquisition function.
         """
         _, y = self.get_history_as_arrays(penalize_nans_with=self.penalize_nans_with)
-        if self.acq_function == ExpectedImprovement:
+        if (
+            self.acq_function == LogExpectedImprovement
+            or self.acq_function == ExpectedImprovement
+        ):
             acq_func = self.acq_function(model, best_f=y.max())
         else:
             raise NotImplementedError

@@ -20,3 +20,17 @@ examples/09_replicating_nsga_ii_of_lambo_by_hand/pHs.json
 examples/09_replicating_nsga_ii_of_lambo_by_hand/history/
 examples/09_replicating_nsga_ii_of_lambo_by_hand/history.json
 examples/ignore*
+
+# BAxUS related stuff
+conf_dict.json
+projectors.txt.xz
+length_history.txt.xz
+final_target_dim.txt.xz
+lengthscales.txt.xz
+split_points.txt.xz
+splitting_dims.txt.xz
+tr_centers.txt.xz
+model_history.zip
+
+# bounce results
+bounce_results/

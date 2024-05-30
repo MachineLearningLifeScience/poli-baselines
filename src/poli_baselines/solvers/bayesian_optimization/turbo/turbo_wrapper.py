@@ -1,9 +1,11 @@
 # Code taken from https://botorch.org/tutorials/turbo_1
+from __future__ import annotations
+
 import numpy as np
 from poli.core.abstract_black_box import AbstractBlackBox
 from typing import List
 
-from poli_baselines.core.abstract_solver import AbstractSolver
+from poli_baselines.core.step_by_step_solver import StepByStepSolver
 import math
 from dataclasses import dataclass
 
@@ -29,8 +31,14 @@ NUM_RESTARTS = 10
 RAW_SAMPLES = 512
 
 
-class TurboWrapper(AbstractSolver):
-    def __init__(self, black_box: AbstractBlackBox, x0: np.ndarray, y0: np.ndarray, bounds: np.ndarray):
+class TurboWrapper(StepByStepSolver):
+    def __init__(
+        self,
+        black_box: AbstractBlackBox,
+        x0: np.ndarray,
+        y0: np.ndarray,
+        bounds: np.ndarray | None = None,
+    ):
         """
 
         Parameters
@@ -43,16 +51,29 @@ class TurboWrapper(AbstractSolver):
             The first row contains the lower bounds on x, the last row contains the upper bounds.
         """
         super().__init__(black_box, x0, y0)
+        
         assert(x0.shape[0] > 1)
 
         assert(bounds.shape[1] == 2)
         assert(bounds.shape[0] == x0.shape[1])
         assert(np.all(bounds[:, 1] >= bounds[:, 0]))
         bounds[:, 1] -= bounds[:, 0]
+
+        assert x0.shape[0] > 1
+
+        if bounds is None:
+            bounds = np.array([[x0.min() - 1.0, x0.max() + 1.0]] * x0.shape[1])
+
+        assert bounds.shape[1] == 2
+        assert bounds.shape[0] == x0.shape[1]
+        assert np.all(bounds[:, 1] >= bounds[:, 0])
+        bounds[:, 1] -= bounds[:, 0]
+
         def make_transforms():
             to_turbo = lambda X: (X - bounds[:, 0]) / bounds[:, 1]
             from_turbo = lambda X: X * bounds[:, 1] + bounds[:, 0]
             return to_turbo, from_turbo
+
         self.to_turbo, self.from_turbo = make_transforms()
         self.X_turbo = torch.tensor(self.to_turbo(x0))
         self.Y_turbo = torch.tensor(y0)
