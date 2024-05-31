@@ -20,11 +20,14 @@ class BAxUS(AbstractSolver):
         upper_bound: float | List[float] | np.ndarray,
         lower_bound: float | List[float] | np.ndarray,
         noise_std: float,
+        max_iter: int = 100,
+        **kwargs,
     ):
         # super().__init__(black_box, x0, y0)
         self.black_box = black_box
         self.x0 = x0
         self.y0 = y0
+        self.max_iter = max_iter
         _, n_dimensions = x0.shape
 
         # Making sure that lower and upper bounds have the same shape as x0
@@ -49,7 +52,7 @@ class BAxUS(AbstractSolver):
                 return -y
 
         self._solver = OriginalBAxUS(
-            Function(n_dimensions), target_dim=2, n_init=10, max_evals=100
+            Function(n_dimensions), target_dim=2, n_init=10, max_evals=self.max_iter
         )
 
     def solve(self, max_iter: int = 100, verbose: bool = False) -> None:
