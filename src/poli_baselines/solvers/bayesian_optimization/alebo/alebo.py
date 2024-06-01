@@ -9,6 +9,8 @@ ALEBO [1] stands for ...
 from __future__ import annotations
 
 import numpy as np
+import torch
+
 from poli.core.abstract_black_box import AbstractBlackBox  # type: ignore
 from poli.objective_repository import ToyContinuousBlackBox  # type: ignore
 
@@ -24,6 +26,7 @@ class ALEBO(AxSolver):
         bounds: list[tuple[float, float]] | None = None,
         lower_dim: int = 4,
         noise_std: float = 0.0,
+        device: torch.device | None = None,
     ):
         self.noise_std = noise_std
         if bounds is None:
@@ -48,6 +51,7 @@ class ALEBO(AxSolver):
             generation_strategy=alebo_strategy,
             bounds=bounds,
             noise_std=noise_std,
+            device=device,
         )
 
 
