@@ -40,6 +40,7 @@ class SAASBO(AxSolver):
                     model=Models.SAASBO,
                     num_trials=-1,
                     max_parallelism=black_box.num_workers,
+                    model_kwargs={"torch_device": device},
                 ),
             ]
         )

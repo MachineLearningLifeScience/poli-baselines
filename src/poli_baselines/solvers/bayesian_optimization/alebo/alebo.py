@@ -42,7 +42,9 @@ class ALEBO(AxSolver):
             f"Lower dimension must be smaller than the input dimension. "
             f"Got {lower_dim} and {x0.shape[1]}."
         )
-        alebo_strategy = ALEBOStrategy(D=x0.shape[1], d=lower_dim, init_size=1)
+        alebo_strategy = ALEBOStrategy(
+            D=x0.shape[1], d=lower_dim, init_size=1, device=device
+        )
 
         super().__init__(
             black_box=black_box,
