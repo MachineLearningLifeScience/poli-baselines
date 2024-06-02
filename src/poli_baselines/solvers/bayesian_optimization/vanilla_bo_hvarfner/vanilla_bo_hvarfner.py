@@ -54,7 +54,7 @@ class VanillaBOHvarfner(AxSolver):
                         "acquisition_options": {
                             "prune_baseline": True,
                         },
-                        "device": device,
+                        "torch_device": device,
                     },
                 )
             ]
