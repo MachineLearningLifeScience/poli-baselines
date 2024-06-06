@@ -19,7 +19,7 @@ class BAxUS(AbstractSolver):
         y0: np.ndarray,
         bounds: tuple[float, float],
         noise_std: float,
-        max_iter: int = None,
+        max_iter: int = 100,
         target_dim: int = 2,
         n_init: int = 10,
         **kwargs,
