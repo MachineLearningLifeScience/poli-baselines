@@ -5,6 +5,7 @@ import uuid
 
 from numpy import ndarray
 import numpy as np
+import torch
 
 from poli.objective_repository import ToyContinuousBlackBox
 from poli.core.abstract_black_box import AbstractBlackBox
@@ -28,6 +29,7 @@ class AxSolver(AbstractSolver):
         generation_strategy: GenerationStrategy,
         bounds: list[tuple[float, float]] | tuple[float, float] | None = None,
         noise_std: float = 0.0,
+        device: torch.device | None = None,
     ):
         super().__init__(black_box, x0, y0)
         self.noise_std = noise_std
@@ -55,7 +57,9 @@ class AxSolver(AbstractSolver):
             assert len(bounds_) == x0.shape[1]
             assert all(len(bound) == 2 for bound in bounds_)
 
-        ax_client = AxClient(generation_strategy=generation_strategy)
+        ax_client = AxClient(
+            generation_strategy=generation_strategy, torch_device=device
+        )
         exp_id = f"{uuid.uuid4()}"[:8]
 
         search_space = define_search_space(x0=x0, bounds=bounds_)

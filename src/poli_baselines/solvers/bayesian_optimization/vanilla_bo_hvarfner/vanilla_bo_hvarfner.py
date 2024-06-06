@@ -1,5 +1,6 @@
 import numpy as np
 
+import torch
 import gpytorch  # type: ignore[import]
 from gpytorch.constraints.constraints import GreaterThan  # type: ignore[import]
 from botorch.models import SingleTaskGP  # type: ignore[import]
@@ -22,6 +23,7 @@ class VanillaBOHvarfner(AxSolver):
         y0: np.ndarray,
         bounds: list[tuple[float, float]] | None = None,
         noise_std: float = 0,
+        device: torch.device | str | None = None,
     ):
         _, n_dimensions = x0.shape
         generation_strategy = GenerationStrategy(
@@ -52,6 +54,7 @@ class VanillaBOHvarfner(AxSolver):
                         "acquisition_options": {
                             "prune_baseline": True,
                         },
+                        "torch_device": device,
                     },
                 )
             ]

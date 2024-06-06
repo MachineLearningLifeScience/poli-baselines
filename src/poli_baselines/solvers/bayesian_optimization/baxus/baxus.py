@@ -17,14 +17,24 @@ class BAxUS(AbstractSolver):
         black_box: AbstractBlackBox,
         x0: np.ndarray,
         y0: np.ndarray,
-        upper_bound: float | List[float] | np.ndarray,
-        lower_bound: float | List[float] | np.ndarray,
+        bounds: tuple[float, float],
         noise_std: float,
+        max_iter: int = 100,
+        target_dim: int = 2,
+        n_init: int = 10,
+        **kwargs,
     ):
         # super().__init__(black_box, x0, y0)
         self.black_box = black_box
         self.x0 = x0
         self.y0 = y0
+        self.max_iter = max_iter
+        self.bounds = bounds
+        self.noise_std = noise_std
+        self.target_dim = target_dim
+        self.n_init = n_init
+        lower_bound, upper_bound = bounds
+
         _, n_dimensions = x0.shape
 
         # Making sure that lower and upper bounds have the same shape as x0
@@ -45,14 +55,23 @@ class BAxUS(AbstractSolver):
                 assert isinstance(x, np.ndarray)
                 x = x.reshape(1, n_dimensions)
                 y = black_box(x).flatten()[0]
-                print(y)
                 return -y
 
-        self._solver = OriginalBAxUS(
-            Function(n_dimensions), target_dim=2, n_init=10, max_evals=100
-        )
+        self.baxus_benchmark = Function(n_dimensions)
 
     def solve(self, max_iter: int = 100, verbose: bool = False) -> None:
+        if max_iter is None:
+            max_iter = self.max_iter
+            assert self.max_iter is not None, (
+                "You should provide max_iter, be it in "
+                "the constructor or in the solve method."
+            )
+        self._solver = OriginalBAxUS(
+            self.baxus_benchmark,
+            target_dim=self.target_dim,
+            n_init=self.n_init,
+            max_evals=max_iter,
+        )
         self._solver.optimize()
 
 

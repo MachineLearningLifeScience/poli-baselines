@@ -8,6 +8,8 @@ and was proposed by Eriksson and ...
 """
 
 import numpy as np
+import torch
+
 from poli.core.abstract_black_box import AbstractBlackBox  # type: ignore[import]
 from poli.objective_repository import ToyContinuousBlackBox  # type: ignore[import]
 
@@ -25,6 +27,7 @@ class SAASBO(AxSolver):
         y0: np.ndarray,
         bounds: list[tuple[float, float]] | None = None,
         noise_std: float = 0.0,
+        device: torch.device | None = None,
     ):
         self.noise_std = noise_std
         generation_strategy = GenerationStrategy(
@@ -37,6 +40,7 @@ class SAASBO(AxSolver):
                     model=Models.SAASBO,
                     num_trials=-1,
                     max_parallelism=black_box.num_workers,
+                    model_kwargs={"torch_device": device},
                 ),
             ]
         )
@@ -47,6 +51,7 @@ class SAASBO(AxSolver):
             generation_strategy=generation_strategy,
             bounds=bounds,
             noise_std=noise_std,
+            device=device,
         )
 
 

@@ -25,7 +25,7 @@ def test_baxus_instantiates():
     black_box, x0 = problem.black_box, problem.x0
     y0 = black_box(x0)
 
-    solver = BAxUS(black_box, x0, y0, lower_bound=-3.0, upper_bound=3.0, noise_std=0.0)
+    solver = BAxUS(black_box, x0, y0, bounds=(-3.0, 3.0), noise_std=0.0)
 
     assert solver is not None
 
@@ -45,9 +45,9 @@ def test_baxus_runs():
     x0 = np.random.uniform(-1, 1, size=10).reshape(1, 10)
     y0 = black_box(x0)
 
-    solver = BAxUS(black_box, x0, y0, lower_bound=-3.0, upper_bound=3.0, noise_std=0.0)
+    solver = BAxUS(black_box, x0, y0, bounds=(-3.0, 3.0), noise_std=0.0, n_init=2)
 
-    solver.solve(max_iter=2)
+    solver.solve(max_iter=3)
 
 
 if __name__ == "__main__":

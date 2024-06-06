@@ -3,6 +3,7 @@ This can run inside the bounce env.
 """
 
 from __future__ import annotations
+import warnings
 from pathlib import Path
 from typing import Literal
 
@@ -23,6 +24,8 @@ class BounceSolver(AbstractSolver):
     def __init__(
         self,
         black_box: AbstractBlackBox,
+        x0: np.ndarray = None,
+        y0: np.ndarray = None,
         noise_std: float = 0.0,
         sequence_length: int | None = None,
         alphabet: list[str] | None = None,
@@ -33,6 +36,13 @@ class BounceSolver(AbstractSolver):
         initial_target_dimensionality: int = 2,
         number_new_bins_on_split: int = 2,
     ):
+        if x0 is not None or y0 is not None:
+            warnings.warn(
+                "x0 and y0 are not used in BounceSolver because "
+                "the original solver doesn't expose custom inputs. "
+                "They will be ignored. Remember to pass n_initial_points "
+            )
+            assert n_initial_points is not None
         super().__init__(black_box, None, None)
         if device is None:
             device = "cuda" if torch.cuda.is_available() else "cpu"
