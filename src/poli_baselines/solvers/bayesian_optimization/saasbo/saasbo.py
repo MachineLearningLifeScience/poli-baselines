@@ -2,9 +2,9 @@
 Implementing SAASBO using Ax
 
 SAASBO [1] stands for Sparse Axis-Aligned Subspace Bayesian Optimization,
-and was proposed by Eriksson and ...
+and was proposed by Eriksson and Jankowiak
 
-[1] ...
+[1] Eriksson, D., & Jankowiak, M. (2021). High-dimensional Bayesian optimization with sparse axis-aligned subspaces. Proceedings of the Thirty-Seventh Conference on Uncertainty in Artificial Intelligence, 493-503. https://proceedings.mlr.press/v161/eriksson21a.html
 """
 
 import numpy as np

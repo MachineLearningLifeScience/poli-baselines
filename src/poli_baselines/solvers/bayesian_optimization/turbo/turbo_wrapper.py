@@ -31,7 +31,7 @@ NUM_RESTARTS = 10
 RAW_SAMPLES = 512
 
 
-class TurboWrapper(StepByStepSolver):
+class Turbo(StepByStepSolver):
     def __init__(
         self,
         black_box: AbstractBlackBox,
