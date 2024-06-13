@@ -8,8 +8,8 @@ warnings.filterwarnings("ignore")
 
 def test_turbo_runs():
     from poli import objective_factory
-    from poli_baselines.solvers.bayesian_optimization.turbo.turbo_wrapper import (
-        TurboWrapper,
+    from poli_baselines.solvers.bayesian_optimization.turbo import (
+        Turbo,
     )
 
     problem = objective_factory.create(
@@ -23,7 +23,7 @@ def test_turbo_runs():
     x0 = np.random.uniform(0, 1, size=20).reshape(2, 10)
     y0 = black_box(x0)
 
-    solver = TurboWrapper(black_box, x0, y0)
+    solver = Turbo(black_box, x0, y0)
 
     solver.solve(max_iter=5)
 

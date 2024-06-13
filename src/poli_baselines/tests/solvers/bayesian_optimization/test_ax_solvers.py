@@ -44,7 +44,7 @@ class TestBayesianOptimization:
             **solver_kwargs,
         )
 
-    def test_solving_while_mocking_training(self, solver, solver_kwargs):
+    def test_solving(self, solver, solver_kwargs):
         f, x0 = self.problem.black_box, self.problem.x0
         y0 = f(x0)
         solver_: AbstractSolver = solver(
