@@ -5,6 +5,7 @@ dependencies:
   - python=3.10
   - pip
   - pip:
+      - numpy<2
       - torch
       - gpytorch==1.11
       - botorch==0.7.0

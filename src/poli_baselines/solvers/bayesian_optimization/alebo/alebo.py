@@ -1,9 +1,13 @@
 """
 Implementing ALEBO using Ax
 
-ALEBO [1] stands for ...
+ALEBO [1] stands for Adaptive Linear Embeddings Bayesian 
+Optimization. We use the Ax model in this implementation.
 
-[1] ...
+[1] Letham, B., Calandra, R., Rai, A., & Bakshy, E. (2020). 
+Re-Examining Linear Embeddings for High-Dimensional Bayesian 
+Optimization. Advances in Neural Information Processing Systems, 33, 
+1546-1558. https://proceedings.neurips.cc/paper/2020/hash/10fb6cfa4c990d2bad5ddef4f70e8ba2-Abstract.html
 """
 
 from __future__ import annotations
