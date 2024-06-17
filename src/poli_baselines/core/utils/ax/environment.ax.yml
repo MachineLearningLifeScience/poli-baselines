@@ -9,6 +9,6 @@ dependencies:
     - scikit-learn
     - botorch
     - ax-platform
-    - numpy
+    - numpy<2
     - "git+https://github.com/MachineLearningLifeScience/poli.git@dev"
     - "git+https://github.com/MachineLearningLifeScience/poli-baselines@main"
