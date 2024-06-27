@@ -93,6 +93,12 @@ print(solver.get_best_solution())  # Should be [["A", "L", "O", "H", "A"]]
 
 The `examples` folder includes the optimization of more complex objective functions such as `foldx` stability (if you have `foldx` installed in your computer), and the use of advanced black box optimizers like (Line) Bayesian Optimization.
 
+## Our ongoing benchmark
+
+[We have an ongoing benchmark!](https://machinelearninglifescience.github.io/hdbo_benchmark/) We are using `poli` and `poli-baselines` to test several high-dimensional Bayesian optimization methods.
+
+[**If you want to contribute a new solver for the benchmark, follow these instructions.**](https://machinelearninglifescience.github.io/poli-docs/contributing/a_new_solver.html) We expect new optimizers to be contributed as pull requests to this project.
+
 ## Want to contribute?
 
 Take a look at our open issues, and check our [guide to contributing](https://github.com/MachineLearningLifeScience/poli-baselines/blob/main/CONTRIBUTING.md).
