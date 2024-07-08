@@ -2,12 +2,14 @@
 Implementing SAASBO using Ax
 
 SAASBO [1] stands for Sparse Axis-Aligned Subspace Bayesian Optimization,
-and was proposed by Eriksson and ...
+and was proposed by Eriksson and Jankowiak
 
-[1] ...
+[1] Eriksson, D., & Jankowiak, M. (2021). High-dimensional Bayesian optimization with sparse axis-aligned subspaces. Proceedings of the Thirty-Seventh Conference on Uncertainty in Artificial Intelligence, 493-503. https://proceedings.mlr.press/v161/eriksson21a.html
 """
 
 import numpy as np
+import torch
+
 from poli.core.abstract_black_box import AbstractBlackBox  # type: ignore[import]
 from poli.objective_repository import ToyContinuousBlackBox  # type: ignore[import]
 
@@ -25,6 +27,7 @@ class SAASBO(AxSolver):
         y0: np.ndarray,
         bounds: list[tuple[float, float]] | None = None,
         noise_std: float = 0.0,
+        device: torch.device | None = None,
     ):
         self.noise_std = noise_std
         generation_strategy = GenerationStrategy(
@@ -37,6 +40,7 @@ class SAASBO(AxSolver):
                     model=Models.SAASBO,
                     num_trials=-1,
                     max_parallelism=black_box.num_workers,
+                    model_kwargs={"torch_device": device},
                 ),
             ]
         )
@@ -47,6 +51,7 @@ class SAASBO(AxSolver):
             generation_strategy=generation_strategy,
             bounds=bounds,
             noise_std=noise_std,
+            device=device,
         )
 
 

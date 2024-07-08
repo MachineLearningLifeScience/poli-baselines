@@ -100,7 +100,8 @@ class CMA_ES(StepByStepSolver):
         }
 
         if bounds is not None:
-            opts["bounds"] = bounds
+            assert isinstance(bounds, (tuple, list))
+            opts["bounds"] = list(bounds)
 
         self._internal_cma = cma.CMAEvolutionStrategy(initial_mean, initial_sigma, opts)
 

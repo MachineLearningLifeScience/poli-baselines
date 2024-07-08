@@ -39,6 +39,7 @@ class ProbabilisticReparametrizationSolver(AbstractSolver):
         alphabet: list[str] | None = None,
         noise_std: float | None = None,
         use_fixed_noise: bool = False,
+        device: torch.device | str | None = None,
         label: Literal[
             "sobol",
             "cont_optim__round_after__ei",
@@ -79,7 +80,7 @@ class ProbabilisticReparametrizationSolver(AbstractSolver):
         if sequence_length_ is None or sequence_length_ == float("inf"):
             raise ValueError("Sequence length must be provided.")
         self.sequence_length = sequence_length_
-
+        self.device = device
         alphabet_ = alphabet or self.black_box.info.alphabet
         if alphabet_ is None:
             raise ValueError(
@@ -145,7 +146,7 @@ class ProbabilisticReparametrizationSolver(AbstractSolver):
                 "use_fixed_noise": self.use_fixed_noise,
             },
             save_callback=lambda t: t,
-            device=device,
+            device=self.device if self.device else device,
             X_init=X_init,
             Y_init=Y_init,
         )

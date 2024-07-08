@@ -31,7 +31,7 @@ NUM_RESTARTS = 10
 RAW_SAMPLES = 512
 
 
-class TurboWrapper(StepByStepSolver):
+class Turbo(StepByStepSolver):
     def __init__(
         self,
         black_box: AbstractBlackBox,
@@ -63,6 +63,8 @@ class TurboWrapper(StepByStepSolver):
 
         if bounds is None:
             bounds = np.array([[x0.min() - 1.0, x0.max() + 1.0]] * x0.shape[1])
+        if isinstance(bounds, (list, tuple)):
+            bounds = np.array([bounds] * x0.shape[1])
 
         assert bounds.shape[1] == 2
         assert bounds.shape[0] == x0.shape[1]
@@ -83,7 +85,12 @@ class TurboWrapper(StepByStepSolver):
 
     def next_candidate(self) -> np.ndarray:
         dim = self.X_turbo.shape[1]
-        train_Y = (self.Y_turbo - self.Y_turbo.mean()) / self.Y_turbo.std()
+        # Normalize the data
+        # but only if self.Y_turbo.std() is not zero
+        if self.Y_turbo.std() > 0:
+            train_Y = (self.Y_turbo - self.Y_turbo.mean()) / self.Y_turbo.std()
+        else:
+            train_Y = self.Y_turbo
         likelihood = GaussianLikelihood(noise_constraint=Interval(1e-8, 1e-3))
         covar_module = (
             ScaleKernel(  # Use the same lengthscale prior as in the TuRBO paper
