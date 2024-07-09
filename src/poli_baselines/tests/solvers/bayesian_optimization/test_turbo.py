@@ -21,7 +21,9 @@ def test_turbo_runs():
     x0 = np.concatenate([x0, np.random.rand(1, x0.shape[1])])
     y0 = black_box(x0)
 
-    bounds = np.concatenate([-np.ones([x0.shape[1], 1]), np.ones([x0.shape[1], 1])], axis=-1)
+    bounds = np.concatenate(
+        [-np.ones([x0.shape[1], 1]), np.ones([x0.shape[1], 1])], axis=-1
+    )
 
     solver = Turbo(black_box, x0, y0, bounds=bounds)
 
