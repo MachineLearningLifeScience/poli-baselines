@@ -1,1 +1,1 @@
-This solver runs on Ax. The environment of which you can find [in the core.utils.ax folder](../../../core/utils/ax/environment.ax.yml).
+This solver used to run on the default Ax environment, but in it was dropped in `v0.4.1`. We now pin the version of Ax to be `v0.4.0`.
