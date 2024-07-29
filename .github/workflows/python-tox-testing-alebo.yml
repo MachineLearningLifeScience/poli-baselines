@@ -1,4 +1,4 @@
-name: Ax (py3.10 in conda)
+name: ALEBO (py3.10 in conda)
 
 on:
   push:
