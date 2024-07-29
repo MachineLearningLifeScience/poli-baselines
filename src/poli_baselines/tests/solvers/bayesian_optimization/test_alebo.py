@@ -1,6 +1,6 @@
-"""Testing all Ax-related solvers.
+"""Testing the ALEBO solver.
 
-This test suite runs only on poli__ax in CI.
+This test suite runs only on poli__alebo in CI.
 """
 
 import pytest
@@ -14,17 +14,13 @@ try:
 except ImportError:
     pytest.skip("Ax is not installed.", allow_module_level=True)
 
-from poli_baselines.solvers.bayesian_optimization.saasbo import SAASBO
-from poli_baselines.solvers.bayesian_optimization.vanilla_bo_hvarfner import (
-    VanillaBOHvarfner,
-)
+from poli_baselines.solvers.bayesian_optimization.alebo import ALEBO
 
 
 @pytest.mark.parametrize(
     "solver, solver_kwargs",
     [
-        [SAASBO, {}],
-        [VanillaBOHvarfner, {}],
+        [ALEBO, {"lower_dim": 2}],
     ],
 )
 class TestBayesianOptimization:
