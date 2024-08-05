@@ -1,0 +1,13 @@
+name: poli__baxus
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pytorch
+  - pip
+  - pip:
+    - numpy<2
+    - baxus
+    - "git+https://github.com/MachineLearningLifeScience/poli.git@v0.2.1"
+    - "git+https://github.com/MachineLearningLifeScience/poli-baselines@main"
