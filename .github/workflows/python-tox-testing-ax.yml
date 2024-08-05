@@ -17,7 +17,13 @@ jobs:
       max-parallel: 5
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Maximizes space
+        uses: easimon/maximize-build-space@master
+        with:
+          remove-dotnet: 'true'
+          remove-haskell: 'true'
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Set up Python 3.9
         uses: actions/setup-python@v3
         with:
