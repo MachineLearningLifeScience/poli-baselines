@@ -38,5 +38,7 @@ class AmortizedBOWrapper(StepByStepSolver):
         x = self.solver.propose(num_samples=1, population=Population(samples))
         s = list(self.domain.decode(x)[0])
         if not self.problem_info.sequences_are_aligned():
-            s = s + [self.problem_info.get_padding_token()] * (self.problem_info.get_max_sequence_length() - len(s))
+            s = s + [self.problem_info.get_padding_token()] * (
+                self.problem_info.get_max_sequence_length() - len(s)
+            )
         return np.array([s])
