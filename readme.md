@@ -57,7 +57,7 @@ These can be found [in the folder of each solver](src/poli_baselines/solvers).
 | **BAxUS** |  [![BAxUS (py3.10 in conda)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-baxus.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-baxus.yml)  | [Papenmeier et al. 2022](https://arxiv.org/abs/2304.11468) |
 | **Probabilistic Reparametrization** |  [![Prob. Rep. (py3.10 in conda)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-pr.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-pr.yml)  | [Daulton et al. 2022](https://arxiv.org/abs/2210.10199) |
 | **SAASBO** |  [![Ax (py3.10 in conda)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-ax.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-ax.yml)  | [Eriksson and Jankowiak 2021](https://arxiv.org/abs/2103.00349) |
-| **ALEBO** |  [![Ax (py3.10 in conda)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-ax.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-ax.yml)  | [Lentham et al. 2020](https://proceedings.neurips.cc/paper/2020/file/10fb6cfa4c990d2bad5ddef4f70e8ba2-Paper.pdf) |
+| **ALEBO** |  [![ALEBO (py3.10 in conda)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-alebo.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-alebo.yml) | [Lentham et al. 2020](https://proceedings.neurips.cc/paper/2020/file/10fb6cfa4c990d2bad5ddef4f70e8ba2-Paper.pdf) |
 
 In the case of Probabilistic Reparametrization, we rely on a slightly modified version of the `run_one_replication.py` script from [the original repository](https://github.com/facebookresearch/bo_pr).
 
@@ -92,6 +92,12 @@ print(solver.get_best_solution())  # Should be [["A", "L", "O", "H", "A"]]
 ## More examples
 
 The `examples` folder includes the optimization of more complex objective functions such as `foldx` stability (if you have `foldx` installed in your computer), and the use of advanced black box optimizers like (Line) Bayesian Optimization.
+
+## Our ongoing benchmark
+
+[We have an ongoing benchmark!](https://machinelearninglifescience.github.io/hdbo_benchmark/) We are using `poli` and `poli-baselines` to test several high-dimensional Bayesian optimization methods.
+
+[**If you want to contribute a new solver for the benchmark, follow these instructions.**](https://machinelearninglifescience.github.io/poli-docs/contributing/a_new_solver.html) We expect new optimizers to be contributed as pull requests to this project.
 
 ## Want to contribute?
 
