@@ -3,8 +3,10 @@ channels:
   - defaults
 dependencies:
   - python=3.10
+  - pytorch
   - pip
   - pip:
+      - --extra-index-url https://download.pytorch.org/whl/cpu
       - numpy<2
       - torch
       - gpytorch==1.11

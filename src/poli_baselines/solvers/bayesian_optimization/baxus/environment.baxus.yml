@@ -6,7 +6,7 @@ dependencies:
   - python=3.10
   - pip
   - pip:
-    - numpy
+    - numpy<2
     - baxus
-    - "git+https://github.com/MachineLearningLifeScience/poli.git@dev"
+    - "git+https://github.com/MachineLearningLifeScience/poli.git@v0.2.1"
     - "git+https://github.com/MachineLearningLifeScience/poli-baselines@main"
