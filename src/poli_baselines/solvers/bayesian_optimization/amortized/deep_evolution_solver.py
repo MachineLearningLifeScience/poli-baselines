@@ -273,7 +273,9 @@ def _create_positional_encoding(  # pylint: disable=invalid-name
     position = np.arange(0, max_len)[:, np.newaxis]
     div_term = np.exp(np.arange(0, d_feature, 2) * -(np.log(10000.0) / d_feature))
     pe[:, 0::2] = np.sin(position * div_term)
-    pe[:, 1::2] = np.cos(position * div_term)
+    # FIXME: Simon: the line below does not work for odd alphabet sizes! Get in touch with authors!
+    #pe[:, 1::2] = np.cos(position * div_term)
+    pe[:, 1::2] = np.cos(position * div_term[d_feature%2:])
     pe = pe[np.newaxis, :, :]  # [1, max_len, d_feature]
     return jnp.array(pe)  # These are trainable parameters, initialized as above.
 
