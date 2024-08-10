@@ -51,6 +51,14 @@ class Turbo(StepByStepSolver):
             The first row contains the lower bounds on x, the last row contains the upper bounds.
         """
         super().__init__(black_box, x0, y0)
+
+        assert x0.shape[0] > 1
+
+        assert bounds.shape[1] == 2
+        assert bounds.shape[0] == x0.shape[1]
+        assert np.all(bounds[:, 1] >= bounds[:, 0])
+        bounds[:, 1] -= bounds[:, 0]
+
         assert x0.shape[0] > 1
 
         if bounds is None:

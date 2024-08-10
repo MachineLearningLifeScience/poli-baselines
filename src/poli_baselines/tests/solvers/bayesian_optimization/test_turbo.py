@@ -18,12 +18,14 @@ def test_turbo_runs():
         n_dimensions=10,
     )
     black_box, x0 = problem.black_box, problem.x0
+    x0 = np.concatenate([x0, np.random.rand(1, x0.shape[1])])
     y0 = black_box(x0)
 
-    x0 = np.random.uniform(0, 1, size=20).reshape(2, 10)
-    y0 = black_box(x0)
+    bounds = np.concatenate(
+        [-np.ones([x0.shape[1], 1]), np.ones([x0.shape[1], 1])], axis=-1
+    )
 
-    solver = Turbo(black_box, x0, y0)
+    solver = Turbo(black_box, x0, y0, bounds=bounds)
 
     solver.solve(max_iter=5)
 
