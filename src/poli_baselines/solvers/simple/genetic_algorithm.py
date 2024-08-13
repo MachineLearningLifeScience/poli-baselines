@@ -2,6 +2,8 @@
 Implements a genetic algorithm solver using pymoo as a backend.
 """
 
+from __future__ import annotations
+
 from typing import Callable, Iterable
 from typing_extensions import Self
 
@@ -45,6 +47,8 @@ class FixedLengthGeneticAlgorithm(StepByStepSolver):
         population_size: int = 100,
         initialize_with_x0: bool = True,
         prob_of_mutation: float = 0.5,
+        alphabet: list[str] = None,
+        sequence_length: int = None,
     ):
         super().__init__(black_box, x0, y0)
         self.population_size = population_size
@@ -55,6 +59,8 @@ class FixedLengthGeneticAlgorithm(StepByStepSolver):
             x0=self.x0,
             y0=self.y0,
             initialize_with_x0=initialize_with_x0,
+            alphabet=alphabet,
+            sequence_length=sequence_length,
         )
 
         if initialize_with_x0:
@@ -75,12 +81,11 @@ class FixedLengthGeneticAlgorithm(StepByStepSolver):
             ),
         )
 
-    def next_candidate(self) -> ndarray:
-        raise NotImplementedError
-
     def solve(
         self,
         max_iter: int = 100,
+        n_initial_points: int = 0,
+        seed: int | None = None,
         break_at_performance: float = None,
         verbose: bool = False,
         pre_step_callbacks: Iterable[Callable[[Self], None]] = None,

@@ -3,6 +3,8 @@ This module contains ways of transforming poli's objective
 functions to pymoo problems.
 """
 
+from __future__ import annotations
+
 from typing import Dict, List, Tuple
 from pathlib import Path
 import pickle
@@ -85,6 +87,8 @@ class DiscretePymooProblem(Problem):
         checkpoint_path: Path = None,
         initialize_with_x0: bool = True,
         minimize: bool = False,
+        alphabet: list[str] = None,
+        sequence_length: int | None = None,
         **kwargs,
     ):
         """
@@ -116,14 +120,18 @@ class DiscretePymooProblem(Problem):
         # We define sequence_length discrete choice variables,
         # selecting from the alphabet, which we assure is List[str]
         # (by checking the first key, if it's dict).
-        alphabet = black_box.info.alphabet
+        if alphabet is None:
+            alphabet = black_box.info.alphabet
+
         if isinstance(alphabet, Dict):
             alphabet = list(alphabet.keys())
             assert isinstance(alphabet[0], str)
 
         self.alphabet = alphabet
 
-        sequence_length = x0.shape[1]
+        if sequence_length is None:
+            sequence_length = x0.shape[1]
+
         variables = {f"x_{i}": Choice(options=alphabet) for i in range(sequence_length)}
 
         self.checkpoint_path = checkpoint_path
