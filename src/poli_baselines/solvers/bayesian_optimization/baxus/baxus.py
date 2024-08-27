@@ -70,7 +70,7 @@ class BAxUS(AbstractSolver):
             self.baxus_benchmark,
             target_dim=self.target_dim,
             n_init=self.n_init,
-            max_evals=max_iter,
+            max_evals=max_iter + self.n_init,
         )
         self._solver.optimize()
 
