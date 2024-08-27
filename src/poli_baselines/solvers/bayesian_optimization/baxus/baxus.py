@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from typing import List
+import warnings
+
 import numpy as np
 
 from poli.core.abstract_black_box import AbstractBlackBox
@@ -21,6 +23,7 @@ class BAxUS(AbstractSolver):
         noise_std: float,
         max_iter: int = 100,
         target_dim: int = 2,
+        n_dimensions: int = None,
         n_init: int = 10,
         **kwargs,
     ):
@@ -35,7 +38,21 @@ class BAxUS(AbstractSolver):
         self.n_init = n_init
         lower_bound, upper_bound = bounds
 
-        _, n_dimensions = x0.shape
+        if n_dimensions is None:
+            if x0 is None:
+                raise ValueError(
+                    "You should provide either x0 or n_dimensions in the constructor."
+                )
+            _, n_dimensions = x0.shape
+
+        if x0 is not None or y0 is not None:
+            warnings.warn(
+                "Since we follow the original implementation, "
+                "BAxUS does not use x0 or y0 for initialization. "
+                "By default, it uses n_init points in a SOBOL sequence. "
+                "Specify how many points you would like to initialize with "
+                "by using the n_init parameter."
+            )
 
         # Making sure that lower and upper bounds have the same shape as x0
         if isinstance(upper_bound, float):
@@ -70,7 +87,7 @@ class BAxUS(AbstractSolver):
             self.baxus_benchmark,
             target_dim=self.target_dim,
             n_init=self.n_init,
-            max_evals=max_iter,
+            max_evals=max_iter + self.n_init,
         )
         self._solver.optimize()
 
