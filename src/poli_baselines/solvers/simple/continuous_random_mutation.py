@@ -1,6 +1,8 @@
 """This module implements continuous random search by mutating
 the best performing candidate, adding Gaussian noise."""
 
+from __future__ import annotations
+
 from typing import Tuple
 import numpy as np
 
@@ -16,7 +18,7 @@ class ContinuousRandomMutation(StepByStepSolver):
         y0: np.ndarray,
         loc: float = 0.0,
         std: float = 1.0,
-        bounds: Tuple[float, float] = (-2.0, 2.0),
+        bounds: Tuple[float, float] | None = None,
         penalize_nans_with: float = -10.0,
     ):
         """
@@ -45,5 +47,9 @@ class ContinuousRandomMutation(StepByStepSolver):
 
         # Perform a random mutation
         candidate = best_x + np.random.normal(self.loc, self.std, size=best_x.shape)
+
+        # Clip the candidate to the bounds
+        if self.bounds is not None:
+            candidate = np.clip(candidate, *self.bounds)
 
         return candidate
