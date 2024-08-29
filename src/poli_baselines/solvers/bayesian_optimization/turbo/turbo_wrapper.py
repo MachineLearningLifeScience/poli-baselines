@@ -216,7 +216,7 @@ def generate_batch(
         ] = 1
 
         # Create candidate points from the perturbations and the mask
-        X_cand = x_center.expand(n_candidates, dim).clone()
+        X_cand = x_center.expand(n_candidates, dim).clone().to(DEFAULT_DEVICE)
         X_cand[mask] = pert[mask]
 
         # Sample on the candidate points
