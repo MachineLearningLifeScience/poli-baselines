@@ -114,7 +114,7 @@ class Turbo(StepByStepSolver):
             raw_samples=RAW_SAMPLES,
             acqf="ts",
         )
-        return self.from_turbo(X_next.numpy())
+        return self.from_turbo(X_next.numpy(force=True))
 
     def post_update(self, x: np.ndarray, y: np.ndarray) -> None:
         """
