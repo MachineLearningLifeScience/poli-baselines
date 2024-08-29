@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import numpy as np
 from poli.core.abstract_black_box import AbstractBlackBox
-from typing import List
 
 from poli_baselines.core.step_by_step_solver import StepByStepSolver
 import math
@@ -23,8 +22,8 @@ from gpytorch.likelihoods import GaussianLikelihood
 from gpytorch.mlls import ExactMarginalLogLikelihood
 
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-dtype = torch.double
+DEFAULT_DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+DEFAULT_DTYPE = torch.double
 
 
 NUM_RESTARTS = 10
@@ -38,6 +37,7 @@ class Turbo(StepByStepSolver):
         x0: np.ndarray,
         y0: np.ndarray,
         bounds: np.ndarray | None = None,
+        device: torch.device = DEFAULT_DEVICE,
     ):
         """
 
@@ -74,6 +74,7 @@ class Turbo(StepByStepSolver):
         self.batch_size = 1
         dim = x0.shape[1]
         self.state = TurboState(dim, batch_size=self.batch_size)
+        self.device = device
 
     def next_candidate(self) -> np.ndarray:
         dim = self.X_turbo.shape[1]
@@ -119,8 +120,8 @@ class Turbo(StepByStepSolver):
         """
         This method is called after the history is updated.
         """
-        Y_next = torch.tensor(y)
-        X_next = torch.tensor(self.to_turbo(x))
+        Y_next = torch.tensor(y).to(self.device)
+        X_next = torch.tensor(self.to_turbo(x)).to(self.device)
 
         # Update state
         self.state = update_state(state=self.state, Y_next=Y_next)
@@ -190,18 +191,25 @@ def generate_batch(
     weights = model.covar_module.base_kernel.lengthscale.squeeze().detach()
     weights = weights / weights.mean()
     weights = weights / torch.prod(weights.pow(1.0 / len(weights)))
-    tr_lb = torch.clamp(x_center - weights * state.length / 2.0, 0.0, 1.0)
-    tr_ub = torch.clamp(x_center + weights * state.length / 2.0, 0.0, 1.0)
+    tr_lb = torch.clamp(x_center - weights * state.length / 2.0, 0.0, 1.0).to(
+        dtype=DEFAULT_DTYPE, device=DEFAULT_DEVICE
+    )
+    tr_ub = torch.clamp(x_center + weights * state.length / 2.0, 0.0, 1.0).to(
+        dtype=DEFAULT_DTYPE, device=DEFAULT_DEVICE
+    )
 
     if acqf == "ts":
         dim = X.shape[-1]
         sobol = SobolEngine(dim, scramble=True)
-        pert = sobol.draw(n_candidates).to(dtype=dtype, device=device)
+        pert = sobol.draw(n_candidates).to(dtype=DEFAULT_DTYPE, device=DEFAULT_DEVICE)
         pert = tr_lb + (tr_ub - tr_lb) * pert
 
         # Create a perturbation mask
         prob_perturb = min(20.0 / dim, 1.0)
-        mask = torch.rand(n_candidates, dim, dtype=dtype, device=device) <= prob_perturb
+        mask = (
+            torch.rand(n_candidates, dim, dtype=DEFAULT_DTYPE, device=DEFAULT_DEVICE)
+            <= prob_perturb
+        )
         ind = torch.where(mask.sum(dim=1) == 0)[0]
         mask[ind, torch.randint(0, dim - 1, size=(len(ind),), device=device)] = 1
 
