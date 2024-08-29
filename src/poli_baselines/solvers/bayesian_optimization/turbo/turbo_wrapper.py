@@ -68,13 +68,13 @@ class Turbo(StepByStepSolver):
             from_turbo = lambda X: X * bounds[:, 1] + bounds[:, 0]
             return to_turbo, from_turbo
 
+        self.device = device
         self.to_turbo, self.from_turbo = make_transforms()
-        self.X_turbo = torch.tensor(self.to_turbo(x0))
-        self.Y_turbo = torch.tensor(y0)
+        self.X_turbo = torch.tensor(self.to_turbo(x0)).to(self.device)
+        self.Y_turbo = torch.tensor(y0).to(self.device)
         self.batch_size = 1
         dim = x0.shape[1]
         self.state = TurboState(dim, batch_size=self.batch_size)
-        self.device = device
 
     def next_candidate(self) -> np.ndarray:
         dim = self.X_turbo.shape[1]
@@ -97,7 +97,7 @@ class Turbo(StepByStepSolver):
         model = SingleTaskGP(
             self.X_turbo, train_Y, covar_module=covar_module, likelihood=likelihood
         )
-        mll = ExactMarginalLogLikelihood(model.likelihood, model)
+        mll = ExactMarginalLogLikelihood(model.likelihood, model).to(DEFAULT_DEVICE)
 
         fit_gpytorch_mll(mll)
 
