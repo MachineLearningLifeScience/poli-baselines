@@ -113,6 +113,7 @@ class Turbo(StepByStepSolver):
             num_restarts=NUM_RESTARTS,
             raw_samples=RAW_SAMPLES,
             acqf="ts",
+            device=self.device,
         )
         return self.from_turbo(X_next.numpy(force=True))
 
@@ -180,6 +181,7 @@ def generate_batch(
     num_restarts=10,
     raw_samples=512,
     acqf="ts",  # "ei" or "ts"
+    device=DEFAULT_DEVICE,
 ):
     assert acqf in ("ts", "ei")
     assert X.min() >= 0.0 and X.max() <= 1.0 and torch.all(torch.isfinite(Y))
@@ -192,31 +194,29 @@ def generate_batch(
     weights = weights / weights.mean()
     weights = weights / torch.prod(weights.pow(1.0 / len(weights)))
     tr_lb = torch.clamp(x_center - weights * state.length / 2.0, 0.0, 1.0).to(
-        dtype=DEFAULT_DTYPE, device=DEFAULT_DEVICE
+        dtype=DEFAULT_DTYPE, device=device
     )
     tr_ub = torch.clamp(x_center + weights * state.length / 2.0, 0.0, 1.0).to(
-        dtype=DEFAULT_DTYPE, device=DEFAULT_DEVICE
+        dtype=DEFAULT_DTYPE, device=device
     )
 
     if acqf == "ts":
         dim = X.shape[-1]
         sobol = SobolEngine(dim, scramble=True)
-        pert = sobol.draw(n_candidates).to(dtype=DEFAULT_DTYPE, device=DEFAULT_DEVICE)
+        pert = sobol.draw(n_candidates).to(dtype=DEFAULT_DTYPE, device=device)
         pert = tr_lb + (tr_ub - tr_lb) * pert
 
         # Create a perturbation mask
         prob_perturb = min(20.0 / dim, 1.0)
         mask = (
-            torch.rand(n_candidates, dim, dtype=DEFAULT_DTYPE, device=DEFAULT_DEVICE)
+            torch.rand(n_candidates, dim, dtype=DEFAULT_DTYPE, device=device)
             <= prob_perturb
         )
         ind = torch.where(mask.sum(dim=1) == 0)[0]
-        mask[
-            ind, torch.randint(0, dim - 1, size=(len(ind),), device=DEFAULT_DEVICE)
-        ] = 1
+        mask[ind, torch.randint(0, dim - 1, size=(len(ind),), device=device)] = 1
 
         # Create candidate points from the perturbations and the mask
-        X_cand = x_center.expand(n_candidates, dim).clone().to(DEFAULT_DEVICE)
+        X_cand = x_center.expand(n_candidates, dim).clone().to(device)
         X_cand[mask] = pert[mask]
 
         # Sample on the candidate points
