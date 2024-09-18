@@ -34,3 +34,6 @@ model_history.zip
 
 # bounce results
 bounce_results/
+
+# lightning logs
+lightning_logs/

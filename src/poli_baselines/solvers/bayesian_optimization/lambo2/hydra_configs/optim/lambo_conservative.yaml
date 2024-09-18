@@ -1,0 +1,42 @@
+# Leave it as-is.
+_target_: cortex.optim.generative.LaMBO
+
+# Batch size.
+max_num_solutions: ${num_samples}
+
+# At each optimizer step, the maximum nr.
+# of mutations we make is precisely this.
+# These are the number of masks we apply.
+num_mutations_per_step: 2
+
+# As few as you can get away with.
+# It depends on the number of mutations you want
+# to make per step.
+max_guidance_updates: 1
+
+# Good to leave it still.
+# (It's the gradient descent param.)
+guidance_step_size: 0.1
+
+# Deprecated.
+guidance_layer: trunk
+
+# For small step sizes, it's good to have it be 0.0.
+# Otherwise it constraints the search. In general,
+# it's good to have it be a small value for exploration.
+# If you're interested in exploitation, it could be larger.
+kl_weight: 0.0
+
+# Deprecated. Legacy flag.
+feature_attr_temp: 1.0
+
+# Leave it still.
+domain_name: protein_seq
+
+# Forces to go beyond initialization.
+# If false, it returns the initial solution when
+# whatever it finds fails to improve the acq. value.
+exclude_initial_solution: true 
+
+# Good to leave on.
+resample_edit_positions: true  
