@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from poli.objective_repository import RaspProblemFactory
-from poli_baselines.solvers.bayesian_optimization.lambo2 import Lambo2
+from poli_baselines.solvers.bayesian_optimization.lambo2 import LaMBO2
 
 THIS_DIR = Path(__file__).resolve().parent
 sys.path.append(str(THIS_DIR))
@@ -33,7 +33,7 @@ def run_with_default_hyperparameters():
     observer.x_s.append(x0.reshape(-1, 1))
     observer.y_s.append(y0)
 
-    lambo2 = Lambo2(
+    lambo2 = LaMBO2(
         black_box=black_box,
         x0=x0,
         y0=y0,
@@ -82,7 +82,7 @@ def run_with_modified_hyperparameters():
     observer.x_s.append(x0.reshape(-1, 1))
     observer.y_s.append(y0)
 
-    lambo2 = Lambo2(
+    lambo2 = LaMBO2(
         black_box=black_box,
         x0=x0,
         y0=y0,

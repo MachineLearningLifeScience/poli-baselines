@@ -1,1 +1,3 @@
-from .solver import Lambo2
+from .solver import LaMBO2
+
+__all__ = ["LaMBO2"]

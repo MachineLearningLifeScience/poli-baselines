@@ -10,12 +10,13 @@ from omegaconf import OmegaConf
 from poli.core.abstract_black_box import AbstractBlackBox
 from poli.core.util.seeding import seed_python_numpy_and_torch
 from poli_baselines.core.abstract_solver import AbstractSolver
+from poli_baselines.core.utils.mutations import add_random_mutations_to_reach_pop_size
 
 THIS_DIR = Path(__file__).parent.resolve()
 DEFAULT_CONFIG_DIR = THIS_DIR / "hydra_configs"
 
 
-class Lambo2(AbstractSolver):
+class LaMBO2(AbstractSolver):
     def __init__(
         self,
         black_box: AbstractBlackBox,
@@ -30,29 +31,35 @@ class Lambo2(AbstractSolver):
         super().__init__(black_box=black_box, x0=x0, y0=y0)
         self.experiment_id = f"{uuid4()}"[:8]
         self.max_epochs_for_retraining = max_epochs_for_retraining
+
         if config_dir is None:
             config_dir = DEFAULT_CONFIG_DIR
-
         with hydra.initialize_config_dir(config_dir=str(config_dir)):
             cfg = hydra.compose(config_name=config_name, overrides=overrides)
             OmegaConf.set_struct(cfg, False)
 
         # Setting the random seed
+        # We are ignoring the seed in the original config file.
+        # TODO: unify this.
         if seed is not None:
             cfg.update({"random_seed": seed})
             seed_python_numpy_and_torch(seed)
             L.seed_everything(seed=cfg.random_seed, workers=True)
+
         self.cfg = cfg
 
-        # TODO: decide on these criteria
         if x0 is None:
-            # Run directed evolution or something like that to bootstrap.
-            # TODO: implement.
-            x0 = ...
+            raise ValueError(
+                "In the Lambo2 optimizer, it is necessary to pass at least "
+                "a single solution to the solver through x0."
+            )
         elif x0.shape[0] < cfg.num_samples:
             original_size = x0.shape[0]
-            # TODO: implement.
-            x0 = ...
+            x0 = add_random_mutations_to_reach_pop_size(
+                x0,
+                alphabet=self.black_box.alphabet,
+                n_solutions=cfg.num_samples - original_size,
+            )
 
         tokenized_x0 = np.array([" ".join(x_i) for x_i in x0])
 
@@ -81,8 +88,6 @@ class Lambo2(AbstractSolver):
         save_checkpoint_to: Path | None = None,
         max_epochs: int = 2,
     ) -> L.LightningModule:
-        # TODO: what to do on empty histories? Should
-        # we just skip?
         model = hydra.utils.instantiate(self.cfg.tree)
         model.build_tree(self.cfg, skip_task_setup=True)
 
