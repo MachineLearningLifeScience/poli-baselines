@@ -1,5 +1,6 @@
 from __future__ import annotations
 from pathlib import Path
+from dataclasses import dataclass
 
 import hydra
 import lightning as L
@@ -20,14 +21,12 @@ class Lambo2(AbstractSolver):
         black_box: AbstractBlackBox,
         x0: np.ndarray | None = None,
         y0: np.ndarray | None = None,
-        config_path: Path | str = None,
-        config_name: str | None = None,
         overrides: list[str] | None = None,
         seed: int | None = None,
     ):
         super().__init__(black_box=black_box, x0=x0, y0=y0)
-        with hydra.initialize(config_path=config_path):
-            cfg = hydra.compose(config_name=config_name, overrides=overrides)
+        with hydra.initialize(config_path="./hydra_configs"):
+            cfg = hydra.compose(config_name="generic_training", overrides=overrides)
             OmegaConf.set_struct(cfg, False)
 
         # set random seed
