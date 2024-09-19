@@ -17,7 +17,5 @@ protein_generation:
       train_on_everything: false
       num_workers: 1
       dataset_config:
-        _target_: cortex.data.dataset.TAPEFluorescenceDataset
-        root: ${data_dir}
-        download: true
+        _target_: cortex.data.dataset.NumpyDataset
         train: ???

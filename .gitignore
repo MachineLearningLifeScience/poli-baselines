@@ -35,5 +35,6 @@ model_history.zip
 # bounce results
 bounce_results/
 
-# lightning logs
+# lightning logs and lambo2-related assets
 lightning_logs/
+.cache/
