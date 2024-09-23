@@ -57,8 +57,8 @@ class LaMBO2(AbstractSolver):
             original_size = x0.shape[0]
             x0 = add_random_mutations_to_reach_pop_size(
                 x0,
-                alphabet=self.black_box.alphabet,
-                n_solutions=cfg.num_samples - original_size,
+                alphabet=self.black_box.info.alphabet,
+                population_size=cfg.num_samples,
             )
 
         tokenized_x0 = np.array([" ".join(x_i) for x_i in x0])
