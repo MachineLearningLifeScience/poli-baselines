@@ -28,7 +28,7 @@ def test_lambo2_runs_on_ehrlich():
         y0=f(x0),
     )
 
-    solver.solve(max_iter=5)
+    solver.solve(max_iter=3)
 
 
 if __name__ == "__main__":

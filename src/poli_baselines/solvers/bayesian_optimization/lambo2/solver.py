@@ -257,6 +257,16 @@ class LaMBO2(AbstractSolver):
         # Builds the optimizer
         tokenizer_transform = model.root_nodes["protein_seq"].eval_transform
         tokenizer = tokenizer_transform[0].tokenizer
+
+        # Making sure the model doesn't edit length
+        if not self.cfg.allow_length_change:
+            tokenizer.corruption_vocab_excluded.add(
+                "-"
+            )  # prevent existing gap tokens from being masked
+            tokenizer.sampling_vocab_excluded.add(
+                "-"
+            )  # prevent any gap tokens from being sampled
+
         tok_idxs = tokenizer_transform(candidate_points)
         is_mutable = tokenizer.get_corruptible_mask(tok_idxs)
         tok_idxs = tokenizer_transform(candidate_points)
