@@ -1,14 +1,19 @@
+import importlib
 from pathlib import Path
+
+import pytest
 
 from poli.repository import RaspProblemFactory
 
-from poli_baselines.solvers.bayesian_optimization.lambo2 import LaMBO2
-
+if importlib.util.find_spec("cortex") is None:
+    pytest.skip("Cortex is not installed.", allow_module_level=True)
 
 TEST_ASSETS = Path(__file__).parent.parent.parent / "test_files"
 
 
 def test_lambo2_runs_on_rasp():
+    from poli_baselines.solvers.bayesian_optimization.lambo2 import LaMBO2
+
     problem = RaspProblemFactory().create(
         wildtype_pdb_path=TEST_ASSETS / "2vad_A.pdb",
         chains_to_keep=["A"],
