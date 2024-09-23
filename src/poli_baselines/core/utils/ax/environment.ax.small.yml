@@ -4,11 +4,10 @@ channels:
   - defaults
 dependencies:
   - python=3.10
-  - pytorch
   - pip
   - pip:
+    - --extra-index-url https://download.pytorch.org/whl/cpu
     - scikit-learn
-    - botorch
     - ax-platform
     - numpy<2
     - "git+https://github.com/MachineLearningLifeScience/poli.git@v0.2.1"
