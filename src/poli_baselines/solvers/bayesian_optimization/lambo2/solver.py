@@ -1,3 +1,25 @@
+"""
+This module implements LaMBO2 by Gruver, Stanton et al. 2023.
+
+LaMBO2 is an improvement on LaMBO [Stanton et al. 2022], using 
+guided discrete diffusion and network ensembles instead of 
+latent space optimization using Gaussian Processes.
+
+In this module, we import [`cortex`](https://github.com/prescient-design/cortex)
+and use the default configuration files except for the `lambo` optimizer, which
+is replaced by a more conservative version. The exact configuration file can
+be found [alongside this file in our repository](TODO:ADD).
+
+:::{warning}
+This optimizer only works for **protein-related** black boxes, like
+- `foldx_stability`
+- `foldx_sasa`
+- `rasp`
+- `erlich`
+:::
+
+"""
+
 from __future__ import annotations
 from pathlib import Path
 from uuid import uuid4
@@ -17,6 +39,39 @@ DEFAULT_CONFIG_DIR = THIS_DIR / "hydra_configs"
 
 
 class LaMBO2(AbstractSolver):
+    """
+    LaMBO2 solver for protein-related black boxes.
+
+    Parameters
+    ----------
+    black_box : AbstractBlackBox
+        The black box to optimize. Must be protein-related. To ensure that the
+        black box is protein-related, we verify that the `alphabet` inside the
+        `info` attribute of the black box is a protein alphabet.
+    x0 : np.ndarray
+        The initial solutions to the black box. If not enough solutions are
+        provided, the solver will generate random mutants to reach the population
+        size specified in the configuration file (as cfg.num_samples).
+    y0 : np.ndarray, optional
+        The initial evaluations of the black box. If not provided, the solver
+        will evaluate the black box on the initial solutions.
+    config_dir : Path | str, optional
+        The directory where the configuration files are stored. If not provided,
+        the default configuration files (stored alongside this file in our
+        repository) will be used. If you are interested in modifying the
+        configurations, we recommend taking a look at the tutorials inside `cortex`.
+    config_name : str, optional
+        The name of the configuration file to use. Defaults to "generic_training".
+    overrides : list[str], optional
+        A list of overrides to apply to the configuration file. For example,
+        ["num_samples=10", "max_epochs=5"]. To know what to override, we recommend
+        taking a look at the tutorials inside `cortex`.
+    seed : int, optional
+        The random seed to use. If not provided, nothing will be seeded.
+    max_epochs_for_retraining : int, optional
+        The number of epochs to retrain the model after each step. Defaults to 1.
+    """
+
     def __init__(
         self,
         black_box: AbstractBlackBox,
@@ -31,6 +86,13 @@ class LaMBO2(AbstractSolver):
         super().__init__(black_box=black_box, x0=x0, y0=y0)
         self.experiment_id = f"{uuid4()}"[:8]
         self.max_epochs_for_retraining = max_epochs_for_retraining
+
+        # # Verifying that the black box is protein-related.
+        # if not set(self.black_box.info.alphabet) == set(AMINO_ACIDS):
+        #     raise ValueError(
+        #         f"The black box must be protein-related, but the alphabet is "
+        #         f"{self.black_box.info.alphabet}."
+        #     )
 
         if config_dir is None:
             config_dir = DEFAULT_CONFIG_DIR
@@ -77,17 +139,31 @@ class LaMBO2(AbstractSolver):
         MODEL_FOLDER = Path(cfg.data_dir) / self.experiment_id
         MODEL_FOLDER.mkdir(exist_ok=True, parents=True)
         self.model_path = MODEL_FOLDER / "ongoing_model.ckpt"
-        self.train_model_with_history(
+        self._train_model_with_history(
             save_checkpoint_to=self.model_path,
             max_epochs=cfg.max_epochs,
         )
 
-    def train_model_with_history(
+    def _train_model_with_history(
         self,
         load_checkpoint_from: Path | None = None,
         save_checkpoint_to: Path | None = None,
         max_epochs: int = 2,
     ) -> L.LightningModule:
+        """
+        Trains the model with the history of the black box evaluations.
+
+        Parameters
+        ----------
+        load_checkpoint_from : Path, optional
+            The path to the checkpoint to load. If not provided, the model will
+            be trained from scratch.
+        save_checkpoint_to : Path, optional
+            The path to save the checkpoint. If not provided, the model will not
+            be saved.
+        max_epochs : int, optional
+            The number of epochs to train the model. Defaults to 2.
+        """
         model = hydra.utils.instantiate(self.cfg.tree)
         model.build_tree(self.cfg, skip_task_setup=True)
 
@@ -143,6 +219,11 @@ class LaMBO2(AbstractSolver):
         return model
 
     def get_candidate_points_from_history(self) -> np.ndarray:
+        """
+        Returns the current best population (whose size is specified in the
+        configuration file as cfg.num_samples) from the history of the black
+        box evaluations.
+        """
         x = np.concatenate(self.history_for_training["x"], axis=0)
         y = np.concatenate(self.history_for_training["y"], axis=0)
         sorted_y0_idxs = np.argsort(y.flatten())[::-1]
@@ -150,14 +231,14 @@ class LaMBO2(AbstractSolver):
 
         return candidate_points
 
-    def step(self):
+    def step(self) -> tuple[np.ndarray, np.ndarray]:
         """
         Loads the model, runs the optimizer (LaMBO2) for the
         number of steps in the config, computes new proposal,
         evaluates on the black box and updates history.
         """
         # Load the model and optimizer
-        model = self.train_model_with_history(
+        model = self._train_model_with_history(
             load_checkpoint_from=self.model_path,
             max_epochs=self.max_epochs_for_retraining,
         )
@@ -208,6 +289,17 @@ class LaMBO2(AbstractSolver):
         self.history_for_training["x"].append(new_designs)
         self.history_for_training["y"].append(new_y.flatten())
 
-    def solve(self, max_iter: int = 100) -> None:
+        return new_designs_for_black_box, new_y
+
+    def solve(self, max_iter: int = 10) -> None:
+        """
+        Solves the black box optimization problem for a maximum of `max_iter`
+        iterations.
+
+        Parameters
+        ----------
+        max_iter : int, optional
+            The maximum number of iterations to run the solver. Defaults to 10.
+        """
         for _ in range(max_iter):
             self.step()
