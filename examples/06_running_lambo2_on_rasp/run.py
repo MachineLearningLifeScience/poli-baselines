@@ -52,14 +52,17 @@ def run_with_default_hyperparameters():
 
 def run_with_modified_hyperparameters():
     """
-    TODO: write docs explaining the original config
-    file from Lambo2.
+    In this example we modify the configuration
+    of the optimizer, which uses hydra underneath.
+
+    In the overrides kwarg of LaMBO2, we can specify
+    the hyperparameters we want to change. For example,
+    we can change the population size, the number of
+    epochs for pretraining, etc.
+
+    You can find the original configuration we use here:
+    src/poli_baselines/solvers/bayesian_optimization/lambo2/hydra_configs
     """
-    # Some alternative hyperparameters which
-    # will override what is specified in the Lambo2
-    # configuration. You can find the original config
-    # we use here:
-    # TODO: add link.
     POPULATION_SIZE = 96
     MAX_EPOCHS_FOR_PRETRAINING = 4
 
