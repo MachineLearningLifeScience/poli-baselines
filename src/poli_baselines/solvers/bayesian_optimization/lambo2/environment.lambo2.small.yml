@@ -1,0 +1,12 @@
+name: poli__lambo2
+channels:
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+      - --extra-index-url https://download.pytorch.org/whl/cpu
+      - numpy<2
+      - "git+https://github.com/prescient-design/cortex.git"
+      - "git+https://github.com/MachineLearningLifeScience/poli.git"
+      - "git+https://github.com/MachineLearningLifeScience/poli-baselines.git@main"
