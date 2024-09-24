@@ -106,10 +106,7 @@ class DiscretePymooProblem(Problem):
             Additional keyword arguments to be passed to the base class.
         """
         self.black_box = black_box
-        if minimize:
-            self.black_box_for_minimization = black_box
-        else:
-            self.black_box_for_minimization = -black_box
+        self.black_box_for_minimization = black_box
         self.x0 = x0
         self.y0 = y0
 
