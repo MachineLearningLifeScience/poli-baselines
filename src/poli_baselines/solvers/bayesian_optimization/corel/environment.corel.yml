@@ -1,0 +1,17 @@
+name: poli__corel
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.9
+  - jax
+  - keras
+  - scipy
+  - pip
+  - numpy=1.23.5
+  - tensorflow=2.12.1
+  - pip:
+    - trieste==1.2.0
+    - tensorflow-probability==0.19.0
+    - gpflow==2.9.0
+    - gpflux==0.4.2
