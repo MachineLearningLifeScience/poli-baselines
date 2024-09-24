@@ -1,1 +1,1 @@
-recursive-include src/poli_baselines/solvers/bayesian_optimization/lambo2/hydra_configs *.yaml
+include src/**/*.yaml
