@@ -9,14 +9,15 @@ In this module, we import [`cortex`](https://github.com/prescient-design/cortex)
 and use the default configuration files except for the `lambo`
 optimizer, which is replaced by a more conservative version.
 The exact configuration file can be found alongside this file
-in our repository.
+in our repository:
+https://github.com/MachineLearningLifeScience/poli-baselines/tree/main/src/poli_baselines/solvers/bayesian_optimization/lambo2/hydra_configs
 
 :::{warning}
 This optimizer only works for **protein-related** black boxes, like
 - `foldx_stability`
 - `foldx_sasa`
 - `rasp`
-- `erlich`
+- `ehrlich`
 :::
 
 """
