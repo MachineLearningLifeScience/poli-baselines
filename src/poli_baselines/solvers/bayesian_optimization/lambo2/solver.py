@@ -6,9 +6,10 @@ guided discrete diffusion and network ensembles instead of
 latent space optimization using Gaussian Processes.
 
 In this module, we import [`cortex`](https://github.com/prescient-design/cortex)
-and use the default configuration files except for the `lambo` optimizer, which
-is replaced by a more conservative version. The exact configuration file can
-be found [alongside this file in our repository](TODO:ADD).
+and use the default configuration files except for the `lambo`
+optimizer, which is replaced by a more conservative version.
+The exact configuration file can be found alongside this file
+in our repository.
 
 :::{warning}
 This optimizer only works for **protein-related** black boxes, like
@@ -67,7 +68,9 @@ class LaMBO2(AbstractSolver):
         ["num_samples=10", "max_epochs=5"]. To know what to override, we recommend
         taking a look at the tutorials inside `cortex`.
     seed : int, optional
-        The random seed to use. If not provided, nothing will be seeded.
+        The random seed to use. If not provided, we use the seed provided in the
+        configuration file. If provided, this seed will override the seed in the
+        configuration file.
     max_epochs_for_retraining : int, optional
         The number of epochs to retrain the model after each step. Defaults to 1.
     """
@@ -87,13 +90,6 @@ class LaMBO2(AbstractSolver):
         self.experiment_id = f"{uuid4()}"[:8]
         self.max_epochs_for_retraining = max_epochs_for_retraining
 
-        # # Verifying that the black box is protein-related.
-        # if not set(self.black_box.info.alphabet) == set(AMINO_ACIDS):
-        #     raise ValueError(
-        #         f"The black box must be protein-related, but the alphabet is "
-        #         f"{self.black_box.info.alphabet}."
-        #     )
-
         if config_dir is None:
             config_dir = DEFAULT_CONFIG_DIR
         with hydra.initialize_config_dir(config_dir=str(config_dir)):
@@ -102,11 +98,11 @@ class LaMBO2(AbstractSolver):
 
         # Setting the random seed
         # We are ignoring the seed in the original config file.
-        # TODO: unify this.
         if seed is not None:
             cfg.update({"random_seed": seed})
-            seed_python_numpy_and_torch(seed)
-            L.seed_everything(seed=cfg.random_seed, workers=True)
+
+        seed_python_numpy_and_torch(cfg.random_seed)
+        L.seed_everything(seed=cfg.random_seed, workers=True)
 
         self.cfg = cfg
 
@@ -143,6 +139,24 @@ class LaMBO2(AbstractSolver):
             save_checkpoint_to=self.model_path,
             max_epochs=cfg.max_epochs,
         )
+
+    @property
+    def history(self) -> dict[str, list[np.ndarray]]:
+        """
+        Returns the history of the black box evaluations.
+
+        Returns
+        -------
+        dict[str, list[np.ndarray]]
+            The history of the black box evaluations.
+        """
+        all_x = np.concatenate(self.history_for_training["x"], axis=0)
+        all_y = np.concatenate(self.history_for_training["y"], axis=0)
+
+        return {
+            "x": [np.array(["".join(x_i).replace(" ", "")]) for x_i in all_x],
+            "y": [np.array([[y_i]]) for y_i in all_y],
+        }
 
     def _train_model_with_history(
         self,
