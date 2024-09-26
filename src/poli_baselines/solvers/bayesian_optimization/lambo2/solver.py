@@ -23,6 +23,7 @@ This optimizer only works for **protein-related** black boxes, like
 """
 
 from __future__ import annotations
+import math
 from pathlib import Path
 from uuid import uuid4
 
@@ -36,8 +37,18 @@ from poli.core.util.seeding import seed_python_numpy_and_torch
 from poli_baselines.core.abstract_solver import AbstractSolver
 from poli_baselines.core.utils.mutations import add_random_mutations_to_reach_pop_size
 
+from beignet import farthest_first_traversal
+import edlib
+
 THIS_DIR = Path(__file__).parent.resolve()
 DEFAULT_CONFIG_DIR = THIS_DIR / "hydra_configs"
+
+
+def edit_dist(x: str, y: str):
+    """
+    Computes the edit distance between two strings.
+    """
+    return edlib.align(x, y)["editDistance"]
 
 
 class LaMBO2(AbstractSolver):
@@ -193,22 +204,31 @@ class LaMBO2(AbstractSolver):
         x = np.concatenate(self.history_for_training["x"])
         y = np.concatenate(self.history_for_training["y"])
 
+
         task_setup_kwargs = {
             # task_key:
+            "generic_constraint": {
+                "data": {
+                    "tokenized_seq": x,
+                    "is_feasible": y >= 0,
+                },
+            },
             "generic_task": {
                 # dataset kwarg
                 "data": {
-                    "tokenized_seq": x,
-                    "generic_task": y,
+                    "tokenized_seq": x[y >= 0],
+                    # "generic_task": y[y >= 0] + np.random.normal(0, math.sqrt(0.01), y[y >= 0].shape),
+                    "generic_task": y[y >= 0],
                 }
             },
             "protein_seq": {
                 # dataset kwarg
                 "data": {
-                    "tokenized_seq": x,
+                    "tokenized_seq": x[y >= 0],
                 }
             },
         }
+        print(f"\nFraction of feasible solutions in history: {np.mean(y >= 0)}\n")
 
         for task_key, task_obj in model.task_dict.items():
             task_obj.data_module.setup(
@@ -225,7 +245,7 @@ class LaMBO2(AbstractSolver):
         self.trainer.fit(
             model,
             train_dataloaders=model.get_dataloader(split="train"),
-            val_dataloaders=model.get_dataloader(split="val"),
+            # val_dataloaders=model.get_dataloader(split="val"),
         )
 
         if save_checkpoint_to:
@@ -242,9 +262,20 @@ class LaMBO2(AbstractSolver):
         x = np.concatenate(self.history_for_training["x"], axis=0)
         y = np.concatenate(self.history_for_training["y"], axis=0)
         sorted_y0_idxs = np.argsort(y.flatten())[::-1]
-        candidate_points = x[sorted_y0_idxs[: self.cfg.num_samples]]
+        candidate_points = x[sorted_y0_idxs[: max(len(x) // 2, self.cfg.num_samples)]]
+        candidate_scores = y[sorted_y0_idxs[: max(len(x) // 2, self.cfg.num_samples)]]
 
-        return candidate_points
+        indices = farthest_first_traversal(
+            library=candidate_points,
+            distance_fn=edit_dist,
+            ranking_scores=torch.tensor(candidate_scores.flatten()),
+            n=self.cfg.num_samples,
+            descending=True,
+        )
+        print(candidate_points[indices])
+        print(candidate_scores[indices])            
+
+        return candidate_points[indices]
 
     def step(self) -> tuple[np.ndarray, np.ndarray]:
         """
@@ -313,6 +344,8 @@ class LaMBO2(AbstractSolver):
         # Updating the history that is used for training.
         self.history_for_training["x"].append(new_designs)
         self.history_for_training["y"].append(new_y.flatten())
+
+        print(f"\n{new_designs_for_black_box}\n")
 
         return new_designs_for_black_box, new_y
 

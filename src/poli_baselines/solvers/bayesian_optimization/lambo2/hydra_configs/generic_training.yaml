@@ -2,8 +2,9 @@ defaults:
   - tree: sequence_model_conservative
   - roots: [protein_seq]
   - trunk: sum_trunk
-  - branches: [protein_property, protein_generation]
+  - branches: [protein_property, protein_generation, protein_constraint]
   - tasks:
+    - generic_constraint
     - generic_task
     - protein_seq
   - guidance_objective: generic_task
@@ -16,11 +17,14 @@ max_epochs: 1
 data_dir: ./.cache
 wandb_mode: offline
 random_seed: 42
-num_steps: 1
-num_samples: 16
+num_steps: 2
+num_samples: 32
 allow_length_change: false
 
 trainer:
   _target_: lightning.Trainer
   max_epochs: ${max_epochs}
-  num_sanity_val_steps: 1
+  num_sanity_val_steps: 0
+  accelerator: gpu
+  devices: 1
+  precision: 16

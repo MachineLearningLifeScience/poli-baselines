@@ -3,7 +3,9 @@ static_kwargs:
   _target_: cortex.acquisition.GraphNEI
   objectives:
     - generic_task
-  constraints: null
+  constraints:
+    generic_task:
+      - generic_constraint
   scaling: null
 runtime_kwargs:
   _target_: cortex.acquisition.get_graph_nei_runtime_kwargs
