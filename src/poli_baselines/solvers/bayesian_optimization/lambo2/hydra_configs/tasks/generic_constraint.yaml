@@ -1,18 +1,19 @@
-protein_property:
-  generic_task:
-    _target_: cortex.task.RegressionTask
+protein_constraint:
+  generic_constraint:
+    _target_: cortex.task.ClassificationTask
     input_map:
       protein_seq: ['tokenized_seq']
-    outcome_cols: ['generic_task']
+    class_col: is_feasible
+    num_classes: 2
     corrupt_train_inputs: true
     root_key: protein_seq
-    nominal_label_var: 0.01
     ensemble_size: 8
     data_module:
       _target_: cortex.data.data_module.TaskDataModule
       _recursive_: false
       lengths: [1.0, 0.0]
       balance_train_partition:
+        - ${tasks.protein_constraint.generic_constraint.class_col}
         - recency
       batch_size: ${batch_size}
       dataset_config:

@@ -12,7 +12,7 @@ protein_generation:
       _recursive_: false
       batch_size: ${batch_size}
       balance_train_partition: null
-      drop_last: true
+      drop_last: false
       lengths: [1.0, 0.0]
       train_on_everything: false
       num_workers: 1
