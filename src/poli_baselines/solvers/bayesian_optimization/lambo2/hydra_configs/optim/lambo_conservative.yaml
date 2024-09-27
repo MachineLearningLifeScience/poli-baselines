@@ -12,7 +12,7 @@ num_mutations_per_step: 2
 # As few as you can get away with.
 # It depends on the number of mutations you want
 # to make per step.
-max_guidance_updates: 4
+max_guidance_updates: 8
 
 # Good to leave it still.
 # (It's the gradient descent param.)
@@ -28,7 +28,7 @@ guidance_layer: trunk
 kl_weight: 0.0
 
 # Deprecated. Legacy flag.
-feature_attr_temp: 8.0
+feature_attr_temp: 1.0
 
 # Leave it still.
 domain_name: protein_seq

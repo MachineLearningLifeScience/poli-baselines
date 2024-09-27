@@ -2,9 +2,10 @@ defaults:
   - tree: sequence_model_conservative
   - roots: [protein_seq]
   - trunk: sum_trunk
-  - branches: [protein_property, protein_generation, protein_constraint]
+  # - branches: [protein_property, protein_generation, protein_constraint]
+  - branches: [protein_property, protein_generation]
   - tasks:
-    - generic_constraint
+    # - generic_constraint
     - generic_task
     - protein_seq
   - guidance_objective: generic_task
@@ -17,7 +18,7 @@ max_epochs: 1
 data_dir: ./.cache
 wandb_mode: offline
 random_seed: 42
-num_steps: 2
+num_steps: 1
 num_samples: ${batch_size}
 allow_length_change: false
 

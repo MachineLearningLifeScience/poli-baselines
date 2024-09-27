@@ -14,6 +14,7 @@ protein_constraint:
       lengths: [1.0, 0.0]
       balance_train_partition:
         - ${tasks.protein_constraint.generic_constraint.class_col}
+        - recency
       batch_size: ${batch_size}
       dataset_config:
         _target_: cortex.data.dataset.NumpyDataset
