@@ -19,13 +19,13 @@ def run_with_default_hyperparameters():
     problem = EhrlichProblemFactory().create(
         sequence_length=32,
         motif_length=4,
-        n_motifs=4,
+        n_motifs=2,
         quantization=4,
         return_value_on_unfeasible=-1.0
     )
     black_box = problem.black_box
     x0 = problem.x0
-    random_seqs = np.array([list(black_box._sample_random_sequence()) for _ in range(31)])
+    random_seqs = np.array([list(black_box._sample_random_sequence()) for _ in range(127)])
     x0 = np.concatenate([problem.x0, random_seqs], axis=0)
     y0 = black_box(x0)
 
@@ -43,10 +43,10 @@ def run_with_default_hyperparameters():
         black_box=black_box,
         x0=x0,
         y0=y0,
-        population_size=2000,
-        prob_of_mutation=0.04
+        population_size=128,
+        prob_of_mutation=0.4
     )
-    presolver.solve(max_iter=10)
+    presolver.solve(max_iter=1)
     presolver_x = np.array(presolver.history["x"])
     presolver_x = presolver_x.reshape(presolver_x.shape[0], -1)
 

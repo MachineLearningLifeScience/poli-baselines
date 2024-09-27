@@ -7,7 +7,7 @@ protein_constraint:
     num_classes: 2
     corrupt_train_inputs: true
     root_key: protein_seq
-    ensemble_size: 4
+    ensemble_size: 8
     data_module:
       _target_: cortex.data.data_module.TaskDataModule
       _recursive_: false

@@ -117,6 +117,7 @@ class LaMBO2(AbstractSolver):
         L.seed_everything(seed=cfg.random_seed, workers=True)
 
         self.cfg = cfg
+        print(OmegaConf.to_yaml(cfg))
 
         if x0 is None:
             raise ValueError(
@@ -204,6 +205,11 @@ class LaMBO2(AbstractSolver):
         x = np.concatenate(self.history_for_training["x"])
         y = np.concatenate(self.history_for_training["y"])
 
+        feasible_x = x[y >= 0]
+        feasible_y = y[y >= 0]
+
+        dedup_feas_x = np.unique(feasible_x)
+
 
         task_setup_kwargs = {
             # task_key:
@@ -216,15 +222,15 @@ class LaMBO2(AbstractSolver):
             "generic_task": {
                 # dataset kwarg
                 "data": {
-                    "tokenized_seq": x[y >= 0],
+                    "tokenized_seq": feasible_x,
                     # "generic_task": y[y >= 0] + np.random.normal(0, math.sqrt(0.01), y[y >= 0].shape),
-                    "generic_task": y[y >= 0],
+                    "generic_task": feasible_y,
                 }
             },
             "protein_seq": {
                 # dataset kwarg
                 "data": {
-                    "tokenized_seq": x[y >= 0],
+                    "tokenized_seq": dedup_feas_x,
                 }
             },
         }
@@ -262,8 +268,10 @@ class LaMBO2(AbstractSolver):
         x = np.concatenate(self.history_for_training["x"], axis=0)
         y = np.concatenate(self.history_for_training["y"], axis=0)
         sorted_y0_idxs = np.argsort(y.flatten())[::-1]
-        candidate_points = x[sorted_y0_idxs[: max(len(x) // 2, self.cfg.num_samples)]]
-        candidate_scores = y[sorted_y0_idxs[: max(len(x) // 2, self.cfg.num_samples)]]
+        candidate_points = x[sorted_y0_idxs[: min(len(x), 2 * self.cfg.num_samples)]]
+        candidate_scores = y[sorted_y0_idxs[: min(len(x), 2 * self.cfg.num_samples)]]
+        # candidate_points = x[sorted_y0_idxs[: max(len(x) // 2, self.cfg.num_samples)]]
+        # candidate_scores = y[sorted_y0_idxs[: max(len(x) // 2, self.cfg.num_samples)]]
 
         indices = farthest_first_traversal(
             library=candidate_points,

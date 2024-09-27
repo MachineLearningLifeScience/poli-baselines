@@ -10,15 +10,15 @@ defaults:
   - guidance_objective: generic_task
   - optim: lambo_conservative
 
-feature_dim: 32
+feature_dim: 128
 kernel_size: 3
-batch_size: 32
+batch_size: 128
 max_epochs: 1
 data_dir: ./.cache
 wandb_mode: offline
 random_seed: 42
 num_steps: 2
-num_samples: 32
+num_samples: ${batch_size}
 allow_length_change: false
 
 trainer:
