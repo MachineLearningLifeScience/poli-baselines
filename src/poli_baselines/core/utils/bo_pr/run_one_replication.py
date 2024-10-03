@@ -565,7 +565,7 @@ def run_one_replication_on_poli_black_box(
                 )
 
         X = torch.cat([X, candidates], dim=0)
-        Y = torch.cat([Y, new_y], dim=0)
+        Y = torch.cat([Y, new_y.to(device)], dim=0)
         standardize_tf.train()
         stdized_Y, _ = standardize_tf(Y)
         standardize_tf.eval()
