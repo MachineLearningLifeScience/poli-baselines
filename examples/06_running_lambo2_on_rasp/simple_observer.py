@@ -19,6 +19,14 @@ class SimpleObserver(AbstractObserver):
         self.x_s.append(x)
         self.y_s.append(y)
 
+    def save_history(self, path: str) -> None:
+        arr_x = []
+        for x in self.x_s:
+            arr_x.append(np.array(["".join(x_i) for x_i in x]))
+        x_s = np.concatenate(arr_x)
+        y_s = np.vstack(self.y_s)
+        np.savez(path, x_s=x_s, y_s=y_s)
+
 
 def plot_best_y(obs: SimpleObserver, ax: plt.Axes, start_from: int = 0):
     best_y = np.maximum.accumulate(np.vstack(obs.y_s).flatten())
