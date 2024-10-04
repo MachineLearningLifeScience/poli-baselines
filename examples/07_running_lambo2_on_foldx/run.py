@@ -12,6 +12,8 @@ sys.path.append(str(THIS_DIR))
 
 from simple_observer import SimpleObserver, plot_best_y
 
+from IPython import embed
+
 
 def run_with_modified_hyperparameters():
     """
@@ -64,6 +66,7 @@ def run_with_modified_hyperparameters():
             f"max_epochs={MAX_EPOCHS_FOR_PRETRAINING}",
             f"num_mutations_per_step={NUM_MUTATIONS_PER_STEP}",
         ],
+        restrict_candidate_points_to=problem.x0.flatten(),
     )
 
     lambo2.solve(max_iter=NUM_BATCHES)
