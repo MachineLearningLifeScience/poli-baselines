@@ -18,6 +18,7 @@ wandb_mode: offline
 random_seed: 42
 num_steps: 1
 num_samples: 16
+num_mutations_per_step: 2
 allow_length_change: false
 
 trainer:

@@ -7,7 +7,7 @@ max_num_solutions: ${num_samples}
 # At each optimizer step, the maximum nr.
 # of mutations we make is precisely this.
 # These are the number of masks we apply.
-num_mutations_per_step: 2
+num_mutations_per_step: ${num_mutations_per_step}
 
 # As few as you can get away with.
 # It depends on the number of mutations you want

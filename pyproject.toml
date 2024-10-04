@@ -27,12 +27,14 @@ dependencies = [
     "selfies",
     "pymoo",
     "botorch",
-    "cma"
+    "cma",
+    "poli @ git+https://github.com/MachineLearningLifeScience/poli.git"
 ]
 
 [project.optional-dependencies]
 dev = ["black", "tox", "pytest"]
 docs = ["sphinx", "furo"]
+lambo2 = ["pytorch-cortex"]
 
 [project.urls]
 Homepage = "https://github.com/MachineLearningLifeScience/poli-baselines"

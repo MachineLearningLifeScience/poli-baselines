@@ -31,6 +31,7 @@ def run_with_modified_hyperparameters():
     POPULATION_SIZE = 96
     MAX_EPOCHS_FOR_PRETRAINING = 1
     NUM_BATCHES = 5
+    NUM_MUTATIONS_PER_STEP = 6
 
     arr = np.load(THIS_DIR / "dnja_foldx_initsamples.npz", allow_pickle=True)
     x0 = arr["x0"]
@@ -41,8 +42,9 @@ def run_with_modified_hyperparameters():
     problem = FoldXStabilityProblemFactory().create(
         wildtype_pdb_path=PDB_FILE,
         parallelize=True,
+        tmp_folder=THIS_DIR / "tmp",
         batch_size=96,
-        num_workers=6,
+        num_workers=8,
         verbose=True,
     )
     black_box = problem.black_box
@@ -60,6 +62,7 @@ def run_with_modified_hyperparameters():
         overrides=[
             f"num_samples={POPULATION_SIZE}",
             f"max_epochs={MAX_EPOCHS_FOR_PRETRAINING}",
+            f"num_mutations_per_step={NUM_MUTATIONS_PER_STEP}",
         ],
     )
 
