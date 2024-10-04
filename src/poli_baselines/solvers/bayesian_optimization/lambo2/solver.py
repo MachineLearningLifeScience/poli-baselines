@@ -36,7 +36,7 @@ from poli.core.util.seeding import seed_python_numpy_and_torch
 from poli_baselines.core.abstract_solver import AbstractSolver
 from poli_baselines.core.utils.mutations import add_random_mutations_to_reach_pop_size
 
-from IPython import embed
+# from IPython import embed
 
 THIS_DIR = Path(__file__).parent.resolve()
 DEFAULT_CONFIG_DIR = THIS_DIR / "hydra_configs"
@@ -236,7 +236,7 @@ class LaMBO2(AbstractSolver):
             self.trainer.save_checkpoint(save_checkpoint_to)
 
         return model
-    
+
     def get_candidate_points(self):
         if self.restrict_candidate_points_to is not None:
             # TODO: make sure the array is of self.cfg.num_samples size.
@@ -244,10 +244,23 @@ class LaMBO2(AbstractSolver):
             # Let's assume that the user passes a wildtype as
             # np.array(["AAAAA"]) or np.array(["A", "A", "A", ...]).
             assert len(self.restrict_candidate_points_to.shape) == 1
-            tokenizable_candidate_point = " ".join(self.restrict_candidate_points_to)
-            candidate_points = np.array([tokenizable_candidate_point for _ in range(self.cfg.num_samples)])
-
-            embed()
+            if self.restrict_candidate_points_to.shape[0] == 1:
+                tokenizable_candidate_point = " ".join(
+                    self.restrict_candidate_points_to
+                )
+                candidate_points = np.array(
+                    [tokenizable_candidate_point for _ in range(self.cfg.num_samples)]
+                )
+            elif self.restrict_candidate_points_to.shape[0] == self.cfg.num_samples:
+                candidate_points = np.array(
+                    [" ".join(x_i) for x_i in self.restrict_candidate_points_to]
+                )
+            else:
+                raise ValueError(
+                    "The restrict_candidate_points_to array must be of size "
+                    f"self.cfg.num_samples ({self.cfg.num_samples}) or of size 1. "
+                    f"Got {len(self.restrict_candidate_points_to[0])} instead."
+                )
 
             return candidate_points
         else:
