@@ -12,7 +12,7 @@ from poli_baselines.solvers.simple.random_mutation import RandomMutation
 THIS_DIR = Path(__file__).resolve().parent
 sys.path.append(str(THIS_DIR))
 
-from simple_observer import SimpleObserver, plot_best_y
+from simple_observer import SimpleObserverForMads, plot_best_y
 
 # from IPython import embed
 
@@ -36,7 +36,7 @@ def run_with_modified_hyperparameters(num_workers: int):
     """
     from poli_baselines.solvers.bayesian_optimization.lambo2 import LaMBO2
 
-    POPULATION_SIZE = 8
+    POPULATION_SIZE = 4
     MAX_EPOCHS_FOR_PRETRAINING = 1
     NUM_BATCHES = 2
     NUM_MUTATIONS_PER_STEP = 5
@@ -56,7 +56,7 @@ def run_with_modified_hyperparameters(num_workers: int):
     )
     black_box = problem.black_box
 
-    observer = SimpleObserver()
+    observer = SimpleObserverForMads()
     black_box.set_observer(observer)
 
     observer.x_s.append(x0.reshape(-1, 1))
@@ -79,59 +79,8 @@ def run_with_modified_hyperparameters(num_workers: int):
 
     lambo2.solve(max_iter=NUM_BATCHES)
 
-    fig, (ax1, ax2) = plt.subplots(1, 2)
-    plot_best_y(observer, ax1)
-    plot_best_y(observer, ax2, start_from=x0.shape[0])
-    ax1.axvline(x0.shape[0], color="red")
-    plt.show()
-
-    black_box.terminate()
-
-
-def comparing_against_directed_evolution():
-    arr = np.load(THIS_DIR / "rasp_seed_data.npz")
-    x0 = arr["x0"]
-    y0 = arr["y0"]
-    batch_size = 128
-    n_iterations = 32
-
-    x0_for_solver_no_padding = x0[np.argsort(y0.flatten())[::-1]][:batch_size]
-
-    # Adding padding
-    max_length = max(map(len, x0_for_solver_no_padding))
-    x0_for_solver_ = [[char for char in x_i] for x_i in x0_for_solver_no_padding]
-    x0_for_solver = np.array(
-        [list_ + ([""] * (max_length - len(list_))) for list_ in x0_for_solver_]
-    )
-
-    y0_for_solver = y0[np.argsort(y0.flatten())[::-1]][:batch_size]
-
-    RFP_PDBS_DIR = THIS_DIR / "rfp_pdbs"
-    ALL_PDBS = list(RFP_PDBS_DIR.rglob("**/*.pdb"))
-    problem = RaspProblemFactory().create(
-        wildtype_pdb_path=ALL_PDBS,
-        additive=True,
-        chains_to_keep=[p.parent.name.split("_")[1] for p in ALL_PDBS],
-    )
-    black_box = problem.black_box
-
-    observer = SimpleObserver()
-    black_box.set_observer(observer)
-
-    observer.x_s.append(x0.reshape(-1, 1))
-    observer.y_s.append(y0)
-
-    directed_evolution = RandomMutation(
-        black_box=black_box,
-        x0=x0_for_solver,
-        y0=y0_for_solver,
-        batch_size=batch_size,
-    )
-    max_eval = n_iterations * batch_size
-    directed_evolution.solve(max_iter=max_eval // batch_size, verbose=True)
-    observer.save_history(
-        THIS_DIR / f"directed_evolution_rasp_trace_b_{batch_size}_i_{n_iterations}.npz"
-    )
+    observer.save_history(THIS_DIR / "lambo2_trace.npz")
+    observer.save_df_for_mads(THIS_DIR / "lambo2_trace.csv", batch_size=POPULATION_SIZE)
 
     fig, (ax1, ax2) = plt.subplots(1, 2)
     plot_best_y(observer, ax1)
@@ -144,4 +93,3 @@ def comparing_against_directed_evolution():
 
 if __name__ == "__main__":
     run_with_modified_hyperparameters()
-    # comparing_against_directed_evolution()
