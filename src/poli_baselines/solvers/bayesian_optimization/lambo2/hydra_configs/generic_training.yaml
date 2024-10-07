@@ -20,6 +20,7 @@ num_steps: 1
 num_samples: 16
 num_mutations_per_step: 2
 allow_length_change: false
+max_sequence_length: 256
 
 trainer:
   _target_: lightning.Trainer
