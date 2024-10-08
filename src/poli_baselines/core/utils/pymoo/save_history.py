@@ -3,9 +3,9 @@ This module implements history saving utilities
 from pymoo-related objects.
 """
 
-from typing import Dict, List
-from pathlib import Path
 import json
+from pathlib import Path
+from typing import Dict, List
 
 from pymoo.core.result import Result
 

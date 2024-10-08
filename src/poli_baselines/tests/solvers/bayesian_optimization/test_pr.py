@@ -3,12 +3,11 @@
 TODO: add reference
 """
 
-from pathlib import Path
 import json
-
 import warnings
-import numpy as np
+from pathlib import Path
 
+import numpy as np
 import pytest
 
 TEST_FILES_PATH = Path(__file__).parent.parent.parent / "test_files"
@@ -37,9 +36,8 @@ def test_pr_runs():
     from poli import objective_factory
 
     pytest.importorskip("discrete_mixed_bo")  # We check if we have PR installed
-    from poli_baselines.solvers.bayesian_optimization.pr import (
-        ProbabilisticReparametrizationSolver,
-    )
+    from poli_baselines.solvers.bayesian_optimization.pr import \
+        ProbabilisticReparametrizationSolver
 
     alphabet = load_alphabet()
     sequence_length = load_sequence_length()

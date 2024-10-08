@@ -1,38 +1,25 @@
-from typing import Callable, Type, Tuple
+from typing import Tuple, Type
 
-import numpy as np
 import matplotlib.pyplot as plt
-
+import numpy as np
 import torch
-
-
-from botorch.models import SingleTaskGP
-from botorch.fit import (
-    fit_gpytorch_mll_torch,
-    fit_gpytorch_mll_scipy,
-)
-from botorch.acquisition import (
-    ExpectedImprovement,
-    AcquisitionFunction,
-    LogExpectedImprovement,
-)
-from botorch.optim import optimize_acqf
+from botorch.acquisition import (AcquisitionFunction, ExpectedImprovement,
+                                 LogExpectedImprovement)
+from botorch.fit import fit_gpytorch_mll_torch
 from botorch.generation.gen import gen_candidates_torch
-
-from gpytorch.means import Mean
+from botorch.models import SingleTaskGP
+from botorch.optim import optimize_acqf
 from gpytorch.kernels import Kernel
+from gpytorch.means import Mean
 from gpytorch.mlls import ExactMarginalLogLikelihood
-
 from poli.core.abstract_black_box import AbstractBlackBox
+
 from poli_baselines.core.step_by_step_solver import StepByStepSolver
 from poli_baselines.core.utils.visualization.bayesian_optimization import (
-    plot_prediction_in_2d,
-    plot_acquisition_in_2d,
-)
+    plot_acquisition_in_2d, plot_prediction_in_2d)
 
-from .bayesian_optimization_commons import (
-    optimize_acquisition_function_using_grid_search,
-)
+from .bayesian_optimization_commons import \
+    optimize_acquisition_function_using_grid_search
 
 
 class BaseBayesianOptimization(StepByStepSolver):

@@ -4,7 +4,6 @@ This test suite runs only on poli__alebo in CI.
 """
 
 import pytest
-
 from poli.objective_repository import ToyContinuousProblemFactory
 
 from poli_baselines.core.abstract_solver import AbstractSolver

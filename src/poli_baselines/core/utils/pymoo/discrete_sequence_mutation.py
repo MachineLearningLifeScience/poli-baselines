@@ -1,9 +1,6 @@
-from pymoo.core.mutation import Mutation
-
-import math
 
 import numpy as np
-
+from pymoo.core.mutation import Mutation
 from pymoo.operators.mutation.rm import ChoiceRandomMutation
 
 from poli_baselines.core.utils.constants import IMMUTABLE_TOKENS

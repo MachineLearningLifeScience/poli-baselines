@@ -12,21 +12,19 @@ on applying SAASBO [2].
 [2] https://botorch.org/tutorials/saasbo
 """
 
-from typing import Type, Tuple
-from gpytorch.kernels import Kernel
-from gpytorch.means import Mean
+from typing import Tuple, Type
 
 import numpy as np
 import torch
-
 from botorch import fit_fully_bayesian_model_nuts
-from botorch.acquisition import ExpectedImprovement, AcquisitionFunction
+from botorch.acquisition import AcquisitionFunction, ExpectedImprovement
 from botorch.models.fully_bayesian import SaasFullyBayesianSingleTaskGP
-
+from gpytorch.kernels import Kernel
+from gpytorch.means import Mean
 from poli.core.abstract_black_box import AbstractBlackBox
-from poli_baselines.solvers.bayesian_optimization.base_bayesian_optimization.base_bayesian_optimization import (
-    BaseBayesianOptimization,
-)
+
+from poli_baselines.solvers.bayesian_optimization.base_bayesian_optimization.base_bayesian_optimization import \
+    BaseBayesianOptimization
 
 
 class SAASBO(BaseBayesianOptimization):

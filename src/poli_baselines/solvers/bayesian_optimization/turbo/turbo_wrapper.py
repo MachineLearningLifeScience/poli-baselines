@@ -1,26 +1,24 @@
 # Code taken from https://botorch.org/tutorials/turbo_1
 from __future__ import annotations
 
-import numpy as np
-from poli.core.abstract_black_box import AbstractBlackBox
-
-from poli_baselines.core.step_by_step_solver import StepByStepSolver
 import math
 from dataclasses import dataclass
 
+import numpy as np
 import torch
 from botorch.acquisition import qExpectedImprovement
 from botorch.fit import fit_gpytorch_mll
 from botorch.generation import MaxPosteriorSampling
 from botorch.models import SingleTaskGP
 from botorch.optim import optimize_acqf
-from torch.quasirandom import SobolEngine
-
 from gpytorch.constraints import Interval
 from gpytorch.kernels import MaternKernel, ScaleKernel
 from gpytorch.likelihoods import GaussianLikelihood
 from gpytorch.mlls import ExactMarginalLogLikelihood
+from poli.core.abstract_black_box import AbstractBlackBox
+from torch.quasirandom import SobolEngine
 
+from poli_baselines.core.step_by_step_solver import StepByStepSolver
 
 DEFAULT_DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 DEFAULT_DTYPE = torch.double

@@ -14,30 +14,21 @@ References
     https://proceedings.mlr.press/v97/kirschner19a.html.
 """
 
-from typing import Tuple, Literal
-from gpytorch.kernels import Kernel
-from gpytorch.means import Mean
+from typing import Literal, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
-
 import torch
-
-
+from botorch.acquisition import AcquisitionFunction, LogExpectedImprovement
 from botorch.models import SingleTaskGP
-from botorch.acquisition import (
-    ExpectedImprovement,
-    AcquisitionFunction,
-    LogExpectedImprovement,
-)
-
+from gpytorch.kernels import Kernel
+from gpytorch.means import Mean
 from poli.core.abstract_black_box import AbstractBlackBox
-from poli_baselines.solvers.bayesian_optimization.base_bayesian_optimization.base_bayesian_optimization import (
-    BaseBayesianOptimization,
-)
-from poli_baselines.core.utils.visualization.bayesian_optimization import (
-    plot_prediction_in_2d,
-)
+
+from poli_baselines.core.utils.visualization.bayesian_optimization import \
+    plot_prediction_in_2d
+from poli_baselines.solvers.bayesian_optimization.base_bayesian_optimization.base_bayesian_optimization import \
+    BaseBayesianOptimization
 
 from .utilities import ray_box_intersection
 

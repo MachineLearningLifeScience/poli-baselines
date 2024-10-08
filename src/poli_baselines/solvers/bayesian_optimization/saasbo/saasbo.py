@@ -9,12 +9,13 @@ and was proposed by Eriksson and Jankowiak
 
 import numpy as np
 import torch
-
-from poli.core.abstract_black_box import AbstractBlackBox  # type: ignore[import]
-from poli.objective_repository import ToyContinuousBlackBox  # type: ignore[import]
-
-from ax.modelbridge.generation_strategy import GenerationStep, GenerationStrategy  # type: ignore[import]
+from ax.modelbridge.generation_strategy import (  # type: ignore[import]
+    GenerationStep, GenerationStrategy)
 from ax.modelbridge.registry import Models  # type: ignore[import]
+from poli.core.abstract_black_box import \
+    AbstractBlackBox  # type: ignore[import]
+from poli.objective_repository import \
+    ToyContinuousBlackBox  # type: ignore[import]
 
 from poli_baselines.core.utils.ax.ax_solver import AxSolver
 

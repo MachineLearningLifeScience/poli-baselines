@@ -1,8 +1,7 @@
+from .callbacks import SaveHistoryAndCallOtherCallbacks
 from .discrete_sequence_mating import DiscreteSequenceMating
 from .discrete_sequence_mutation import DiscreteSequenceMutation, NoMutation
 from .discrete_sequence_sampling import DiscreteSequenceSampling
-from .no_crossover import NoCrossover
-
 from .interface import _from_array_to_dict, _from_dict_to_array
+from .no_crossover import NoCrossover
 from .random_selection import RandomSelectionOfSameLength
-from .callbacks import SaveHistoryAndCallOtherCallbacks

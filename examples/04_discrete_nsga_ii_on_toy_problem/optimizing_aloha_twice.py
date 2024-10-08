@@ -1,14 +1,11 @@
 """Example: NSGA-2 on discrete inputs using poli baselines."""
 
-import numpy as np
-
 import matplotlib.pyplot as plt
-
-from poli.objective_repository import AlohaProblemFactory
+import numpy as np
 from poli.core.multi_objective_black_box import MultiObjectiveBlackBox
+from poli.objective_repository import AlohaProblemFactory
 
 from poli_baselines.solvers import DiscreteNSGAII
-
 
 if __name__ == "__main__":
     population_size = 15

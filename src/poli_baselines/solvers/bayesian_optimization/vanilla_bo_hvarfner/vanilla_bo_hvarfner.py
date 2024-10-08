@@ -1,16 +1,18 @@
-import numpy as np
-
-import torch
 import gpytorch  # type: ignore[import]
-from gpytorch.constraints.constraints import GreaterThan  # type: ignore[import]
-from botorch.models import SingleTaskGP  # type: ignore[import]
-from botorch.acquisition.logei import qLogNoisyExpectedImprovement  # type: ignore[import]
-
-from ax.modelbridge.generation_strategy import GenerationStrategy, GenerationStep  # type: ignore[import]
+import numpy as np
+import torch
+from ax.modelbridge.generation_strategy import (  # type: ignore[import]
+    GenerationStep, GenerationStrategy)
 from ax.modelbridge.registry import Models  # type: ignore[import]
-from ax.models.torch.botorch_modular.surrogate import Surrogate  # type: ignore[import]
-
-from poli.core.abstract_black_box import AbstractBlackBox  # type: ignore[import]
+from ax.models.torch.botorch_modular.surrogate import \
+    Surrogate  # type: ignore[import]
+from botorch.acquisition.logei import \
+    qLogNoisyExpectedImprovement  # type: ignore[import]
+from botorch.models import SingleTaskGP  # type: ignore[import]
+from gpytorch.constraints.constraints import \
+    GreaterThan  # type: ignore[import]
+from poli.core.abstract_black_box import \
+    AbstractBlackBox  # type: ignore[import]
 
 from poli_baselines.core.utils.ax.ax_solver import AxSolver
 
@@ -63,7 +65,8 @@ class VanillaBOHvarfner(AxSolver):
 
 
 if __name__ == "__main__":
-    from poli.objective_repository import ToyContinuousBlackBox  # type: ignore[import]
+    from poli.objective_repository import \
+        ToyContinuousBlackBox  # type: ignore[import]
 
     black_box = ToyContinuousBlackBox(
         function_name="branin_2d",

@@ -18,9 +18,8 @@ The PDB files were taken from LaMBO's assets [1].
 
 from pathlib import Path
 
-import numpy as np
 import matplotlib.pyplot as plt
-
+import numpy as np
 from poli.objective_repository import FoldXStabilityAndSASAProblemFactory
 
 from poli_baselines.solvers import DiscreteNSGAII

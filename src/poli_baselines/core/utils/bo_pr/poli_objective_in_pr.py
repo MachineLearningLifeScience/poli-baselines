@@ -10,13 +10,10 @@ running inside the poli__pr environment.
 
 from __future__ import annotations
 
-
 import numpy as np
 import torch
-
-from poli.core.abstract_black_box import AbstractBlackBox
-
 from discrete_mixed_bo.problems.base import DiscreteTestProblem
+from poli.core.abstract_black_box import AbstractBlackBox
 
 
 class PoliObjective(DiscreteTestProblem):

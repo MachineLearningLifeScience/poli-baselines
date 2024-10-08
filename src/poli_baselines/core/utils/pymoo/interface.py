@@ -5,17 +5,15 @@ functions to pymoo problems.
 
 from __future__ import annotations
 
-from typing import Dict, List, Tuple
-from pathlib import Path
 import pickle
+from pathlib import Path
+from typing import Dict, List, Tuple
 
 import numpy as np
-
-from pymoo.core.problem import Problem, ElementwiseProblem
-from pymoo.core.variable import Choice
-from pymoo.core.population import Population
-
 from poli.core.multi_objective_black_box import MultiObjectiveBlackBox
+from pymoo.core.population import Population
+from pymoo.core.problem import Problem
+from pymoo.core.variable import Choice
 
 
 def _from_dict_to_array(x: List[dict]) -> np.ndarray:

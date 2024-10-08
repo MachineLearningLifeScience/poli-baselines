@@ -3,11 +3,9 @@
 TODO: add reference
 """
 
-from pathlib import Path
 import json
-
 import warnings
-import numpy as np
+from pathlib import Path
 
 import pytest
 
@@ -37,9 +35,8 @@ def test_bounce_runs():
     from poli import objective_factory
 
     pytest.importorskip("bounce")  # We check if we have PR installed
-    from poli_baselines.solvers.bayesian_optimization.bounce import (
-        BounceSolver,
-    )
+    from poli_baselines.solvers.bayesian_optimization.bounce import \
+        BounceSolver
 
     alphabet = load_alphabet()
     sequence_length = load_sequence_length()

@@ -2,30 +2,20 @@
 This module provides the VanillaBayesianOptimization class, which performs Bayesian Optimization using a SingleTaskGP model.
 """
 
-from typing import Type, Tuple
+from typing import Tuple, Type
 
-import torch
 import numpy as np
-
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
-from botorch.generation.gen import gen_candidates_torch
-
-from botorch.models import SingleTaskGP
-from botorch.acquisition import (
-    ExpectedImprovement,
-    AcquisitionFunction,
-    LogExpectedImprovement,
-)
+import torch
+from botorch.acquisition import AcquisitionFunction, LogExpectedImprovement
 from botorch.fit import fit_gpytorch_mll
-
-from gpytorch.means import Mean
+from botorch.models import SingleTaskGP
 from gpytorch.kernels import Kernel
+from gpytorch.means import Mean
 from gpytorch.mlls import ExactMarginalLogLikelihood
-
 from poli.core.abstract_black_box import AbstractBlackBox
-from poli_baselines.solvers.bayesian_optimization.base_bayesian_optimization.base_bayesian_optimization import (
-    BaseBayesianOptimization,
-)
+
+from poli_baselines.solvers.bayesian_optimization.base_bayesian_optimization.base_bayesian_optimization import \
+    BaseBayesianOptimization
 
 
 class VanillaBayesianOptimization(BaseBayesianOptimization):

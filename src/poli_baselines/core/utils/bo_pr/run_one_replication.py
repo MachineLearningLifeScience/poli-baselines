@@ -9,9 +9,7 @@ Run one replication.
 """
 import gc
 from time import time
-from typing import Callable, Dict, List, Optional
-
-from poli.core.abstract_black_box import AbstractBlackBox
+from typing import Callable, Dict, Optional
 
 import nevergrad as ng
 import numpy as np
@@ -20,33 +18,24 @@ from botorch.acquisition.utils import is_nonnegative
 from botorch.fit import fit_gpytorch_model
 from botorch.models.transforms.outcome import Standardize
 from botorch.optim.optimize import optimize_acqf_discrete
-from botorch.test_functions.base import (
-    ConstrainedBaseTestProblem,
-    MultiObjectiveTestProblem,
-)
-from botorch.utils.multi_objective.box_decompositions.dominated import (
-    DominatedPartitioning,
-)
+from botorch.test_functions.base import ConstrainedBaseTestProblem
+from botorch.utils.multi_objective.box_decompositions.dominated import \
+    DominatedPartitioning
 from botorch.utils.sampling import draw_sobol_samples
 from botorch.utils.transforms import normalize, unnormalize
-from torch import Tensor
-
-from discrete_mixed_bo.experiment_utils import (
-    eval_problem,
-    generate_discrete_options,
-    generate_initial_data,
-    get_acqf,
-    get_exact_rounding_func,
-    get_problem,
-    initialize_model,
-)
+from discrete_mixed_bo.experiment_utils import (eval_problem,
+                                                generate_discrete_options,
+                                                generate_initial_data,
+                                                get_acqf,
+                                                get_exact_rounding_func,
+                                                initialize_model)
 from discrete_mixed_bo.input import OneHotToNumeric
-from discrete_mixed_bo.model_utils import apply_normal_copula_transform
 from discrete_mixed_bo.optimize import optimize_acqf, optimize_acqf_mixed
-from discrete_mixed_bo.probabilistic_reparameterization import (
-    AbstractProbabilisticReparameterization,
-)
+from discrete_mixed_bo.probabilistic_reparameterization import \
+    AbstractProbabilisticReparameterization
 from discrete_mixed_bo.trust_region import TurboState, update_state
+from poli.core.abstract_black_box import AbstractBlackBox
+from torch import Tensor
 
 from .poli_objective_in_pr import PoliObjective
 

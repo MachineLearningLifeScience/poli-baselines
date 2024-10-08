@@ -3,13 +3,11 @@
 from unittest.mock import MagicMock
 
 import numpy as np
+from poli.objective_repository.toy_continuous_problem.register import \
+    ToyContinuousProblemFactory
 
-from poli_baselines.solvers.simple.continuous_random_mutation import (
-    ContinuousRandomMutation,
-)
-from poli.objective_repository.toy_continuous_problem.register import (
-    ToyContinuousProblemFactory,
-)
+from poli_baselines.solvers.simple.continuous_random_mutation import \
+    ContinuousRandomMutation
 
 
 class TestAddingCallbacks:

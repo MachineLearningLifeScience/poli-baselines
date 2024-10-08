@@ -1,8 +1,8 @@
-from typing import Tuple
 from itertools import product
+from typing import Tuple
 
-import torch
 import numpy as np
+import torch
 
 
 def _image_from_values(

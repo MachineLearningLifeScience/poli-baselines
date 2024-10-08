@@ -6,22 +6,18 @@ and runs Bayesian Optimization in latent space.
 We use BoTorch as the backend for Bayesian Optimization.
 """
 
-from typing import Callable, Type, Tuple
+from typing import Callable, Tuple, Type
 
 import numpy as np
-
 import torch
-
-
-from botorch.models import SingleTaskGP
+from botorch.acquisition import AcquisitionFunction, ExpectedImprovement
 from botorch.fit import fit_gpytorch_model
-from botorch.acquisition import ExpectedImprovement, AcquisitionFunction
-from botorch.optim import optimize_acqf
 from botorch.generation.gen import gen_candidates_torch
-
+from botorch.models import SingleTaskGP
+from botorch.optim import optimize_acqf
 from gpytorch.mlls import ExactMarginalLogLikelihood
-
 from poli.core.abstract_black_box import AbstractBlackBox
+
 from poli_baselines.core.step_by_step_solver import StepByStepSolver
 
 

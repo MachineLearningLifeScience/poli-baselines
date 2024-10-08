@@ -1,10 +1,10 @@
 import sys
 from pathlib import Path
 
-import numpy as np
 import matplotlib.pyplot as plt
-
+import numpy as np
 from poli.objective_repository import RaspProblemFactory
+
 from poli_baselines.solvers.bayesian_optimization.lambo2 import LaMBO2
 
 THIS_DIR = Path(__file__).resolve().parent

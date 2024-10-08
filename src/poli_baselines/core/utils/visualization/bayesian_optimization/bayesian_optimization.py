@@ -1,11 +1,10 @@
-from typing import Tuple
 from itertools import product
+from typing import Tuple
 
 import matplotlib.pyplot as plt
 import torch
-
-from gpytorch.models import ExactGP
 from botorch.acquisition import AcquisitionFunction
+from gpytorch.models import ExactGP
 
 from ..common import _image_from_values
 
