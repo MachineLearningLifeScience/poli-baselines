@@ -6,10 +6,8 @@ def test_optimizing_aloha():
     If poli_baselines is available, this test checks
     whether we can optimize the aloha problem.
     """
-    from poli import objective_factory
-    from poli import get_problems
-
     import numpy as np
+    from poli import get_problems, objective_factory
 
     _ = pytest.importorskip("poli_baselines")
 

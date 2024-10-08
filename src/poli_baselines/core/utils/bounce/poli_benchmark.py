@@ -3,15 +3,13 @@ This can run inside the bounce env.
 """
 
 from __future__ import annotations
+
 import numpy as np
 import torch
-
+from bounce.benchmarks import SyntheticBenchmark
+from bounce.util.benchmark import Parameter, ParameterType
 from poli.core.abstract_black_box import AbstractBlackBox
 from poli.repository import ToyContinuousBlackBox
-
-from bounce.util.benchmark import Parameter, ParameterType
-
-from bounce.benchmarks import SyntheticBenchmark
 
 
 class PoliBenchmark(SyntheticBenchmark):

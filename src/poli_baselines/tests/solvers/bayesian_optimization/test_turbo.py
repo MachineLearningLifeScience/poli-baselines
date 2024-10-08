@@ -1,6 +1,7 @@
 """This module tests the TURBO solver."""
 
 import warnings
+
 import numpy as np
 
 warnings.filterwarnings("ignore")
@@ -8,9 +9,8 @@ warnings.filterwarnings("ignore")
 
 def test_turbo_runs():
     from poli import objective_factory
-    from poli_baselines.solvers.bayesian_optimization.turbo import (
-        Turbo,
-    )
+
+    from poli_baselines.solvers.bayesian_optimization.turbo import Turbo
 
     problem = objective_factory.create(
         name="toy_continuous_problem",

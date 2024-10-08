@@ -19,41 +19,30 @@ References:
 from typing import Tuple
 
 import numpy as np
-
-from pymoo.core.variable import Choice
-from pymoo.core.mutation import Mutation
-from pymoo.core.sampling import Sampling
-from pymoo.core.mating import InfillCriterion
-from pymoo.core.crossover import Crossover
-from pymoo.core.selection import Selection
-from pymoo.algorithms.moo.nsga2 import NSGA2, RankAndCrowdingSurvival, binary_tournament
-from pymoo.core.termination import NoTermination
-from pymoo.core.population import Population
-from pymoo.core.mixed import (
-    MixedVariableDuplicateElimination,
-    MixedVariableMating,
-    MixedVariableSampling,
-)
-from pymoo.operators.crossover.sbx import SBX
-from pymoo.algorithms.moo.nsga2 import NSGA2
-
 from poli.core.abstract_black_box import AbstractBlackBox
+from pymoo.algorithms.moo.nsga2 import NSGA2, RankAndCrowdingSurvival, binary_tournament
+from pymoo.core.mating import InfillCriterion
+from pymoo.core.mixed import MixedVariableDuplicateElimination, MixedVariableSampling
+from pymoo.core.mutation import Mutation
+from pymoo.core.population import Population
+from pymoo.core.sampling import Sampling
+from pymoo.core.termination import NoTermination
+from pymoo.operators.crossover.sbx import SBX
 from pymoo.operators.mutation.pm import PM
 from pymoo.operators.sampling.rnd import FloatRandomSampling
 from pymoo.operators.selection.tournament import TournamentSelection
 from pymoo.util.display.multi import MultiObjectiveOutput
+
 from poli_baselines.core.step_by_step_solver import StepByStepSolver
-from poli_baselines.core.utils.pymoo.interface import DiscretePymooProblem
-from poli_baselines.core.utils.pymoo import (
-    DiscreteSequenceMutation,
-    _from_array_to_dict,
-    _from_dict_to_array,
-    NoCrossover,
-    DiscreteSequenceMating,
-)
 from poli_baselines.core.utils.mutations.random_mutations import (
     add_random_mutations_to_reach_pop_size,
 )
+from poli_baselines.core.utils.pymoo import (
+    DiscreteSequenceMating,
+    _from_array_to_dict,
+    _from_dict_to_array,
+)
+from poli_baselines.core.utils.pymoo.interface import DiscretePymooProblem
 
 
 class DiscreteNSGA2(NSGA2):

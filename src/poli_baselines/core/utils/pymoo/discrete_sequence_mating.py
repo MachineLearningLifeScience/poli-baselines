@@ -1,7 +1,6 @@
 import numpy as np
-
-from pymoo.core.population import Population
 from pymoo.core.infill import InfillCriterion
+from pymoo.core.population import Population
 
 
 def _mutate(problem, x_as_dict, num_mutations):

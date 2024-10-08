@@ -2,10 +2,11 @@
 
 
 def test_continuous_random_mutation_instantiates_and_runs_well():
+    from poli import objective_factory
+
     from poli_baselines.solvers.simple.continuous_random_mutation import (
         ContinuousRandomMutation,
     )
-    from poli import objective_factory
 
     problem = objective_factory.create(
         name="toy_continuous_problem",

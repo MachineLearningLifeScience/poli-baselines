@@ -6,7 +6,6 @@ This test suite runs only on poli__ax in CI.
 import importlib
 
 import pytest
-
 from poli.objective_repository import ToyContinuousProblemFactory
 
 from poli_baselines.core.abstract_solver import AbstractSolver

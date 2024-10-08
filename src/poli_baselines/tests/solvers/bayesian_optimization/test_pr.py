@@ -3,12 +3,11 @@
 TODO: add reference
 """
 
-from pathlib import Path
 import json
-
 import warnings
-import numpy as np
+from pathlib import Path
 
+import numpy as np
 import pytest
 
 TEST_FILES_PATH = Path(__file__).parent.parent.parent / "test_files"

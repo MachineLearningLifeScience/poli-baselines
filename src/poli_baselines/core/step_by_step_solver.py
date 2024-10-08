@@ -1,12 +1,11 @@
-from typing import List, Tuple, Dict, Any, Iterable, Callable, Union
-from typing_extensions import Self
-from pathlib import Path
 import json
+from pathlib import Path
+from typing import Any, Callable, Dict, Iterable, List, Tuple, Union
 
 import numpy as np
-
 from poli.core.abstract_black_box import AbstractBlackBox
 from poli.core.util.seeding import seed_python_numpy_and_torch
+from typing_extensions import Self
 
 from poli_baselines.core.abstract_solver import AbstractSolver
 from poli_baselines.core.utils.saving.json_encoders import NumpyToListEncoder
