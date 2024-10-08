@@ -1,3 +1,5 @@
 black
 pytest
 pre-commit
+ruff
+isort
