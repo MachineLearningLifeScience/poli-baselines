@@ -7,6 +7,7 @@ dependencies:
   - pip:
       - --extra-index-url https://download.pytorch.org/whl/cpu
       - numpy<2
+      - beignet
       - "git+https://github.com/prescient-design/cortex.git"
       - "git+https://github.com/MachineLearningLifeScience/poli.git"
       - "git+https://github.com/MachineLearningLifeScience/poli-baselines.git@main"

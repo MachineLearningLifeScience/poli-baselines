@@ -8,9 +8,10 @@ fit_cfg:
     _target_: torch.optim.Adam
     lr: 5e-3
     weight_decay: 0.
-    betas: [0.99, 0.999]
+    betas: [0.9, 0.99]
     fused: false
   lr_scheduler:
     _target_: transformers.get_cosine_schedule_with_warmup
-    num_warmup_steps: 1
+    num_warmup_steps: 2
     num_training_steps: ${max_epochs}
+    # _target_: transformers.get_constant_schedule

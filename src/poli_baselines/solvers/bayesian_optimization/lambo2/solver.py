@@ -27,10 +27,12 @@ from __future__ import annotations
 from pathlib import Path
 from uuid import uuid4
 
+import edlib
 import hydra
 import lightning as L
 import numpy as np
 import torch
+from beignet import farthest_first_traversal
 from omegaconf import OmegaConf
 from poli.core.abstract_black_box import AbstractBlackBox
 from poli.core.util.seeding import seed_python_numpy_and_torch
@@ -40,6 +42,13 @@ from poli_baselines.core.utils.mutations import add_random_mutations_to_reach_po
 
 THIS_DIR = Path(__file__).parent.resolve()
 DEFAULT_CONFIG_DIR = THIS_DIR / "hydra_configs"
+
+
+def edit_dist(x: str, y: str):
+    """
+    Computes the edit distance between two strings.
+    """
+    return edlib.align(x, y)["editDistance"]
 
 
 class LaMBO2(AbstractSolver):
@@ -108,6 +117,7 @@ class LaMBO2(AbstractSolver):
         L.seed_everything(seed=cfg.random_seed, workers=True)
 
         self.cfg = cfg
+        print(OmegaConf.to_yaml(cfg))
 
         if x0 is None:
             raise ValueError(
@@ -132,6 +142,7 @@ class LaMBO2(AbstractSolver):
         self.history_for_training = {
             "x": [tokenized_x0],
             "y": [y0.flatten()],
+            "t": [np.full(len(y0), 0)],
         }
 
         # Pre-training the model.
@@ -155,10 +166,12 @@ class LaMBO2(AbstractSolver):
         """
         all_x = np.concatenate(self.history_for_training["x"], axis=0)
         all_y = np.concatenate(self.history_for_training["y"], axis=0)
+        all_t = np.concatenate(self.history_for_training["t"], axis=0)
 
         return {
             "x": [np.array(["".join(x_i).replace(" ", "")]) for x_i in all_x],
             "y": [np.array([[y_i]]) for y_i in all_y],
+            "t": [np.array([t_i]) for t_i in all_t],
         }
 
     def _train_model_with_history(
@@ -192,22 +205,48 @@ class LaMBO2(AbstractSolver):
                 )["state_dict"]
             )
 
-        x = np.concatenate(self.history_for_training["x"])
-        y = np.concatenate(self.history_for_training["y"])
+        x = np.concatenate(self.history_for_training["x"][::-1])
+        y = np.concatenate(self.history_for_training["y"][::-1])
+        t = np.concatenate(self.history_for_training["t"][::-1])
+
+        t_partition = _geometric_partitioning(t)
+
+        is_feasible = y > -float("inf")
+        feasible_x = x[is_feasible]
+        feasible_y = y[is_feasible]
+        feasible_t = t[is_feasible]
+
+        dedup_feas_x, indices = np.unique(feasible_x, return_index=True)
+        dedup_feas_y = feasible_y[indices]
+        dedup_feas_t = feasible_t[indices]
+
+        print(f"Total History: {len(x)}")
+        print(f"Unique Feasible Solutions: {len(dedup_feas_x)}")
+        print(f"Top-5 Objective Values: {np.sort(dedup_feas_y.flatten())[-5:]}")
 
         task_setup_kwargs = {
             # task_key:
+            "generic_constraint": {
+                "data": {
+                    "tokenized_seq": x,
+                    "is_feasible": is_feasible,
+                    "recency": t_partition,
+                },
+            },
             "generic_task": {
                 # dataset kwarg
                 "data": {
-                    "tokenized_seq": x,
-                    "generic_task": y,
+                    "tokenized_seq": feasible_x,
+                    # "generic_task": y[y >= 0] + np.random.normal(0, math.sqrt(0.01), y[y >= 0].shape),
+                    "generic_task": feasible_y,
+                    "recency": t_partition[is_feasible],
                 }
             },
             "protein_seq": {
                 # dataset kwarg
                 "data": {
-                    "tokenized_seq": x,
+                    "tokenized_seq": dedup_feas_x,
+                    "recency": dedup_feas_t,
                 }
             },
         }
@@ -227,7 +266,7 @@ class LaMBO2(AbstractSolver):
         self.trainer.fit(
             model,
             train_dataloaders=model.get_dataloader(split="train"),
-            val_dataloaders=model.get_dataloader(split="val"),
+            # val_dataloaders=model.get_dataloader(split="val"),
         )
 
         if save_checkpoint_to:
@@ -244,9 +283,22 @@ class LaMBO2(AbstractSolver):
         x = np.concatenate(self.history_for_training["x"], axis=0)
         y = np.concatenate(self.history_for_training["y"], axis=0)
         sorted_y0_idxs = np.argsort(y.flatten())[::-1]
-        candidate_points = x[sorted_y0_idxs[: self.cfg.num_samples]]
+        candidate_points = x[sorted_y0_idxs[: min(len(x), 2 * self.cfg.num_samples)]]
+        candidate_scores = y[sorted_y0_idxs[: min(len(x), 2 * self.cfg.num_samples)]]
+        # candidate_points = x[sorted_y0_idxs[: max(len(x) // 2, self.cfg.num_samples)]]
+        # candidate_scores = y[sorted_y0_idxs[: max(len(x) // 2, self.cfg.num_samples)]]
 
-        return candidate_points
+        indices = farthest_first_traversal(
+            library=candidate_points,
+            distance_fn=edit_dist,
+            ranking_scores=torch.tensor(candidate_scores.flatten()),
+            n=self.cfg.num_samples,
+            descending=True,
+        )
+        # print(candidate_points[indices])
+        print(candidate_scores[indices])
+
+        return candidate_points[indices]
 
     def step(self) -> tuple[np.ndarray, np.ndarray]:
         """
@@ -315,6 +367,10 @@ class LaMBO2(AbstractSolver):
         # Updating the history that is used for training.
         self.history_for_training["x"].append(new_designs)
         self.history_for_training["y"].append(new_y.flatten())
+        last_t = self.history_for_training["t"][-1][-1]
+        self.history_for_training["t"].append(np.full(len(new_y), last_t + 1))
+
+        # print(f"\n{new_designs_for_black_box}\n")
 
         return new_designs_for_black_box, new_y
 
@@ -330,3 +386,31 @@ class LaMBO2(AbstractSolver):
         """
         for _ in range(max_iter):
             self.step()
+
+
+def _geometric_partitioning(t_arr):
+    """
+    Given an array t with discrete integer values [0, 1, ..., n],
+    assign partition index 0 if t == n, 1 if t in [n - 1, n - 2],
+    2 if t in [n - 3, n - 4, n - 5, n - 6]. Stop when n - i == 0.
+    """
+    n = np.max(t_arr)
+    result = np.zeros_like(t_arr)
+
+    partition_index = 0
+    current_n = n
+
+    while current_n >= 0:
+        if partition_index == 0:
+            result[t_arr == current_n] = partition_index
+            current_n -= 1
+        else:
+            partition_size = 2**partition_index
+            start = min(current_n - partition_size + 1, 0)
+            end = current_n + 1
+            result[(t_arr >= start) & (t_arr < end)] = partition_index
+            current_n -= partition_size
+
+        partition_index += 1
+
+    return result
