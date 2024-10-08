@@ -62,7 +62,7 @@ pr = [
     "statsmodels",
     "xgboost",
     "black",
-    "git+https://github.com/miguelgondu/bo_pr.git@main"
+    "discrete_mixed_bo @ git+https://github.com/miguelgondu/bo_pr.git@main"
 ]
 bounce = [
     "torch==2.0.0",
@@ -75,7 +75,7 @@ bounce = [
     "black>=22.12.0,<22.13.0",
     "memray>=1.6.0,<1.7.0",
     "pytest>=7.3.1,<7.4.0",
-    "git+https://github.com/miguelgondu/bounce.git@main"
+    "bounce @ git+https://github.com/miguelgondu/bounce.git@main"
 ]
 lambo2 = ["pytorch-cortex"]
 
