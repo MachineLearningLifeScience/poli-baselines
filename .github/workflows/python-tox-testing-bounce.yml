@@ -1,4 +1,4 @@
-name: Bounce (py3.10 in conda)
+name: Bounce (py3.10)
 
 on:
   push:

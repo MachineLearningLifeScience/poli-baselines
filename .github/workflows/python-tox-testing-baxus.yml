@@ -1,4 +1,4 @@
-name: BAxUS (py3.10 in conda)
+name: BAxUS (py3.10)
 
 on:
   push:

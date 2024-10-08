@@ -1,4 +1,4 @@
-name: Ax (py3.10 in conda)
+name: Ax (py3.10)
 
 on:
   push:

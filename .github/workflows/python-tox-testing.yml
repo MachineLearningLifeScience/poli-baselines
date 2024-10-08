@@ -1,4 +1,4 @@
-name: Base (python 3.9 in conda)
+name: Base (python 3.10)
 
 on:
   push:

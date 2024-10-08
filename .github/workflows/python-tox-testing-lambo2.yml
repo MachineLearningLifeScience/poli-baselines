@@ -1,4 +1,4 @@
-name: LaMBO2 (py3.10 in conda)
+name: LaMBO2 (py3.10)
 
 on:
   push:
