@@ -21,11 +21,12 @@ random_seed: 42
 num_steps: 1
 num_samples: ${batch_size}
 allow_length_change: false
+accelerator: cpu
 
 trainer:
   _target_: lightning.Trainer
   max_epochs: ${max_epochs}
   num_sanity_val_steps: 0
-  accelerator: gpu
+  accelerator: ${accelerator}
   devices: 1
   precision: 16
