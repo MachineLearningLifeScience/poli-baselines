@@ -5,8 +5,7 @@ from typing import Callable, Tuple, Type
 import numpy as np
 from poli.core.abstract_black_box import AbstractBlackBox
 
-from poli_baselines.core.step_by_step_solver import (AbstractSolver,
-                                                     StepByStepSolver)
+from poli_baselines.core.step_by_step_solver import AbstractSolver, StepByStepSolver
 
 
 class LatentSpaceSolver(StepByStepSolver):

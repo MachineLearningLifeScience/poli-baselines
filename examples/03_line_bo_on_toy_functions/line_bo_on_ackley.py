@@ -9,8 +9,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from poli import objective_factory
 
-from poli_baselines.core.utils.visualization.objective_functions import \
-    plot_objective_function
+from poli_baselines.core.utils.visualization.objective_functions import (
+    plot_objective_function,
+)
 from poli_baselines.solvers import LineBO
 
 warnings.filterwarnings("ignore", module="botorch")

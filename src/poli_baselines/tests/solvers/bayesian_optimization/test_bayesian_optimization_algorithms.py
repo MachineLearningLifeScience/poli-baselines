@@ -5,17 +5,22 @@ from unittest.mock import patch
 import pytest
 import torch
 from botorch.models import SingleTaskGP
-from poli.objective_repository.toy_continuous_problem.register import \
-    ToyContinuousProblemFactory
+from poli.objective_repository.toy_continuous_problem.register import (
+    ToyContinuousProblemFactory,
+)
 
-from poli_baselines.solvers.bayesian_optimization.base_bayesian_optimization import \
-    BaseBayesianOptimization
-from poli_baselines.solvers.bayesian_optimization.line_bayesian_optimization import \
-    LineBO
-from poli_baselines.solvers.bayesian_optimization.saas_bayesian_optimization import \
-    SAASBO
-from poli_baselines.solvers.bayesian_optimization.vanilla_bayesian_optimization import \
-    VanillaBayesianOptimization
+from poli_baselines.solvers.bayesian_optimization.base_bayesian_optimization import (
+    BaseBayesianOptimization,
+)
+from poli_baselines.solvers.bayesian_optimization.line_bayesian_optimization import (
+    LineBO,
+)
+from poli_baselines.solvers.bayesian_optimization.saas_bayesian_optimization import (
+    SAASBO,
+)
+from poli_baselines.solvers.bayesian_optimization.vanilla_bayesian_optimization import (
+    VanillaBayesianOptimization,
+)
 
 
 @pytest.mark.parametrize(
@@ -67,8 +72,9 @@ def test_documentation_of_bo():
     import numpy as np
     from poli.objective_repository import ToyContinuousBlackBox
 
-    from poli_baselines.solvers.bayesian_optimization.vanilla_bayesian_optimization import \
-        VanillaBayesianOptimization
+    from poli_baselines.solvers.bayesian_optimization.vanilla_bayesian_optimization import (
+        VanillaBayesianOptimization,
+    )
 
     f_ackley = ToyContinuousBlackBox(function_name="ackley_function_01", n_dimensions=2)
 

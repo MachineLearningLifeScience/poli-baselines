@@ -11,8 +11,9 @@ import torch
 from poli.core.abstract_black_box import AbstractBlackBox
 
 from poli_baselines.core.abstract_solver import AbstractSolver
-from poli_baselines.core.utils.bo_pr.run_one_replication import \
-    run_one_replication_on_poli_black_box
+from poli_baselines.core.utils.bo_pr.run_one_replication import (
+    run_one_replication_on_poli_black_box,
+)
 
 
 class ProbabilisticReparametrizationSolver(AbstractSolver):

@@ -1,4 +1,3 @@
-
 import numpy as np
 from pymoo.core.mutation import Mutation
 from pymoo.operators.mutation.rm import ChoiceRandomMutation

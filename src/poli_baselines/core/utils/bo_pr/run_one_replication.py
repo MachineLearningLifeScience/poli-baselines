@@ -19,20 +19,24 @@ from botorch.fit import fit_gpytorch_model
 from botorch.models.transforms.outcome import Standardize
 from botorch.optim.optimize import optimize_acqf_discrete
 from botorch.test_functions.base import ConstrainedBaseTestProblem
-from botorch.utils.multi_objective.box_decompositions.dominated import \
-    DominatedPartitioning
+from botorch.utils.multi_objective.box_decompositions.dominated import (
+    DominatedPartitioning,
+)
 from botorch.utils.sampling import draw_sobol_samples
 from botorch.utils.transforms import normalize, unnormalize
-from discrete_mixed_bo.experiment_utils import (eval_problem,
-                                                generate_discrete_options,
-                                                generate_initial_data,
-                                                get_acqf,
-                                                get_exact_rounding_func,
-                                                initialize_model)
+from discrete_mixed_bo.experiment_utils import (
+    eval_problem,
+    generate_discrete_options,
+    generate_initial_data,
+    get_acqf,
+    get_exact_rounding_func,
+    initialize_model,
+)
 from discrete_mixed_bo.input import OneHotToNumeric
 from discrete_mixed_bo.optimize import optimize_acqf, optimize_acqf_mixed
-from discrete_mixed_bo.probabilistic_reparameterization import \
-    AbstractProbabilisticReparameterization
+from discrete_mixed_bo.probabilistic_reparameterization import (
+    AbstractProbabilisticReparameterization,
+)
 from discrete_mixed_bo.trust_region import TurboState, update_state
 from poli.core.abstract_black_box import AbstractBlackBox
 from torch import Tensor

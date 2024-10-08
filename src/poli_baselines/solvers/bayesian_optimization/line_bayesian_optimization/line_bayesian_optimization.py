@@ -25,10 +25,12 @@ from gpytorch.kernels import Kernel
 from gpytorch.means import Mean
 from poli.core.abstract_black_box import AbstractBlackBox
 
-from poli_baselines.core.utils.visualization.bayesian_optimization import \
-    plot_prediction_in_2d
-from poli_baselines.solvers.bayesian_optimization.base_bayesian_optimization.base_bayesian_optimization import \
-    BaseBayesianOptimization
+from poli_baselines.core.utils.visualization.bayesian_optimization import (
+    plot_prediction_in_2d,
+)
+from poli_baselines.solvers.bayesian_optimization.base_bayesian_optimization.base_bayesian_optimization import (
+    BaseBayesianOptimization,
+)
 
 from .utilities import ray_box_intersection
 

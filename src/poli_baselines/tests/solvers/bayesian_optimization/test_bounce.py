@@ -35,8 +35,7 @@ def test_bounce_runs():
     from poli import objective_factory
 
     pytest.importorskip("bounce")  # We check if we have PR installed
-    from poli_baselines.solvers.bayesian_optimization.bounce import \
-        BounceSolver
+    from poli_baselines.solvers.bayesian_optimization.bounce import BounceSolver
 
     alphabet = load_alphabet()
     sequence_length = load_sequence_length()

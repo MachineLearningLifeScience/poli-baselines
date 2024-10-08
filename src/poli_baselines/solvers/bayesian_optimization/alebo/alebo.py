@@ -36,8 +36,7 @@ class ALEBO(AxSolver):
             assert isinstance(black_box, ToyContinuousBlackBox)
             bounds = [black_box.function.limits] * x0.shape[1]
 
-        from ax.modelbridge.strategies.alebo import \
-            ALEBOStrategy  # type: ignore
+        from ax.modelbridge.strategies.alebo import ALEBOStrategy  # type: ignore
 
         # Initialization is already being handled by this constructor,
         # so we leave init_size=1 (ideally it would be 0, but it is not

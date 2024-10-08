@@ -11,9 +11,12 @@ import numpy as np
 from numpy import ndarray
 from poli.core.abstract_black_box import AbstractBlackBox
 from pymoo.core.individual import Individual
-from pymoo.core.mixed import (MixedVariableDuplicateElimination,
-                              MixedVariableGA, MixedVariableMating,
-                              MixedVariableSampling)
+from pymoo.core.mixed import (
+    MixedVariableDuplicateElimination,
+    MixedVariableGA,
+    MixedVariableMating,
+    MixedVariableSampling,
+)
 from pymoo.core.population import Population
 from pymoo.core.variable import Choice
 from pymoo.operators.mutation.rm import ChoiceRandomMutation
@@ -21,13 +24,16 @@ from pymoo.optimize import minimize
 from typing_extensions import Self
 
 from poli_baselines.core.step_by_step_solver import StepByStepSolver
-from poli_baselines.core.utils.mutations import \
-    add_random_mutations_to_reach_pop_size
-from poli_baselines.core.utils.pymoo import (RandomSelectionOfSameLength,
-                                             SaveHistoryAndCallOtherCallbacks)
-from poli_baselines.core.utils.pymoo.interface import (DiscretePymooProblem,
-                                                       _from_array_to_dict,
-                                                       _from_dict_to_array)
+from poli_baselines.core.utils.mutations import add_random_mutations_to_reach_pop_size
+from poli_baselines.core.utils.pymoo import (
+    RandomSelectionOfSameLength,
+    SaveHistoryAndCallOtherCallbacks,
+)
+from poli_baselines.core.utils.pymoo.interface import (
+    DiscretePymooProblem,
+    _from_array_to_dict,
+    _from_dict_to_array,
+)
 
 
 class FixedLengthGeneticAlgorithm(StepByStepSolver):

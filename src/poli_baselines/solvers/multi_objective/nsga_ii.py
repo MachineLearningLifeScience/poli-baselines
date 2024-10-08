@@ -20,11 +20,9 @@ from typing import Tuple
 
 import numpy as np
 from poli.core.abstract_black_box import AbstractBlackBox
-from pymoo.algorithms.moo.nsga2 import (NSGA2, RankAndCrowdingSurvival,
-                                        binary_tournament)
+from pymoo.algorithms.moo.nsga2 import NSGA2, RankAndCrowdingSurvival, binary_tournament
 from pymoo.core.mating import InfillCriterion
-from pymoo.core.mixed import (MixedVariableDuplicateElimination,
-                              MixedVariableSampling)
+from pymoo.core.mixed import MixedVariableDuplicateElimination, MixedVariableSampling
 from pymoo.core.mutation import Mutation
 from pymoo.core.population import Population
 from pymoo.core.sampling import Sampling
@@ -36,11 +34,14 @@ from pymoo.operators.selection.tournament import TournamentSelection
 from pymoo.util.display.multi import MultiObjectiveOutput
 
 from poli_baselines.core.step_by_step_solver import StepByStepSolver
-from poli_baselines.core.utils.mutations.random_mutations import \
-    add_random_mutations_to_reach_pop_size
-from poli_baselines.core.utils.pymoo import (DiscreteSequenceMating,
-                                             _from_array_to_dict,
-                                             _from_dict_to_array)
+from poli_baselines.core.utils.mutations.random_mutations import (
+    add_random_mutations_to_reach_pop_size,
+)
+from poli_baselines.core.utils.pymoo import (
+    DiscreteSequenceMating,
+    _from_array_to_dict,
+    _from_dict_to_array,
+)
 from poli_baselines.core.utils.pymoo.interface import DiscretePymooProblem
 
 

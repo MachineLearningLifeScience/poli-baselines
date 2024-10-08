@@ -36,8 +36,9 @@ def test_pr_runs():
     from poli import objective_factory
 
     pytest.importorskip("discrete_mixed_bo")  # We check if we have PR installed
-    from poli_baselines.solvers.bayesian_optimization.pr import \
-        ProbabilisticReparametrizationSolver
+    from poli_baselines.solvers.bayesian_optimization.pr import (
+        ProbabilisticReparametrizationSolver,
+    )
 
     alphabet = load_alphabet()
     sequence_length = load_sequence_length()
