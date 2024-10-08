@@ -6,20 +6,16 @@ and runs Bayesian Optimization in latent space.
 We use BoTorch as the backend for Bayesian Optimization.
 """
 
-from typing import Callable, Type, Tuple
+from typing import Callable, Tuple, Type
 
 import numpy as np
-
 import torch
-
-
-from botorch.models import SingleTaskGP
+from botorch.acquisition import AcquisitionFunction, ExpectedImprovement
 from botorch.fit import fit_gpytorch_model
-from botorch.acquisition import ExpectedImprovement, AcquisitionFunction
-
+from botorch.models import SingleTaskGP
 from gpytorch.mlls import ExactMarginalLogLikelihood
-
 from poli.core.abstract_black_box import AbstractBlackBox
+
 from poli_baselines.core.step_by_step_solver import StepByStepSolver
 
 
@@ -157,19 +153,19 @@ class LatentSpaceLineBO(StepByStepSolver):
         if self.type_of_line == "random":
             # Selecting a linear direction at random.
             offset = np.random.randn(z.shape[1])
-            l = np.random.randn(z.shape[1])
+            line_ = np.random.randn(z.shape[1])
 
             # Optimizing along this line
             t = np.linspace(-1.0, 1.0, 100)
-            zs_in_line = offset + t[:, None] * l[None, :]
+            zs_in_line = offset + t[:, None] * line_[None, :]
         elif self.type_of_line == "coordinate":
             # Selecting a coordinate direction at random.
-            l = np.zeros(z.shape[1])
-            l[np.random.randint(z.shape[1])] = 1.0
+            line_ = np.zeros(z.shape[1])
+            line_[np.random.randint(z.shape[1])] = 1.0
 
             # Optimizing along this line
             t = np.linspace(*self.bounds, 100)
-            zs_in_line = t[:, None] * l[None, :]
+            zs_in_line = t[:, None] * line_[None, :]
 
         acq_values = acq_func(torch.from_numpy(zs_in_line).to(torch.float32))
         candidate = zs_in_line[acq_values == acq_values.max()]

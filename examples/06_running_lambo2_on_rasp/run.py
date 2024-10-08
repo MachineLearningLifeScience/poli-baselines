@@ -1,17 +1,17 @@
 import sys
 from pathlib import Path
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import torch
-
 from poli.objective_repository import RaspProblemFactory
+
 from poli_baselines.solvers.bayesian_optimization.lambo2 import LaMBO2
 
 THIS_DIR = Path(__file__).resolve().parent
 sys.path.append(str(THIS_DIR))
 
-from simple_observer import SimpleObserver, plot_best_y
+from simple_observer import SimpleObserver, plot_best_y  # noqa: E402
 
 
 def run_with_default_hyperparameters():
@@ -34,7 +34,7 @@ def run_with_default_hyperparameters():
     observer.x_s.append(x0.reshape(-1, 1))
     observer.y_s.append(y0)
 
-    torch.set_float32_matmul_precision('medium')
+    torch.set_float32_matmul_precision("medium")
     lambo2 = LaMBO2(
         black_box=black_box,
         x0=x0,

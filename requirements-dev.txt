@@ -1,4 +1,6 @@
 black
-matplotlib
-torch>=2.0.0
-pymoo
+pytest
+pre-commit
+ruff
+isort
+tox

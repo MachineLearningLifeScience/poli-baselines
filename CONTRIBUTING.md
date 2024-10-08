@@ -1,11 +1,22 @@
 # Contributing to `poli`
 
-![Linting: black](https://img.shields.io/badge/Linting-black-black)
+![Formatting: black](https://img.shields.io/badge/Formatting-black-black)
+![Formatting: isort](https://img.shields.io/badge/Formatting-isort-black)
+![Linting: ruff](https://img.shields.io/badge/Linting-ruff-black)
 ![Testing: pytest](https://img.shields.io/badge/Testing-pytest-blue)
 ![Testing: tox](https://img.shields.io/badge/Testing-tox-blue)
 ![Main branch: main](https://img.shields.io/badge/Pull_request_to-main-blue)
 
 This note details how to contribute to `poli-baselines`.
+
+## Setting up your dev environment
+
+We recommend creating a fresh environment (with Python 3.10 for most solvers), installing the `requirements-dev.txt`, and the pre-commit hooks
+
+```bash
+pip install requirements-dev.txt
+pre-commit install
+```
 
 ## Forking and making pull requests
 
@@ -17,22 +28,21 @@ We follow [numpy's documentation standards](https://numpydoc.readthedocs.io/en/l
 
 ## Linting your changes
 
-We expect you to lint the code you write or modify using `black`.
+Each commit will lint and format your changes using `ruff`, `black` and `isort`.
+
+## Testing your changes
+
+Since we are multiple environments, we settled for using a combination of `tox` and `pytest`. We encourage you to add tests for your solver, and create a new testing environment inside `tox.ini`.
 
 ```bash
-pip install black
-black ./path/to/files
-```
-
-## Testing your changes for `dev``
-
-Since we are testing multiple conda environments, we settled for using a combination of `tox` and `pytest`.
-
-```bash
-pip install tox
-
 # To test both linting and logic (from the root of the project)
 tox
+```
+
+If you want to test a specific environment, you can pass it with the `-e` flag. For example
+
+```bash
+tox -e lint
 ```
 
 ## Create a pull request to main

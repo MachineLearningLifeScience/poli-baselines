@@ -2,8 +2,9 @@
 
 
 def test_random_mutation_instantiates_and_runs_well():
-    from poli_baselines.solvers.simple.random_mutation import RandomMutation
     from poli import objective_factory
+
+    from poli_baselines.solvers.simple.random_mutation import RandomMutation
 
     problem = objective_factory.create(
         name="aloha",
@@ -21,9 +22,8 @@ def test_random_mutation_instantiates_and_runs_well():
 
 
 def test_random_mutation_in_docs():
-    import numpy as np
-
     from poli.objective_repository import AlohaProblemFactory
+
     from poli_baselines.solvers.simple.random_mutation import RandomMutation
 
     problem_factory = AlohaProblemFactory()

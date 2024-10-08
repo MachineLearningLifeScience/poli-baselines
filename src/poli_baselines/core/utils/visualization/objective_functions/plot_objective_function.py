@@ -3,9 +3,8 @@
 from itertools import product
 from typing import Tuple
 
-import numpy as np
 import matplotlib.pyplot as plt
-
+import numpy as np
 from poli.core.abstract_black_box import AbstractBlackBox
 
 from ..common import _image_from_values

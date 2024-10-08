@@ -1,6 +1,5 @@
-import numpy as np
 import matplotlib.pyplot as plt
-
+import numpy as np
 from poli.core.black_box_information import BlackBoxInformation
 from poli.core.util.abstract_observer import AbstractObserver
 

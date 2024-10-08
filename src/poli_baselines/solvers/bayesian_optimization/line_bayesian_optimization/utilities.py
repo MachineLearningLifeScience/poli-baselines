@@ -1,6 +1,7 @@
 """This module contains utilities used inside line Bayesian Optimization."""
 
 from typing import List, Optional, Tuple
+
 import numpy as np
 
 

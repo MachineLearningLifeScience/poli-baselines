@@ -1,23 +1,18 @@
 from __future__ import annotations
 
-from typing import Tuple
 import uuid
+from typing import Tuple
 
-from numpy import ndarray
 import numpy as np
 import torch
-
-from poli.objective_repository import ToyContinuousBlackBox
+from ax.modelbridge.generation_strategy import GenerationStrategy
+from ax.service.ax_client import AxClient, ObjectiveProperties
+from numpy import ndarray
 from poli.core.abstract_black_box import AbstractBlackBox
+from poli.objective_repository import ToyContinuousBlackBox
 
 from poli_baselines.core.abstract_solver import AbstractSolver
-
-from poli_baselines.core.utils.ax.interface import (
-    define_search_space,
-)
-
-from ax.service.ax_client import AxClient, ObjectiveProperties
-from ax.modelbridge.generation_strategy import GenerationStep, GenerationStrategy
+from poli_baselines.core.utils.ax.interface import define_search_space
 
 
 class AxSolver(AbstractSolver):
