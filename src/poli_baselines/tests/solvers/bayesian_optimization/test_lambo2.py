@@ -25,7 +25,7 @@ def test_lambo2_runs_on_ehrlich():
         black_box=f,
         x0=x0,
         y0=f(x0),
-        overrides=["max_epochs=1"],
+        overrides=["max_epochs=1", "batch_size=8"],
     )
 
     solver.solve(max_iter=1)
