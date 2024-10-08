@@ -1,4 +1,4 @@
-name: Ax (py3.10 in conda)
+name: Ax (py3.10)
 
 on:
   push:
@@ -7,22 +7,25 @@ on:
   schedule:
     - cron: "0 0 * * 0" # This will run every Sunday at midnight UTC
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, closed]
     branches:
       - main
 
 jobs:
   build-linux:
     runs-on: ubuntu-latest
+    timeout-minutes: 8
+    if: github.event.pull_request.draft == false
     strategy:
       max-parallel: 5
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Set up Python 3.9
+      - name: Set up Python 3.10
         uses: actions/setup-python@v3
         with:
-          python-version: "3.9"
+          python-version: "3.10"
       - name: Add conda to system path
         run: |
           # $CONDA is an environment variable pointing to the root of the miniconda directory
@@ -32,4 +35,4 @@ jobs:
           python -m pip install tox
       - name: Test Ax-related solvers with tox
         run: |
-          tox -e poli-ax-base-py39
+          tox -e poli-ax-base-py310
