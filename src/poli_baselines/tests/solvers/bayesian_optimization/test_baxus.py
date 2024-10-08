@@ -1,13 +1,12 @@
 """This module tests the BAXUS solver."""
 
+import warnings
+
+import numpy as np
 import pytest
 
 # These tests only run in the poli__baxus environment.
 pytestmark = pytest.mark.baxus
-
-import warnings
-
-import numpy as np
 
 warnings.filterwarnings("ignore")
 

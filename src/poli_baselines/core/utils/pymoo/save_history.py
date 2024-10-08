@@ -19,13 +19,13 @@ def _from_dict_to_list(d: Dict[str, str]):
     return [d[f"x_{i}"] for i in range(len(d))]
 
 
-def _from_list_to_dict(l: List[str]) -> Dict[str, str]:
+def _from_list_to_dict(list_of_strings: List[str]) -> Dict[str, str]:
     """
     Since we are using Choice variables on pymoo, we need to
     convert the list to a dictionary. The dictionary has the
     following format: {"x_0": ..., "x_1": ..., }
     """
-    return {f"x_{i}": l[i] for i in range(len(l))}
+    return {f"x_{i}": list_of_strings[i] for i in range(len(list_of_strings))}
 
 
 def save_final_population(result: Result, alphabet: Dict[str, int], path: Path):

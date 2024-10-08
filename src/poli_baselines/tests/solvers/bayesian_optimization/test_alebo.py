@@ -3,14 +3,14 @@
 This test suite runs only on poli__alebo in CI.
 """
 
+import importlib
+
 import pytest
 from poli.objective_repository import ToyContinuousProblemFactory
 
 from poli_baselines.core.abstract_solver import AbstractSolver
 
-try:
-    import ax  # type: ignore[import]
-except ImportError:
+if not importlib.util.find_spec("ax"):
     pytest.skip("Ax is not installed.", allow_module_level=True)
 
 from poli_baselines.solvers.bayesian_optimization.alebo import ALEBO

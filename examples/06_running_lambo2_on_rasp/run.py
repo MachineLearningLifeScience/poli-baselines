@@ -10,7 +10,7 @@ from poli_baselines.solvers.bayesian_optimization.lambo2 import LaMBO2
 THIS_DIR = Path(__file__).resolve().parent
 sys.path.append(str(THIS_DIR))
 
-from simple_observer import SimpleObserver, plot_best_y
+from simple_observer import SimpleObserver, plot_best_y  # noqa: E402
 
 
 def run_with_default_hyperparameters():

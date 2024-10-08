@@ -187,7 +187,7 @@ class LineBO(BaseBayesianOptimization):
         # over a random/coordinate linear direction in latent space.
         if self.type_of_line == "random":
             # Selecting a linear direction at random.
-            l = np.random.randn(self.x0.shape[1])
+            line_ = np.random.randn(self.x0.shape[1])
 
             # Optimizing along this line
             # TODO: there must be a better way of
@@ -199,10 +199,10 @@ class LineBO(BaseBayesianOptimization):
             best_x = best_x.clip(*self.bounds)
 
             _, one_intersection = ray_box_intersection(
-                best_x, l, [self.bounds] * self.x0.shape[1]
+                best_x, line_, [self.bounds] * self.x0.shape[1]
             )
             _, another_intersection = ray_box_intersection(
-                best_x, -l, [self.bounds] * self.x0.shape[1]
+                best_x, -line_, [self.bounds] * self.x0.shape[1]
             )
             t = np.linspace(0, 1, 100)
             xs_in_line = one_intersection[None, :] * t[:, None] + another_intersection[
@@ -211,12 +211,12 @@ class LineBO(BaseBayesianOptimization):
 
         elif self.type_of_line == "coordinate":
             # Selecting a coordinate direction at random.
-            l = np.zeros(self.x0.shape[1])
-            l[np.random.randint(self.x0.shape[1])] = 1.0
+            line_ = np.zeros(self.x0.shape[1])
+            line_[np.random.randint(self.x0.shape[1])] = 1.0
 
             # Optimizing along this line
             t = np.linspace(*self.bounds, 100)
-            xs_in_line = t[:, None] * l[None, :]
+            xs_in_line = t[:, None] * line_[None, :]
             # self.current_line = xs_in_line
 
         acq_values = acquisition_function(

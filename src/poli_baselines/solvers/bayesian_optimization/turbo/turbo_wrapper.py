@@ -62,8 +62,12 @@ class Turbo(StepByStepSolver):
         bounds[:, 1] -= bounds[:, 0]
 
         def make_transforms():
-            to_turbo = lambda X: (X - bounds[:, 0]) / bounds[:, 1]
-            from_turbo = lambda X: X * bounds[:, 1] + bounds[:, 0]
+            def to_turbo(X):
+                return (X - bounds[:, 0]) / bounds[:, 1]
+
+            def from_turbo(X):
+                return X * bounds[:, 1] + bounds[:, 0]
+
             return to_turbo, from_turbo
 
         self.device = device
