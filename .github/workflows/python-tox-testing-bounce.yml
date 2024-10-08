@@ -34,4 +34,4 @@ jobs:
           python -m pip install tox
       - name: Test bounce with tox
         run: |
-          tox -e poli-bounce-base-py39
+          tox -e poli-bounce-base-py310

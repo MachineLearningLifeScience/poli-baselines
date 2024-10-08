@@ -34,4 +34,4 @@ jobs:
           python -m pip install tox
       - name: Test the LaMBO2 solver with tox
         run: |
-          tox -e poli-lambo2-base-py39
+          tox -e poli-lambo2-base-py310

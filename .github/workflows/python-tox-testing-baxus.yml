@@ -34,4 +34,4 @@ jobs:
           python -m pip install tox
       - name: Test BAxUS with tox
         run: |
-          tox -e poli-baxus-base-py39
+          tox -e poli-baxus-base-py310

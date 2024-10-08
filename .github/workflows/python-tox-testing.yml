@@ -37,4 +37,4 @@ jobs:
           tox -e lint
       - name: Test poli-baselines-base with tox
         run: |
-          tox -e poli-baselines-base-py39
+          tox -e poli-baselines-base-py310
