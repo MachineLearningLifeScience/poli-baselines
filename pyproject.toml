@@ -27,12 +27,17 @@ dependencies = [
     "selfies",
     "pymoo",
     "botorch",
-    "cma"
+    "cma",
+    "poli @ git+https://github.com/MachineLearningLifeScience/poli.git",
 ]
 
 [project.optional-dependencies]
 dev = ["black", "tox", "pytest"]
 docs = ["sphinx", "furo"]
+alebo = [
+    "scikit-learn",
+    "ax-platform==0.4.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/MachineLearningLifeScience/poli-baselines"
