@@ -38,6 +38,8 @@ from poli.core.util.seeding import seed_python_numpy_and_torch
 from poli_baselines.core.abstract_solver import AbstractSolver
 from poli_baselines.core.utils.mutations import add_random_mutations_to_reach_pop_size
 
+# from IPython import embed
+
 THIS_DIR = Path(__file__).parent.resolve()
 DEFAULT_CONFIG_DIR = THIS_DIR / "hydra_configs"
 
@@ -88,10 +90,12 @@ class LaMBO2(AbstractSolver):
         overrides: list[str] | None = None,
         seed: int | None = None,
         max_epochs_for_retraining: int = 1,
+        restrict_candidate_points_to: np.ndarray | None = None,
     ):
         super().__init__(black_box=black_box, x0=x0, y0=y0)
         self.experiment_id = f"{uuid4()}"[:8]
         self.max_epochs_for_retraining = max_epochs_for_retraining
+        self.restrict_candidate_points_to = restrict_candidate_points_to
 
         if config_dir is None:
             config_dir = DEFAULT_CONFIG_DIR
@@ -122,7 +126,7 @@ class LaMBO2(AbstractSolver):
                 population_size=cfg.num_samples,
             )
 
-        tokenized_x0 = np.array([" ".join(x_i) for x_i in x0])
+        tokenizable_x0 = np.array([" ".join(x_i) for x_i in x0])
 
         if y0 is None:
             y0 = self.black_box(x0)
@@ -130,7 +134,7 @@ class LaMBO2(AbstractSolver):
             y0 = np.vstack([y0, self.black_box(x0[original_size:])])
 
         self.history_for_training = {
-            "x": [tokenized_x0],
+            "x": [tokenizable_x0],
             "y": [y0.flatten()],
         }
 
@@ -235,6 +239,35 @@ class LaMBO2(AbstractSolver):
 
         return model
 
+    def get_candidate_points(self):
+        if self.restrict_candidate_points_to is not None:
+            # TODO: make sure the array is of self.cfg.num_samples size.
+            # TODO: THey need to be in the "A A A A" format that lambo expects.
+            # Let's assume that the user passes a wildtype as
+            # np.array(["AAAAA"]) or np.array(["A", "A", "A", ...]).
+            assert len(self.restrict_candidate_points_to.shape) == 1
+            if self.restrict_candidate_points_to.shape[0] == 1:
+                tokenizable_candidate_point = " ".join(
+                    self.restrict_candidate_points_to
+                )
+                candidate_points = np.array(
+                    [tokenizable_candidate_point for _ in range(self.cfg.num_samples)]
+                )
+            elif self.restrict_candidate_points_to.shape[0] == self.cfg.num_samples:
+                candidate_points = np.array(
+                    [" ".join(x_i) for x_i in self.restrict_candidate_points_to]
+                )
+            else:
+                raise ValueError(
+                    "The restrict_candidate_points_to array must be of size "
+                    f"self.cfg.num_samples ({self.cfg.num_samples}) or of size 1. "
+                    f"Got {len(self.restrict_candidate_points_to[0])} instead."
+                )
+
+            return candidate_points
+        else:
+            return self.get_candidate_points_from_history()
+
     def get_candidate_points_from_history(self) -> np.ndarray:
         """
         Returns the current best population (whose size is specified in the
@@ -261,7 +294,7 @@ class LaMBO2(AbstractSolver):
         )
 
         # Builds the acquisition function
-        candidate_points = self.get_candidate_points_from_history()
+        candidate_points = self.get_candidate_points()
         acq_fn_runtime_kwargs = hydra.utils.call(
             self.cfg.guidance_objective.runtime_kwargs,
             model=model,
