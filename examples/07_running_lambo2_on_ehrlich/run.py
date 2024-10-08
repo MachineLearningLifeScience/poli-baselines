@@ -1,18 +1,18 @@
 import sys
 from pathlib import Path
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import torch
-
 from poli.objective_repository import EhrlichProblemFactory
+
 from poli_baselines.solvers.bayesian_optimization.lambo2 import LaMBO2
 from poli_baselines.solvers.simple.genetic_algorithm import FixedLengthGeneticAlgorithm
 
 THIS_DIR = Path(__file__).resolve().parent
 sys.path.append(str(THIS_DIR))
 
-from simple_observer import SimpleObserver, plot_best_y
+from simple_observer import SimpleObserver, plot_best_y  # noqa: E402
 
 
 def run_with_default_hyperparameters():
@@ -21,11 +21,13 @@ def run_with_default_hyperparameters():
         motif_length=4,
         n_motifs=2,
         quantization=4,
-        return_value_on_unfeasible=-1.0
+        return_value_on_unfeasible=-1.0,
     )
     black_box = problem.black_box
     x0 = problem.x0
-    random_seqs = np.array([list(black_box._sample_random_sequence()) for _ in range(127)])
+    random_seqs = np.array(
+        [list(black_box._sample_random_sequence()) for _ in range(127)]
+    )
     x0 = np.concatenate([problem.x0, random_seqs], axis=0)
     y0 = black_box(x0)
 
@@ -40,18 +42,14 @@ def run_with_default_hyperparameters():
     observer.y_s.append(y0)
 
     presolver = FixedLengthGeneticAlgorithm(
-        black_box=black_box,
-        x0=x0,
-        y0=y0,
-        population_size=128,
-        prob_of_mutation=0.4
+        black_box=black_box, x0=x0, y0=y0, population_size=128, prob_of_mutation=0.4
     )
     presolver.solve(max_iter=1)
     presolver_x = np.array(presolver.history["x"])
     presolver_x = presolver_x.reshape(presolver_x.shape[0], -1)
 
     # import pdb; pdb.set_trace()
-    torch.set_float32_matmul_precision('medium')
+    torch.set_float32_matmul_precision("medium")
     lambo2 = LaMBO2(
         black_box=black_box,
         x0=presolver_x,  # inconsistent API
