@@ -12,8 +12,8 @@ if __name__ == "__main__":
     batch_size = 10
     max_iterations = 100
 
-    problem_factory = AlohaProblemFactory()
-    f_aloha, x0, y0 = problem_factory.create()
+    problem = AlohaProblemFactory().create()
+    f_aloha = problem.black_box
 
     f = MultiObjectiveBlackBox(
         info=f_aloha.info,

@@ -30,13 +30,14 @@ if __name__ == "__main__":
     wildtype_pdb_paths = (THIS_DIR / "pdbs").glob("**/*_Repair.pdb")
     wildtype_pdb_paths = list(wildtype_pdb_paths)
 
-    problem_factory = FoldXStabilityAndSASAProblemFactory()
-
-    f, x0, y0 = problem_factory.create(
+    problem = FoldXStabilityAndSASAProblemFactory().create(
         wildtype_pdb_path=wildtype_pdb_paths,
         parallelize=True,
         num_workers=6,
     )
+    f = problem.black_box
+    x0 = problem.x0
+    y0 = f(x0)
 
     solver = DiscreteNSGAII(
         black_box=f,

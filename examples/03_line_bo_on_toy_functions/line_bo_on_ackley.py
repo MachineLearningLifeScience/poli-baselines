@@ -17,11 +17,12 @@ from poli_baselines.solvers import LineBO
 warnings.filterwarnings("ignore", module="botorch")
 
 if __name__ == "__main__":
-    problem_info, f_ackley, _, _, _ = objective_factory.create(
+    problem = objective_factory.create(
         name="toy_continuous_problem",
         function_name="ackley_function_01",
         n_dimensions=2,
     )
+    f_ackley = problem.black_box
 
     x0 = np.random.randn(2).reshape(1, -1).clip(-2.0, 2.0)
     y0 = f_ackley(x0)
