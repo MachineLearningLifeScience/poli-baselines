@@ -16,7 +16,7 @@ from botorch.acquisition import (
     AcquisitionFunction,
     LogExpectedImprovement,
 )
-from botorch.fit import fit_gpytorch_model
+from botorch.fit import fit_gpytorch_mll
 
 from gpytorch.means import Mean
 from gpytorch.kernels import Kernel
@@ -130,7 +130,7 @@ class VanillaBayesianOptimization(BaseBayesianOptimization):
             covar_module=self.kernel,
         )
         mll = ExactMarginalLogLikelihood(model_instance.likelihood, model_instance)
-        fit_gpytorch_model(mll)
+        fit_gpytorch_mll(mll)
         model_instance.eval()
 
         self.gp_model_of_objective = model_instance

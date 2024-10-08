@@ -28,13 +28,58 @@ dependencies = [
     "pymoo",
     "botorch",
     "cma",
-    "poli @ git+https://github.com/MachineLearningLifeScience/poli.git"
+    "poli @ git+https://github.com/MachineLearningLifeScience/poli.git",
 ]
 
 [project.optional-dependencies]
 dev = ["black", "tox", "pytest"]
 docs = ["sphinx", "furo"]
-lambo2 = ["pytorch-cortex"]
+alebo = [
+    "scikit-learn",
+    "ax-platform==0.4.0",
+]
+baxus = [
+    "baxus",
+]
+ax = [
+    "ax-platform",
+]
+saasbo = [
+    "ax-platform"
+]
+vanilla_bo = [
+    "ax-platform"
+]
+pr = [
+    "torch",
+    "gpytorch==1.11",
+    "botorch==0.7.0",
+    "scipy",
+    "jupyter",
+    "matplotlib",
+    "nevergrad",
+    "scikit-learn",
+    "statsmodels",
+    "xgboost",
+    "black",
+    "discrete_mixed_bo @ git+https://github.com/miguelgondu/bo_pr.git@main"
+]
+bounce = [
+    "torch==2.0.0",
+    "botorch>=0.8.2,<0.9.0",
+    "gin-config>=0.5.0,<0.6.0",
+    "pandas>=1.5.3,<1.6.0",
+    "xgboost>=1.7.5,<1.8.0",
+    "coverage>=7.2.5,<7.3.0",
+    "requests>=2.31.0,<2.32.0",
+    "black>=22.12.0,<22.13.0",
+    "memray>=1.6.0,<1.7.0",
+    "pytest>=7.3.1,<7.4.0",
+    "bounce @ git+https://github.com/miguelgondu/bounce.git@main"
+]
+
+
+
 
 [project.urls]
 Homepage = "https://github.com/MachineLearningLifeScience/poli-baselines"
