@@ -1,7 +1,6 @@
 from collections import defaultdict
 
 import numpy as np
-
 from pymoo.core.selection import Selection
 
 

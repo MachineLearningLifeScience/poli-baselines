@@ -1,7 +1,6 @@
 from typing import Iterable
 
 import numpy as np
-
 from pymoo.core.callback import Callback
 
 from poli_baselines.core.step_by_step_solver import StepByStepSolver

@@ -9,13 +9,12 @@ position in the input and randomly selecting
 a new value for that position.
 """
 
-from typing import Dict
 import random
 
 import numpy as np
+from poli.core.abstract_black_box import AbstractBlackBox
 
 from poli_baselines.core.step_by_step_solver import StepByStepSolver
-from poli.core.abstract_black_box import AbstractBlackBox
 
 
 class RandomMutation(StepByStepSolver):

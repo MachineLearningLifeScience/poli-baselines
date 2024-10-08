@@ -1,8 +1,8 @@
 """
 This module implements LaMBO2 by Gruver, Stanton et al. 2023.
 
-LaMBO2 is an improvement on LaMBO [Stanton et al. 2022], using 
-guided discrete diffusion and network ensembles instead of 
+LaMBO2 is an improvement on LaMBO [Stanton et al. 2022], using
+guided discrete diffusion and network ensembles instead of
 latent space optimization using Gaussian Processes.
 
 In this module, we import [`cortex`](https://github.com/prescient-design/cortex)
@@ -23,6 +23,7 @@ This optimizer only works for **protein-related** black boxes, like
 """
 
 from __future__ import annotations
+
 from pathlib import Path
 from uuid import uuid4
 
@@ -33,6 +34,7 @@ import torch
 from omegaconf import OmegaConf
 from poli.core.abstract_black_box import AbstractBlackBox
 from poli.core.util.seeding import seed_python_numpy_and_torch
+
 from poli_baselines.core.abstract_solver import AbstractSolver
 from poli_baselines.core.utils.mutations import add_random_mutations_to_reach_pop_size
 

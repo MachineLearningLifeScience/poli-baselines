@@ -78,9 +78,6 @@ bounce = [
     "bounce @ git+https://github.com/miguelgondu/bounce.git@main"
 ]
 
-
-
-
 [project.urls]
 Homepage = "https://github.com/MachineLearningLifeScience/poli-baselines"
 
@@ -90,3 +87,6 @@ markers = [
     "baxus: marks test that can be run in the BAxUS environment",
     "ax_solvers: marks test that can be run in the Ax environment",
 ]
+
+[tool.isort]
+profile = "black"

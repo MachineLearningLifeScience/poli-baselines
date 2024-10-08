@@ -5,7 +5,6 @@ from typing import Literal, Tuple
 
 import numpy as np
 import torch
-
 from botorch.acquisition import AcquisitionFunction
 
 

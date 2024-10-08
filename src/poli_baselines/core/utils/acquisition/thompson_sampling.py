@@ -3,12 +3,10 @@
 from typing import Tuple
 
 import torch
-
-from torch.quasirandom import SobolEngine
-
-from botorch.generation import MaxPosteriorSampling
 from botorch.acquisition import AcquisitionFunction
+from botorch.generation import MaxPosteriorSampling
 from botorch.models.model import Model
+from torch.quasirandom import SobolEngine
 
 
 class ThompsonSampling(AcquisitionFunction):

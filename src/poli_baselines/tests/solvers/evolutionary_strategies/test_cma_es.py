@@ -4,8 +4,9 @@ import numpy as np
 
 
 def test_running_cma_es():
-    from poli_baselines.solvers.evolutionary_strategies.cma_es import CMA_ES
     from poli.objective_repository import ToyContinuousBlackBox
+
+    from poli_baselines.solvers.evolutionary_strategies.cma_es import CMA_ES
 
     n_dimensions = 3
     population_size = 10
@@ -33,8 +34,9 @@ def test_running_cma_es():
 
 
 def test_running_cma_es_docs():
-    from poli_baselines.solvers.evolutionary_strategies.cma_es import CMA_ES
     from poli.objective_repository import ToyContinuousBlackBox
+
+    from poli_baselines.solvers.evolutionary_strategies.cma_es import CMA_ES
 
     n_dimensions = 3
     population_size = 10

@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-from typing import List
 import warnings
+from typing import List
 
 import numpy as np
-
+from baxus.baxus import BAxUS as OriginalBAxUS
+from baxus.benchmarks.benchmark_function import Benchmark
 from poli.core.abstract_black_box import AbstractBlackBox
 
 from poli_baselines.core.abstract_solver import AbstractSolver
-
-from baxus.benchmarks.benchmark_function import Benchmark
-from baxus.baxus import BAxUS as OriginalBAxUS
 
 
 class BAxUS(AbstractSolver):

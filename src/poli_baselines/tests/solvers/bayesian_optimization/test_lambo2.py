@@ -2,7 +2,6 @@ import importlib
 from pathlib import Path
 
 import pytest
-
 from poli.repository import EhrlichProblemFactory
 
 if importlib.util.find_spec("cortex") is None:

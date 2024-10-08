@@ -1,16 +1,16 @@
 import sys
 from pathlib import Path
 
-import numpy as np
 import matplotlib.pyplot as plt
-
+import numpy as np
 from poli.objective_repository import RaspProblemFactory
+
 from poli_baselines.solvers.simple.random_mutation import RandomMutation
 
 THIS_DIR = Path(__file__).resolve().parent
 sys.path.append(str(THIS_DIR))
 
-from simple_observer import SimpleObserver, plot_best_y
+from simple_observer import SimpleObserver, plot_best_y  # noqa: E402
 
 
 def run_with_default_hyperparameters():

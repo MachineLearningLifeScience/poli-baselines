@@ -18,11 +18,12 @@ References
 """
 
 from __future__ import annotations
+
 from typing import Tuple
-import numpy as np
-from poli.core.abstract_black_box import AbstractBlackBox
 
 import cma
+import numpy as np
+from poli.core.abstract_black_box import AbstractBlackBox
 
 from poli_baselines.core.step_by_step_solver import StepByStepSolver
 

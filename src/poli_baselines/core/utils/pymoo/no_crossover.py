@@ -1,11 +1,4 @@
-import numpy as np
-
 from pymoo.core.crossover import Crossover
-
-from poli_baselines.core.utils.pymoo.interface import (
-    _from_array_to_dict,
-    _from_dict_to_array,
-)
 
 
 class NoCrossover(Crossover):

@@ -1,8 +1,6 @@
 from __future__ import annotations
-from typing import Union
 
 import numpy as np
-
 from poli.core.abstract_black_box import AbstractBlackBox
 
 
