@@ -3,3 +3,4 @@ pytest
 pre-commit
 ruff
 isort
+tox
