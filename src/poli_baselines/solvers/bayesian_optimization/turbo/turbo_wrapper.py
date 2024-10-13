@@ -49,7 +49,7 @@ class Turbo(StepByStepSolver):
             The first row contains the lower bounds on x, the last row contains the upper bounds.
         """
         super().__init__(black_box, x0, y0)
-        assert x0.shape[0] > 1
+        # assert x0.shape[0] > 1
 
         if bounds is None:
             bounds = np.array([[x0.min() - 1.0, x0.max() + 1.0]] * x0.shape[1])

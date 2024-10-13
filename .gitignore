@@ -1,6 +1,8 @@
 # Development
 .vscode/
 .DS_Store
+oracle/
+tmp/
 
 # Python
 *.pyc
