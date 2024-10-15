@@ -65,13 +65,7 @@ class RandomMutation(StepByStepSolver):
         # TODO: this assumes that x has shape [1, L],
         # what happens with batches? So far, POLi is
         # implemented without batching in mind.
-        if len(best_x.shape) == 1:
-            # Then we assume it's a [1,] array with a single string
-            string_inputs = True
-            next_x = np.array([list("".join(best_x[0]))]).reshape(1, -1)
-        else:
-            string_inputs = False
-            next_x = best_x.copy().reshape(1, -1)
+        next_x = best_x.copy().reshape(1, -1)
 
         for _ in range(self.n_mutations):
             pos = np.random.randint(0, len(next_x.flatten()))
@@ -90,9 +84,6 @@ class RandomMutation(StepByStepSolver):
 
             next_x[0][pos] = mutant
 
-        if string_inputs:
-            return np.array(["".join(next_x[0])])
-        else:
             return next_x
 
     def next_candidate(self) -> np.ndarray:
