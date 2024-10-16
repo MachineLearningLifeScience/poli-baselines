@@ -40,3 +40,9 @@ class AbstractSolver:
             None, which means that no seed is set.
         """
         raise NotImplementedError
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(black_box={self.black_box}, x0={self.x0}, y0={self.y0})"
+
+    def __str__(self) -> str:
+        return self.__repr__()
