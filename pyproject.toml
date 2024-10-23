@@ -62,7 +62,7 @@ pr = [
     "statsmodels",
     "xgboost",
     "black",
-    "discrete_mixed_bo @ git+https://github.com/miguelgondu/bo_pr.git@main"
+    "bo_pr@git+https://github.com/miguelgondu/bo_pr.git@main"
 ]
 bounce = [
     "torch==2.0.0",
