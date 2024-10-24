@@ -222,7 +222,7 @@ def generate_batch(
         mask[ind, torch.randint(0, dim - 1, size=(len(ind),), device=device)] = 1
 
         # Create candidate points from the perturbations and the mask
-        X_cand = x_center.expand(n_candidates, dim).clone().to(device)
+        X_cand = x_center.expand(n_candidates, dim).clone().to(device).to(DEFAULT_DTYPE)
         X_cand[mask] = pert[mask]
 
         # Sample on the candidate points
