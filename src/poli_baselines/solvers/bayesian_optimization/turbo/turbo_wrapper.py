@@ -21,7 +21,7 @@ from torch.quasirandom import SobolEngine
 from poli_baselines.core.step_by_step_solver import StepByStepSolver
 
 DEFAULT_DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-DEFAULT_DTYPE = torch.double
+DEFAULT_DTYPE = torch.get_default_dtype()
 
 
 NUM_RESTARTS = 10
