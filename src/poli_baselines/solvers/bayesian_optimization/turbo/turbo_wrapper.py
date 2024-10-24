@@ -72,8 +72,12 @@ class Turbo(StepByStepSolver):
 
         self.device = device
         self.to_turbo, self.from_turbo = make_transforms()
-        self.X_turbo = torch.tensor(self.to_turbo(x0)).to(self.device)
-        self.Y_turbo = torch.tensor(y0).to(self.device)
+        self.X_turbo = (
+            torch.tensor(self.to_turbo(x0))
+            .to(self.device)
+            .to(torch.get_default_dtype())
+        )
+        self.Y_turbo = torch.tensor(y0).to(self.device).to(torch.get_default_dtype())
         self.batch_size = 1
         dim = x0.shape[1]
         self.state = TurboState(dim, batch_size=self.batch_size)
