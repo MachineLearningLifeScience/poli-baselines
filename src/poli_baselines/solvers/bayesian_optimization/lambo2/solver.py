@@ -278,8 +278,6 @@ class LaMBO2(AbstractSolver):
 
     def get_candidate_points(self):
         if self.restrict_candidate_points_to is not None:
-            # TODO: make sure the array is of self.cfg.num_samples size.
-            # TODO: THey need to be in the "A A A A" format that lambo expects.
             # Let's assume that the user passes a wildtype as
             # np.array(["AAAAA"]) or np.array(["A", "A", "A", ...]).
             assert len(self.restrict_candidate_points_to.shape) == 1
@@ -316,8 +314,6 @@ class LaMBO2(AbstractSolver):
         sorted_y0_idxs = np.argsort(y.flatten())[::-1]
         candidate_points = x[sorted_y0_idxs[: min(len(x), 2 * self.cfg.num_samples)]]
         candidate_scores = y[sorted_y0_idxs[: min(len(x), 2 * self.cfg.num_samples)]]
-        # candidate_points = x[sorted_y0_idxs[: max(len(x) // 2, self.cfg.num_samples)]]
-        # candidate_scores = y[sorted_y0_idxs[: max(len(x) // 2, self.cfg.num_samples)]]
 
         indices = farthest_first_traversal(
             library=candidate_points,
