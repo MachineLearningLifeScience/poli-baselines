@@ -28,7 +28,7 @@ dependencies = [
     "pymoo",
     "botorch",
     "cma",
-    "poli @ git+https://github.com/MachineLearningLifeScience/poli.git",
+    "poli-core @ git+https://github.com/MachineLearningLifeScience/poli.git",
 ]
 
 [project.optional-dependencies]
