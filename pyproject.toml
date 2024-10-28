@@ -78,7 +78,7 @@ bounce = [
     "pytest>=7.3.1,<7.4.0",
     "bounce @ git+https://github.com/miguelgondu/bounce.git@main"
 ]
-lambo2 = ["pytorch-cortex", "beignet", "pydantic<2.0"]
+lambo2 = ["pytorch-cortex", "beignet"]
 
 [project.urls]
 Homepage = "https://github.com/MachineLearningLifeScience/poli-baselines"
