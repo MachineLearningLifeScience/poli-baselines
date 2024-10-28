@@ -19,6 +19,8 @@ data_dir: ./.cache
 wandb_mode: offline
 random_seed: 42
 num_steps: 1
+num_mutations_per_step: 2
+max_sequence_length: 256
 num_samples: ${batch_size}
 allow_length_change: false
 accelerator: cpu
