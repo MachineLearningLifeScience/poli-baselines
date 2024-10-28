@@ -27,12 +27,14 @@ class RandomMutation(StepByStepSolver):
         top_k: int = 1,
         batch_size: int = 1,
         greedy: bool = True,
+        alphabet: list[str] | None = None,
     ):
         super().__init__(black_box, x0, y0)
-        self.alphabet = black_box.info.alphabet
+        self.alphabet = black_box.info.alphabet if alphabet is None else alphabet
+        self.alphabet_without_empty = [s for s in self.alphabet if s != ""]
         self.string_to_idx = {symbol: i for i, symbol in enumerate(self.alphabet)}
         self.alphabet_size = len(self.alphabet)
-        self.idx_to_string = {v: k for k, v in self.string_to_idx.items()}
+        self.idx_to_string = {v: k for k, v in self.string_to_idx.items() if k != ""}
         self.n_mutations = n_mutations
         self.top_k = top_k
         self.greedy = greedy
@@ -73,7 +75,7 @@ class RandomMutation(StepByStepSolver):
             if next_x.dtype.kind in ("i", "f"):
                 mutant = np.random.randint(0, self.alphabet_size)
             elif next_x.dtype.kind in ("U", "S"):
-                mutant = np.random.choice(list(self.string_to_idx.keys()))
+                mutant = np.random.choice(self.alphabet_without_empty)
             else:
                 raise ValueError(
                     f"Unknown dtype for the input: {next_x.dtype}. "
@@ -81,18 +83,6 @@ class RandomMutation(StepByStepSolver):
                 )
 
             next_x[0][pos] = mutant
-
-            # if next_x.dtype.kind in ("i", "f"):
-            #     mutant = np.random.randint(0, self.alphabet_size)
-            # elif next_x.dtype.kind in ("U", "S"):
-            #     mutant = np.random.choice(list(self.string_to_idx.keys()))
-            # else:
-            #     raise ValueError(
-            #         f"Unknown dtype for the input: {next_x.dtype}. "
-            #         "Only integer, float and unicode dtypes are supported."
-            #     )
-
-            # next_x[0][pos] = mutant
 
         return next_x
 

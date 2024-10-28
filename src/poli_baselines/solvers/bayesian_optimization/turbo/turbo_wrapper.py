@@ -21,7 +21,7 @@ from torch.quasirandom import SobolEngine
 from poli_baselines.core.step_by_step_solver import StepByStepSolver
 
 DEFAULT_DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-DEFAULT_DTYPE = torch.double
+DEFAULT_DTYPE = torch.get_default_dtype()
 
 
 NUM_RESTARTS = 10
@@ -49,7 +49,7 @@ class Turbo(StepByStepSolver):
             The first row contains the lower bounds on x, the last row contains the upper bounds.
         """
         super().__init__(black_box, x0, y0)
-        assert x0.shape[0] > 1
+        # assert x0.shape[0] > 1
 
         if bounds is None:
             bounds = np.array([[x0.min() - 1.0, x0.max() + 1.0]] * x0.shape[1])
@@ -72,8 +72,12 @@ class Turbo(StepByStepSolver):
 
         self.device = device
         self.to_turbo, self.from_turbo = make_transforms()
-        self.X_turbo = torch.tensor(self.to_turbo(x0)).to(self.device)
-        self.Y_turbo = torch.tensor(y0).to(self.device)
+        self.X_turbo = (
+            torch.tensor(self.to_turbo(x0))
+            .to(self.device)
+            .to(torch.get_default_dtype())
+        )
+        self.Y_turbo = torch.tensor(y0).to(self.device).to(torch.get_default_dtype())
         self.batch_size = 1
         dim = x0.shape[1]
         self.state = TurboState(dim, batch_size=self.batch_size)
@@ -218,7 +222,7 @@ def generate_batch(
         mask[ind, torch.randint(0, dim - 1, size=(len(ind),), device=device)] = 1
 
         # Create candidate points from the perturbations and the mask
-        X_cand = x_center.expand(n_candidates, dim).clone().to(device)
+        X_cand = x_center.expand(n_candidates, dim).clone().to(device).to(DEFAULT_DTYPE)
         X_cand[mask] = pert[mask]
 
         # Sample on the candidate points

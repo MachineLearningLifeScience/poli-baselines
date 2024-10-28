@@ -1,4 +1,4 @@
-protein_property:
+protein_constraint:
   _target_: cortex.model.branch.Conv1dBranch
   out_dim: 8
   channel_dim: ${feature_dim}

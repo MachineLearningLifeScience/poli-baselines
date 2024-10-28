@@ -540,7 +540,7 @@ def run_one_replication_on_poli_black_box(
             gc.collect()
 
         # Get the new observations and update the data.
-        new_y = eval_problem(candidates, base_function=base_function)
+        new_y = eval_problem(candidates, base_function=base_function).to(**tkwargs)
 
         if use_trust_region:
             old_length = trbo_state.length

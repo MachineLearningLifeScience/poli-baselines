@@ -106,6 +106,14 @@ class CMA_ES(StepByStepSolver):
 
         self._internal_cma = cma.CMAEvolutionStrategy(initial_mean, initial_sigma, opts)
 
+        # If x0.shape[0] is less than the population_size,
+        # we need to pad x0 and y0 to match the population size.
+        if x0.shape[0] < population_size:
+            remaining_values = population_size - x0.shape[0]
+            random_values = np.random.randn(remaining_values, x0.shape[1])
+            x0 = np.vstack([x0, random_values])
+            y0 = np.vstack([y0, black_box(random_values)])
+
         # Include the x0 and y0
         _ = self._internal_cma.ask()
         self._internal_cma.tell(x0, -y0)
