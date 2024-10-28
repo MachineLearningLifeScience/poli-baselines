@@ -2,19 +2,14 @@ import sys
 from pathlib import Path
 
 import click
-
-import numpy as np
 import matplotlib.pyplot as plt
-
+import numpy as np
 from poli.objective_repository import FoldXStabilityProblemFactory
-from poli_baselines.solvers.simple.random_mutation import RandomMutation
 
 THIS_DIR = Path(__file__).resolve().parent
 sys.path.append(str(THIS_DIR))
 
-from simple_observer import SimpleObserverForMads, plot_best_y
-
-# from IPython import embed
+from simple_observer import SimpleObserverForMads, plot_best_y  # noqa: E402
 
 
 @click.command()
