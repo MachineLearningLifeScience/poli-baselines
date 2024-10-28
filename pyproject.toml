@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "poli-baselines"
-version = "0.0.1"
+version = "1.0.0"
 description = "poli-baselines, a library of discrete objective optimizers"
 readme = "README.md"
 authors = [{name="Miguel González-Duque", email="miguelgondu@gmail.com"}]
@@ -30,6 +30,7 @@ dependencies = [
     "cma",
     "poli-core @ git+https://github.com/MachineLearningLifeScience/poli.git",
 ]
+requires-python = ">=3.10"
 
 [project.optional-dependencies]
 dev = ["black", "tox", "pytest"]
@@ -62,7 +63,7 @@ pr = [
     "statsmodels",
     "xgboost",
     "black",
-    "bo_pr@git+https://github.com/miguelgondu/bo_pr.git@main"
+    "bo_pr @ git+https://github.com/miguelgondu/bo_pr.git@main"
 ]
 bounce = [
     "torch==2.0.0",
@@ -91,3 +92,51 @@ markers = [
 
 [tool.isort]
 profile = "black"
+
+[tool.bumpversion]
+current_version = "1.0.0"
+parse = """(?x)
+    (?P<major>0|[1-9]\\d*)\\.
+    (?P<minor>0|[1-9]\\d*)\\.
+    (?P<patch>0|[1-9]\\d*)
+    (?:
+        .                             # dash separator for pre-release section
+        (?P<pre_l>[a-zA-Z-]+)         # pre-release label
+        (?P<pre_n>0|[1-9]\\d*)        # pre-release version number
+    )?                                # pre-release section is optional
+"""
+serialize = [
+    "{major}.{minor}.{patch}.{pre_l}{pre_n}",
+    "{major}.{minor}.{patch}",
+]
+search = 'current_version = "{current_version}"'
+replace = 'current_version = "{new_version}"'
+regex = false
+ignore_missing_version = false
+ignore_missing_files = false
+tag = false
+sign_tags = false
+tag_name = "v{new_version}"
+tag_message = "Bump version: {current_version} → {new_version}"
+allow_dirty = false
+commit = false
+message = "Bump version: {current_version} → {new_version}"
+commit_args = ""
+
+[tool.bumpversion.parts.pre_l]
+values = ["dev"]
+
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"
+search = 'version = "{current_version}"'
+replace = 'version = "{new_version}"'
+
+[[tool.bumpversion.files]]
+filename = "src/poli_baselines/__init__.py"
+search = '__version__ = "{current_version}"'
+replace = '__version__ = "{new_version}"'
+
+[[tool.bumpversion.files]]
+filename = "setup.cfg"
+search = 'version = {current_version}'
+replace = 'version = {new_version}'
