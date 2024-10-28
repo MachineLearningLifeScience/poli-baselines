@@ -137,5 +137,5 @@ replace = '__version__ = "{new_version}"'
 
 [[tool.bumpversion.files]]
 filename = "setup.cfg"
-search = 'version = "{current_version}"'
-replace = 'version = "{new_version}"'
+search = 'version = {current_version}'
+replace = 'version = {new_version}'
