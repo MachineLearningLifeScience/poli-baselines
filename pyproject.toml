@@ -28,7 +28,7 @@ dependencies = [
     "pymoo",
     "botorch",
     "cma",
-    "poli-core@git+https://github.com/MachineLearningLifeScience/poli.git",
+    "poli-core @ git+https://github.com/MachineLearningLifeScience/poli.git",
 ]
 requires-python = ">=3.10"
 
@@ -63,7 +63,7 @@ pr = [
     "statsmodels",
     "xgboost",
     "black",
-    "bo_pr@git+https://github.com/miguelgondu/bo_pr.git@main"
+    "bo_pr @ git+https://github.com/miguelgondu/bo_pr.git@main"
 ]
 bounce = [
     "torch==2.0.0",
@@ -76,9 +76,9 @@ bounce = [
     "black>=22.12.0,<22.13.0",
     "memray>=1.6.0,<1.7.0",
     "pytest>=7.3.1,<7.4.0",
-    "bounce@git+https://github.com/miguelgondu/bounce.git@main"
+    "bounce @ git+https://github.com/miguelgondu/bounce.git@main"
 ]
-lambo2 = ["pytorch-cortex", "beignet", "fastapi>=0.88"]
+lambo2 = ["pytorch-cortex", "beignet"]
 
 [project.urls]
 Homepage = "https://github.com/MachineLearningLifeScience/poli-baselines"
