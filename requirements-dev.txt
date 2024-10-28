@@ -4,3 +4,4 @@ pre-commit
 ruff
 isort
 tox
+bump-my-version
