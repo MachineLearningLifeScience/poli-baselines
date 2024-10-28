@@ -40,8 +40,6 @@ from poli.core.util.seeding import seed_python_numpy_and_torch
 from poli_baselines.core.abstract_solver import AbstractSolver
 from poli_baselines.core.utils.mutations import add_random_mutations_to_reach_pop_size
 
-# from IPython import embed
-
 THIS_DIR = Path(__file__).parent.resolve()
 DEFAULT_CONFIG_DIR = THIS_DIR / "hydra_configs"
 
