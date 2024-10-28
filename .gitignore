@@ -11,8 +11,10 @@ __pycache__/
 
 .tox/
 build/
+oracle/
 
 examples/05_optimizing_qed_using_latent_space_bo/VAESelfies_TINY-CID-SELFIES-20_latent_dim_2.pt
+examples/06_running_lambo2_on_rasp/directed_evolution_rasp*.npz
 examples/07_optimizing_logp_on_chembl/VAE_CHEMBL.pt
 examples/08_pymoo_nsga_ii_on_foldx/history.json
 examples/09_replicating_nsga_ii_of_lambo_by_hand/pdbs
