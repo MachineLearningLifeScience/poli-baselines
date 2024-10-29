@@ -10,7 +10,17 @@ from typing import Literal
 
 import numpy as np
 import torch
-from bounce.bounce import Bounce
+
+try:
+    from bounce.bounce import Bounce
+except ImportError as e:
+    raise ImportError(
+        "You are trying to use the Bounce solver. Install "
+        "the relevant optional dependencies with [bounce]. \n"
+        "You can do this by running: \n"
+        "pip install 'poli-baselines[bounce] @ git+https://github.com/MachineLearningLifeScience/poli-baselines.git'"
+    ) from e
+
 from poli.core.abstract_black_box import AbstractBlackBox
 from poli.core.util.seeding import seed_python_numpy_and_torch
 
