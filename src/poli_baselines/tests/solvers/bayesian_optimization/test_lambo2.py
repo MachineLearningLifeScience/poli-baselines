@@ -1,9 +1,11 @@
+import importlib.util
 from pathlib import Path
 
+import pytest
 from poli.repository import EhrlichHoloProblemFactory
 
-# if importlib.util.find_spec("cortex") is None:
-#     pytest.skip("Cortex is not installed.", allow_module_level=True)
+if importlib.util.find_spec("cortex") is None:
+    pytest.skip("Cortex is not installed.", allow_module_level=True)
 
 TEST_ASSETS = Path(__file__).parent.parent.parent / "test_files"
 
