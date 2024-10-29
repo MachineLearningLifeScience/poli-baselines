@@ -11,9 +11,18 @@ import torch
 from poli.core.abstract_black_box import AbstractBlackBox
 
 from poli_baselines.core.abstract_solver import AbstractSolver
-from poli_baselines.core.utils.bo_pr.run_one_replication import (
-    run_one_replication_on_poli_black_box,
-)
+
+try:
+    from poli_baselines.core.utils.bo_pr.run_one_replication import (
+        run_one_replication_on_poli_black_box,
+    )
+except ImportError as e:
+    raise ImportError(
+        "You are trying to use the Probabilistic Reparametrization solver. Install "
+        "the relevant optional dependencies with [pr]. \n"
+        "You can do this by running: \n"
+        "pip install 'poli-baselines[pr] @ git+https://github.com/MachineLearningLifeScience/poli-baselines.git'"
+    ) from e
 
 
 class ProbabilisticReparametrizationSolver(AbstractSolver):

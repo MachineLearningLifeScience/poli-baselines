@@ -27,13 +27,22 @@ from __future__ import annotations
 from pathlib import Path
 from uuid import uuid4
 
-import edlib
-import hydra
-import lightning as L
+try:
+    import edlib
+    import hydra
+    import lightning as L
+    from beignet import farthest_first_traversal
+    from omegaconf import OmegaConf
+except ImportError as e:
+    raise ImportError(
+        "You are trying to use the Lambo2 solver. Install "
+        "the relevant optional dependencies with [lambo2].\n"
+        "You can do this by running e.g. \n"
+        "pip install 'poli-baselines[lambo2] @ git+https://github.com/MachineLearningLifeScience/poli-baselines.git'"
+    ) from e
+
 import numpy as np
 import torch
-from beignet import farthest_first_traversal
-from omegaconf import OmegaConf
 from poli.core.abstract_black_box import AbstractBlackBox
 from poli.core.util.seeding import seed_python_numpy_and_torch
 

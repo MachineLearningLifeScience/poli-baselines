@@ -4,8 +4,17 @@ import warnings
 from typing import List
 
 import numpy as np
-from baxus.baxus import BAxUS as OriginalBAxUS
-from baxus.benchmarks.benchmark_function import Benchmark
+
+try:
+    from baxus.baxus import BAxUS as OriginalBAxUS
+    from baxus.benchmarks.benchmark_function import Benchmark
+except ImportError as e:
+    raise ImportError(
+        "You are trying to use the BAxUS solver. Install "
+        "the relevant optional dependencies with [baxus]. \n"
+        "You can do this by running: \n"
+        "pip install 'poli-baselines[baxus] @ git+https://github.com/MachineLearningLifeScience/poli-baselines.git'"
+    ) from e
 from poli.core.abstract_black_box import AbstractBlackBox
 
 from poli_baselines.core.abstract_solver import AbstractSolver

@@ -12,7 +12,9 @@ try:
 except ImportError as e:
     raise ImportError(
         "You are trying to use a solver that requires Ax. Install "
-        "the relevant optional dependencies with [ax] or [alebo]."
+        "the relevant optional dependencies with [ax] or [alebo].\n"
+        "You can do this by running e.g. \n"
+        "pip install 'poli-baselines[ax] @ git+https://github.com/MachineLearningLifeScience/poli-baselines.git'"
     ) from e
 
 from numpy import ndarray
