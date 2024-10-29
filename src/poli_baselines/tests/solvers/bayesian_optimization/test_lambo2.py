@@ -1,11 +1,9 @@
-import importlib
 from pathlib import Path
 
-import pytest
-from poli.repository import EhrlichProblemFactory
+from poli.repository import EhrlichHoloProblemFactory
 
-if importlib.util.find_spec("cortex") is None:
-    pytest.skip("Cortex is not installed.", allow_module_level=True)
+# if importlib.util.find_spec("cortex") is None:
+#     pytest.skip("Cortex is not installed.", allow_module_level=True)
 
 TEST_ASSETS = Path(__file__).parent.parent.parent / "test_files"
 
@@ -13,7 +11,7 @@ TEST_ASSETS = Path(__file__).parent.parent.parent / "test_files"
 def test_lambo2_runs_on_ehrlich():
     from poli_baselines.solvers.bayesian_optimization.lambo2 import LaMBO2
 
-    problem = EhrlichProblemFactory().create(
+    problem = EhrlichHoloProblemFactory().create(
         sequence_length=10,
         n_motifs=2,
         motif_length=4,

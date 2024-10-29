@@ -25,7 +25,14 @@ def add_random_mutations_to_reach_pop_size(
             f"Expected x to have less elements than the population size. x.shape: {x.shape}, pop_size: {population_size}"
         )
 
-    x_as_1d_array_of_strings = np.array(["".join(x[i, :]) for i in range(b)])
+    if len(x.shape) == 1:
+        # Then the input as an array [b,] of strings
+        x_as_1d_array_of_strings = x
+    elif len(x.shape) == 2:
+        # Then the input as an array [b, L] of strings
+        x_as_1d_array_of_strings = np.array(["".join(x[i, :]) for i in range(b)])
+    else:
+        raise ValueError(f"Expected x to have shape [b,] or [b, L], but got {x.shape}.")
 
     more_mutants = []
     for _ in range(population_size - b):
