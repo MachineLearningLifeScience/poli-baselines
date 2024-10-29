@@ -5,8 +5,16 @@ from typing import Tuple
 
 import numpy as np
 import torch
-from ax.modelbridge.generation_strategy import GenerationStrategy
-from ax.service.ax_client import AxClient, ObjectiveProperties
+
+try:
+    from ax.modelbridge.generation_strategy import GenerationStrategy
+    from ax.service.ax_client import AxClient, ObjectiveProperties
+except ImportError as e:
+    raise ImportError(
+        "You are trying to use a solver that requires Ax. Install "
+        "the relevant optional dependencies with [ax] or [alebo]."
+    ) from e
+
 from numpy import ndarray
 from poli.core.abstract_black_box import AbstractBlackBox
 from poli.objective_repository import ToyContinuousBlackBox
