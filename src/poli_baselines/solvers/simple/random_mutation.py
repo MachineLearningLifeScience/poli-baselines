@@ -29,6 +29,10 @@ class RandomMutation(StepByStepSolver):
         greedy: bool = True,
         alphabet: list[str] | None = None,
     ):
+        if x0.ndim == 1:
+            x0_ = [list(x_i) for x_i in x0]
+            x0 = np.array(x0_)
+
         super().__init__(black_box, x0, y0)
         self.alphabet = black_box.info.alphabet if alphabet is None else alphabet
         self.alphabet_without_empty = [s for s in self.alphabet if s != ""]

@@ -43,5 +43,28 @@ def test_random_mutation_in_docs():
     print(solver.get_best_solution())
 
 
+def test_random_mutation_on_ehrlich():
+    from poli.repository import EhrlichHoloProblemFactory
+
+    from poli_baselines.solvers.simple.random_mutation import RandomMutation
+
+    problem = EhrlichHoloProblemFactory().create(
+        sequence_length=15,
+        n_motifs=2,
+        motif_length=7,
+    )
+    f, x0 = problem.black_box, problem.x0
+
+    solver = RandomMutation(
+        black_box=f,
+        x0=x0,
+        y0=f(x0),
+        greedy=True,  # Directed Evolution.
+    )
+
+    solver.solve(100)
+
+
 if __name__ == "__main__":
-    test_random_mutation_in_docs()
+    # test_random_mutation_in_docs()
+    test_random_mutation_on_ehrlich()
