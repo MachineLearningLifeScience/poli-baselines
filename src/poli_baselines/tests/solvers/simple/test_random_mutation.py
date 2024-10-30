@@ -63,8 +63,3 @@ def test_random_mutation_on_ehrlich():
     )
 
     solver.solve(100)
-
-
-if __name__ == "__main__":
-    # test_random_mutation_in_docs()
-    test_random_mutation_on_ehrlich()
