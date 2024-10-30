@@ -41,7 +41,3 @@ def test_random_mutation_in_docs():
     solver.solve(max_iter=100)
 
     print(solver.get_best_solution())
-
-
-if __name__ == "__main__":
-    test_random_mutation_in_docs()

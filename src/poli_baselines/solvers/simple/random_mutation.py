@@ -10,6 +10,8 @@ a new value for that position.
 """
 
 import random
+import warnings
+from typing import Callable
 
 import numpy as np
 from poli.core.abstract_black_box import AbstractBlackBox
@@ -28,7 +30,23 @@ class RandomMutation(StepByStepSolver):
         batch_size: int = 1,
         greedy: bool = True,
         alphabet: list[str] | None = None,
+        tokenizer: Callable[[str], list[str]] | None = None,
     ):
+        if x0.ndim == 1:
+            if tokenizer is None:
+                warnings.warn(
+                    "In the initialization of the RandomMutation solver: \n"
+                    "The input is a 1D array, but no tokenizer was provided.\n"
+                    "Assuming that the input is a string that can be tokenized\n"
+                    "character by character using list(x_i)."
+                )
+
+                def tokenizer(x):
+                    return list(x)
+
+            x0_ = [tokenizer(x_i) for x_i in x0]
+            x0 = np.array(x0_)
+
         super().__init__(black_box, x0, y0)
         self.alphabet = black_box.info.alphabet if alphabet is None else alphabet
         self.alphabet_without_empty = [s for s in self.alphabet if s != ""]
