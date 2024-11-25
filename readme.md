@@ -18,18 +18,10 @@ conda create -n poli-baselines python=3.10
 conda activate poli-baselines
 ```
 
-After which, you can download this repository and install it locally
+After which, you can install this package by running
 
 ```bash
-git clone git@github.com:MachineLearningLifeScience/poli-baselines.git
-cd ./poli-baselines
-```
-
-Now install the requirements, as well as the library:
-
-```bash
-pip install -r requirements.txt
-pip install -e .
+pip install "poli-baselines @ git+https://github.com/MachineLearningLifeScience/poli-baselines.git@main"
 ```
 
 After this, you could test you installation by running (inside your `poli-baselines` environment):
@@ -60,7 +52,6 @@ These can be found [in the folder of each solver](src/poli_baselines/solvers).
 | **ALEBO** |  [![ALEBO (py3.10 in conda)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-alebo.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-alebo.yml) | [Lentham et al. 2020](https://proceedings.neurips.cc/paper/2020/file/10fb6cfa4c990d2bad5ddef4f70e8ba2-Paper.pdf) |
 | **LaMBO2** | [![LaMBO2 (py3.10 in conda)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-lambo2.yml/badge.svg)](https://github.com/MachineLearningLifeScience/poli-baselines/actions/workflows/python-tox-testing-lambo2.yml) | [Gruver and Stanton et al. 2020](https://arxiv.org/abs/2305.20009) |
 
-In the case of Probabilistic Reparametrization, we rely on a slightly modified version of the `run_one_replication.py` script from [the original repository](https://github.com/facebookresearch/bo_pr).
 
 ## Your first optimization using `poli-baselines`
 
