@@ -2,6 +2,7 @@
 Tests for the BOSS implementation
 
 """
+
 import json
 import warnings
 from pathlib import Path
@@ -27,6 +28,7 @@ def load_sequence_length() -> int:
 
     return metadata["max_sequence_length"]
 
+
 @pytest.mark.slow()
 def test_boss_runs():
     """
@@ -40,9 +42,7 @@ def test_boss_runs():
     alphabet = load_alphabet()
     sequence_length = load_sequence_length()
 
-    problem = objective_factory.create(
-        name="rdkit_qed", string_representation="SMILES"
-    )
+    problem = objective_factory.create(name="rdkit_qed", string_representation="SMILES")
     black_box = problem.black_box
     x0 = problem.x0
     y0 = black_box(x0)

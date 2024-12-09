@@ -62,10 +62,14 @@ class BossSolver(AbstractSolver):
         self.objective = lambda x: -self.black_box(x)  # BOSS minimizes
 
         # see SMILES examples
-        token_space = np.array([" ".join(list(ss)) for ss in self.x0]).reshape(-1,1)
+        token_space = np.array([" ".join(list(ss)) for ss in self.x0]).reshape(-1, 1)
 
-        self.search_space = ParameterSpace([CandidateStringParameter("string", token_space)])  # x0 goes here with correct wrapper
-        self.model = SSK_model(self.search_space, self.x0, self.y0, max_subsequence_length=5, n_restarts=1)
+        self.search_space = ParameterSpace(
+            [CandidateStringParameter("string", token_space)]
+        )  # x0 goes here with correct wrapper
+        self.model = SSK_model(
+            self.search_space, self.x0, self.y0, max_subsequence_length=5, n_restarts=1
+        )
         self.acquisition = ExpectedImprovement(self.model)
         self.optimizer = RandomSearchAcquisitionOptimizer(self.search_space, 100)
 
@@ -84,7 +88,7 @@ class BossSolver(AbstractSolver):
         # Creating a gitignore file inside that dir
         with open(results_dir / ".gitignore", "w") as fp:
             fp.write("*\n!.gitignore")
-        
+
     def solve(
         self,
         max_iter: int = 100,
@@ -114,4 +118,3 @@ class BossSolver(AbstractSolver):
             dtype=self.dtype,
         )
         self.boss.bo_loop_ssk.run_loop(self.objective, stopping_condition)
-
