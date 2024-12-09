@@ -1,4 +1,4 @@
-"""Tests for our bridge with Probabilistic Reparametrization [1]
+"""Tests for our bridge with Bounce
 
 TODO: add reference
 """
@@ -34,7 +34,7 @@ def test_bounce_runs():
     """Tests that Bounce instantiates and runs."""
     from poli import objective_factory
 
-    pytest.importorskip("bounce")  # We check if we have PR installed
+    pytest.importorskip("bounce")  # We check if we have Bounce installed
     from poli_baselines.solvers.bayesian_optimization.bounce import BounceSolver
 
     alphabet = load_alphabet()
