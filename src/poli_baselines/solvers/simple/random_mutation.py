@@ -9,6 +9,8 @@ position in the input and randomly selecting
 a new value for that position.
 """
 
+from __future__ import annotations
+
 import random
 import warnings
 from typing import Callable
