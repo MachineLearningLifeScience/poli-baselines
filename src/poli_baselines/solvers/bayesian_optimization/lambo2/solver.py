@@ -213,6 +213,7 @@ class LaMBO2(AbstractSolver):
                 torch.load(
                     load_checkpoint_from,
                     map_location="cpu",
+                    weights_only=False,
                 )["state_dict"]
             )
 
