@@ -1,6 +1,6 @@
-"""Tests for our bridge with Bounce
+"""
+Tests for the BOSS implementation
 
-TODO: add reference
 """
 
 import json
@@ -30,32 +30,30 @@ def load_sequence_length() -> int:
 
 
 @pytest.mark.slow()
-def test_bounce_runs():
-    """Tests that Bounce instantiates and runs."""
+def test_boss_runs():
+    """
+    Test BOSS instantiates and runs.
+    """
     from poli import objective_factory
 
-    pytest.importorskip("bounce")  # We check if we have Bounce installed
-    from poli_baselines.solvers.bayesian_optimization.bounce import BounceSolver
+    pytest.importorskip("boss")
+    from poli_baselines.solvers.bayesian_optimization.boss import BossSolver
 
     alphabet = load_alphabet()
     sequence_length = load_sequence_length()
 
-    problem = objective_factory.create(
-        name="rdkit_qed", string_representation="SELFIES"
-    )
+    problem = objective_factory.create(name="rdkit_qed", string_representation="SMILES")
     black_box = problem.black_box
+    x0 = problem.x0
+    y0 = black_box(x0)
 
-    solver = BounceSolver(
+    solver = BossSolver(
         black_box=black_box,
-        alphabet=alphabet,
-        sequence_length=sequence_length,
-        n_initial_points=10,
+        x0=x0,
+        y0=y0,
+        n_initial_points=1,
     )
 
     assert solver is not None
 
     solver.solve(max_iter=1)
-
-
-if __name__ == "__main__":
-    test_bounce_runs()
