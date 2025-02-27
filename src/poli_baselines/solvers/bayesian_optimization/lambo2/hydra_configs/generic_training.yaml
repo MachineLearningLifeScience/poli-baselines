@@ -24,6 +24,7 @@ max_sequence_length: 256
 num_samples: ${batch_size}
 allow_length_change: false
 accelerator: cpu
+fft_expansion_factor: 2
 
 trainer:
   _target_: lightning.Trainer
