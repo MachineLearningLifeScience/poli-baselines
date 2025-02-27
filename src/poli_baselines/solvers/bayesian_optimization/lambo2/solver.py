@@ -151,10 +151,14 @@ class LaMBO2(AbstractSolver):
 
         tokenizable_x0 = np.array([" ".join(x_i) for x_i in x0])
 
+        x0_for_black_box = np.array(
+            [seq.replace(" ", "") for seq in tokenizable_x0]
+        )
+
         if y0 is None:
-            y0 = self.black_box(x0)
+            y0 = self.black_box(x0_for_black_box)
         elif y0.shape[0] < x0.shape[0]:
-            y0 = np.vstack([y0, self.black_box(x0[original_size:])])
+            y0 = np.vstack([y0, self.black_box(x0_for_black_box[original_size:])])
 
         self.history_for_training = {
             "x": [tokenizable_x0],
@@ -378,6 +382,11 @@ class LaMBO2(AbstractSolver):
             tokenizer.sampling_vocab_excluded.add(
                 "-"
             )  # prevent any gap tokens from being sampled
+
+        print("Tokenizer vocab:")
+        print(tokenizer.vocab)
+        print("Tokenizer sampling vocab excluded:")
+        print(tokenizer.sampling_vocab_excluded)
 
         tok_idxs = tokenizer_transform(candidate_points)
         is_mutable = tokenizer.get_corruptible_mask(tok_idxs)
