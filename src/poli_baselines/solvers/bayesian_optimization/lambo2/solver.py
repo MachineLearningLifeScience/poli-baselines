@@ -108,13 +108,13 @@ class LaMBO2(AbstractSolver):
         seed: int | None = None,
         max_epochs_for_retraining: int = 1,
         restrict_candidate_points_to: np.ndarray | None = None,
-        logger = None,
+        logger=None,
     ):
         super().__init__(black_box=black_box, x0=x0, y0=y0)
         self.experiment_id = f"{uuid4()}"[:8]
         self.max_epochs_for_retraining = max_epochs_for_retraining
         self.restrict_candidate_points_to = restrict_candidate_points_to
-        
+
         if config is None:
             if config_dir is None:
                 config_dir = DEFAULT_CONFIG_DIR
@@ -151,9 +151,7 @@ class LaMBO2(AbstractSolver):
 
         tokenizable_x0 = np.array([" ".join(x_i) for x_i in x0])
 
-        x0_for_black_box = np.array(
-            [seq.replace(" ", "") for seq in tokenizable_x0]
-        )
+        x0_for_black_box = np.array([seq.replace(" ", "") for seq in tokenizable_x0])
 
         if y0 is None:
             y0 = self.black_box(x0_for_black_box)
@@ -332,8 +330,16 @@ class LaMBO2(AbstractSolver):
         x = np.concatenate(self.history_for_training["x"], axis=0)
         y = np.concatenate(self.history_for_training["y"], axis=0)
         sorted_y0_idxs = np.argsort(y.flatten())[::-1]
-        candidate_points = x[sorted_y0_idxs[: min(len(x), self.cfg.fft_expansion_factor * self.cfg.num_samples)]]
-        candidate_scores = y[sorted_y0_idxs[: min(len(x), self.cfg.fft_expansion_factor * self.cfg.num_samples)]]
+        candidate_points = x[
+            sorted_y0_idxs[
+                : min(len(x), self.cfg.fft_expansion_factor * self.cfg.num_samples)
+            ]
+        ]
+        candidate_scores = y[
+            sorted_y0_idxs[
+                : min(len(x), self.cfg.fft_expansion_factor * self.cfg.num_samples)
+            ]
+        ]
 
         indices = farthest_first_traversal(
             library=candidate_points,
