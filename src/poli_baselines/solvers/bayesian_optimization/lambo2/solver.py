@@ -383,11 +383,6 @@ class LaMBO2(AbstractSolver):
                 "-"
             )  # prevent any gap tokens from being sampled
 
-        print("Tokenizer vocab:")
-        print(tokenizer.vocab)
-        print("Tokenizer sampling vocab excluded:")
-        print(tokenizer.sampling_vocab_excluded)
-
         tok_idxs = tokenizer_transform(candidate_points)
         is_mutable = tokenizer.get_corruptible_mask(tok_idxs)
         tok_idxs = tokenizer_transform(candidate_points)
@@ -406,8 +401,6 @@ class LaMBO2(AbstractSolver):
             metrics = optimizer.step()
             if self.logger:
                 self.logger.log_metrics(metrics)
-            if self.cfg.debug_mode:
-                print(optimizer.get_best_solutions()["protein_seq"].values)
 
         # Get the most promising sequences from the optimizer
         best_solutions = optimizer.get_best_solutions()
