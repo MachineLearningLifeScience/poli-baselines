@@ -101,23 +101,28 @@ class LaMBO2(AbstractSolver):
         black_box: AbstractBlackBox,
         x0: np.ndarray | None = None,
         y0: np.ndarray | None = None,
+        config: OmegaConf | None = None,
         config_dir: Path | str | None = None,
         config_name: str = "generic_training",
         overrides: list[str] | None = None,
         seed: int | None = None,
         max_epochs_for_retraining: int = 1,
         restrict_candidate_points_to: np.ndarray | None = None,
+        logger=None,
     ):
         super().__init__(black_box=black_box, x0=x0, y0=y0)
         self.experiment_id = f"{uuid4()}"[:8]
         self.max_epochs_for_retraining = max_epochs_for_retraining
         self.restrict_candidate_points_to = restrict_candidate_points_to
 
-        if config_dir is None:
-            config_dir = DEFAULT_CONFIG_DIR
-        with hydra.initialize_config_dir(config_dir=str(config_dir)):
-            cfg = hydra.compose(config_name=config_name, overrides=overrides)
-            OmegaConf.set_struct(cfg, False)
+        if config is None:
+            if config_dir is None:
+                config_dir = DEFAULT_CONFIG_DIR
+            with hydra.initialize_config_dir(config_dir=str(config_dir)):
+                cfg = hydra.compose(config_name=config_name, overrides=overrides)
+                OmegaConf.set_struct(cfg, False)
+        else:
+            cfg = config
 
         # Setting the random seed
         # We are ignoring the seed in the original config file.
@@ -129,6 +134,7 @@ class LaMBO2(AbstractSolver):
 
         self.cfg = cfg
         print(OmegaConf.to_yaml(cfg))
+        self.logger = logger
 
         if x0 is None:
             raise ValueError(
@@ -145,10 +151,12 @@ class LaMBO2(AbstractSolver):
 
         tokenizable_x0 = np.array([" ".join(x_i) for x_i in x0])
 
+        x0_for_black_box = np.array([seq.replace(" ", "") for seq in tokenizable_x0])
+
         if y0 is None:
-            y0 = self.black_box(x0)
+            y0 = self.black_box(x0_for_black_box)
         elif y0.shape[0] < x0.shape[0]:
-            y0 = np.vstack([y0, self.black_box(x0[original_size:])])
+            y0 = np.vstack([y0, self.black_box(x0_for_black_box[original_size:])])
 
         self.history_for_training = {
             "x": [tokenizable_x0],
@@ -322,8 +330,16 @@ class LaMBO2(AbstractSolver):
         x = np.concatenate(self.history_for_training["x"], axis=0)
         y = np.concatenate(self.history_for_training["y"], axis=0)
         sorted_y0_idxs = np.argsort(y.flatten())[::-1]
-        candidate_points = x[sorted_y0_idxs[: min(len(x), 2 * self.cfg.num_samples)]]
-        candidate_scores = y[sorted_y0_idxs[: min(len(x), 2 * self.cfg.num_samples)]]
+        candidate_points = x[
+            sorted_y0_idxs[
+                : min(len(x), self.cfg.fft_expansion_factor * self.cfg.num_samples)
+            ]
+        ]
+        candidate_scores = y[
+            sorted_y0_idxs[
+                : min(len(x), self.cfg.fft_expansion_factor * self.cfg.num_samples)
+            ]
+        ]
 
         indices = farthest_first_traversal(
             library=candidate_points,
@@ -388,7 +404,9 @@ class LaMBO2(AbstractSolver):
         # Compute proposals using the optimizer
         for _ in range(self.cfg.num_steps):
             # Take a step on the optimizer, diffusing towards promising sequences.
-            optimizer.step()
+            metrics = optimizer.step()
+            if self.logger:
+                self.logger.log_metrics(metrics)
 
         # Get the most promising sequences from the optimizer
         best_solutions = optimizer.get_best_solutions()
