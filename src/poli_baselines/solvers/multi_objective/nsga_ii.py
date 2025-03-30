@@ -199,8 +199,8 @@ class DiscreteNSGAII(StepByStepSolver):
                 y0_for_init = np.vstack([self.y0, missing_evaluations])
             elif self.x0.shape[0] > population_size:
                 best_performing_indices = np.argsort(self.y0.flatten())[::-1]
-                x0_for_init = self.x0[best_performing_indices[: self.pop_size]]
-                y0_for_init = y0[best_performing_indices[: self.pop_size]]
+                x0_for_init = self.x0[best_performing_indices[:population_size]]
+                y0_for_init = y0[best_performing_indices[:population_size]]
 
             else:
                 x0_for_init = self.x0
